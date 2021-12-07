@@ -49,7 +49,7 @@ def probate(request):
     """
     probate_list = ProbateContract.objects.filter(dead=True)
 
-    if not probate_list:
+    if not probate_list.exists():
         return Response(status=HTTP_200_OK)
     data = list()
     for probate in probate_list:

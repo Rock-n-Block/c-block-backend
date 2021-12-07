@@ -30,7 +30,7 @@ async def get_event(contract, noda, w3) -> None:
                     "topics": [w3.keccak(text="NewContract(address,uint8,address)").hex()]}]}))
         while True:
             try:
-                message = await asyncio.wait_for(ws.recv(), timeout=60)
+                message = await asyncio.wait_for(ws.recv(), timeout=10)
                 # Decoded response with event
                 decoded = list(decode_single('(address,uint8,address)',bytearray.fromhex(json.loads(message)['params']['result']['data'][2:])))
                 logger.info(f'New Event {decoded}')

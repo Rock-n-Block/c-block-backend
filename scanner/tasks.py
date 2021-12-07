@@ -1,16 +1,8 @@
-import os
-import sys
-
 from celery import shared_task
-from scanner.utils import send_heirs_mail
 from web3 import Web3
+
 # from .contracts import PROBATE_CONTRACT
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mywish2.settings")
-import django
-django.setup()
-
+from scanner.utils import send_heirs_mail
 from scanner.models import ProbateContract
 
 
