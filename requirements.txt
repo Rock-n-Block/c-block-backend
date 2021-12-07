@@ -1,0 +1,12 @@
+Django==3.2.9
+jsonschema==3.2.0
+marshmallow==3.14.1
+marshmallow-dataclass==8.5.3
+psycopg2-binary==2.9.2
+PyYAML==6.0
+redis==4.0.2
+web3==5.17.0
+drf-yasg==1.20.0
+djangorestframework==3.12.4
+flower==1.0.0
+celery==5.2.1
