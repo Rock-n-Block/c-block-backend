@@ -51,4 +51,7 @@ docker-compose exec web python manage.py migrate
 - REDIS_PORT - entry redis port: int
 - EMAIL_HOST - login of the sender of the mail: str
 - EMAIL_PASSWORD - password of the sender of the mail: str
-
+### Тесты
+```
+docker-compose exec python manage.py test
+```

@@ -47,7 +47,12 @@ async def get_event(contract: str, noda: list, w3, event: str) -> None:
                     logger.warning('Profile not exists')
                     profile = await sync_to_async(Profile.objects.create, thread_sensitive=True)(owner_address=decoded[2])
                 try:
-                    await sync_to_async(TokenContract.objects.get, thread_sensitive=True)(address=decoded[0])
+                    token = await sync_to_async(TokenContract.objects.get, thread_sensitive=True)(address=decoded[0])
+                    token.address = decoded[0]
+                    token.contract_type = decoded[1]
+                    token.owner = profile
+                    token.test_noda = noda[1]
+                    token.save()
                     logger.info('token is exist')
                 except:
                     # Save new events history

@@ -106,7 +106,7 @@ def new_probate(request):
     Create new probate contract
     """
     owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    ProbateContract.objects.create(
+    ProbateContract.objects.update_or_create(
         address=request.data['contract_address'],
         name=request.data['contract_name'],
         mails_array=request.data['mail_list'],
@@ -138,7 +138,7 @@ def new_crowdsale(request):
     """
     owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
 
-    CrowdsaleContract.objects.create(
+    CrowdsaleContract.objects.update_or_create(
         address=request.data['contract_address'],
         name=request.data['contract_name'],
         owner=owner[0])
@@ -167,7 +167,7 @@ def new_wedding(request):
     Create new wedding contract
     """
     owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    WeddingContract.objects.create(
+    WeddingContract.objects.update_or_create(
         address=request.data['contract_address'],
         name=request.data['contract_name'],
         mail_list=request.data['mail_list'],
@@ -199,7 +199,7 @@ def new_token(request):
     """
     owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
 
-    TokenContract.objects.create(
+    TokenContract.objects.update_or_create(
         address=request.data['contract_address'],
         address_list=request.data['address_list'],
         name=request.data['contract_name'],
