@@ -7,7 +7,7 @@ from scanner.models import ProbateContract
 
 
 @shared_task
-def check_dead_wallets(noda, test) -> None:
+def check_dead_wallets(noda: str, test: bool) -> None:
     """
     Take all the contracts of users with the status dead=False in noda
     and turn to the contract method to find out if the status has changed

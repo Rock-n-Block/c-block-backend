@@ -31,8 +31,10 @@ if __name__ == "__main__":
         network.erc20mnffabric_address,
         network.erc20mffabric_address
     ]
+    #probate_address = network.probate_address
     logger.info(contract)
 
     while True:
-        futures = [get_event(address, provider_url, w3) for address in contract]
+        futures = [get_event(address, provider_url, w3, '(address,uint8)') for address in contract]
+        #futures.append(get_event(probate_address, provider_url, w3, '(address(_lostKey), timestamp)'))
         loop.run_until_complete(asyncio.wait(futures))
