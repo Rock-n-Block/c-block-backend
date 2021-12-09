@@ -18,9 +18,7 @@ import logging
 
 if __name__ == "__main__":
     logger = logging.getLogger('mainnet_scanner')
-    provider_url = [config.ENDPOINT, 0]
-    w3 = Web3(Web3.WebsocketProvider(provider_url[0]))
-    w3.middleware_onion.inject(geth_poa_middleware, layer=0)  # only needed for PoA networks like BSC
+
     loop = asyncio.get_event_loop()
     network = Network.objects.first()
     # List contract addresses
@@ -30,10 +28,14 @@ if __name__ == "__main__":
         network.erc20mnffabric_address,
         network.erc20mffabric_address
     ]
-    #probate_address = network.probate_address
-    logger.info(contract)
+    probate_address = network.probatefabric_address
+    logger.info(f'{contract}\n{probate_address}')
+    fabrics = {'token': contract, 'probate': probate_address}
 
     while True:
-        futures = [get_event(address, provider_url, w3, '(address,uint8,address)') for address in contract]
-        #futures.append(get_event(probate_address, provider_url, w3, '(address(_lostKey), timestamp)'))
+        provider_url = [config.ENDPOINT, 0]
+        w3 = Web3(Web3.WebsocketProvider(provider_url[0]))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)  # only needed for PoA networks like BSC
+        futures = [get_event(address, provider_url, w3, '(address,uint8,address)', fabrics) for address in contract]
+        futures.append(get_event(probate_address, provider_url, w3,  '(address,uint256)', fabrics))
         loop.run_until_complete(asyncio.wait(futures))

@@ -11,14 +11,33 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mywish2.settings")
 import django
 django.setup()
 
-from .models import TokenContract, Profile
+from .models import TokenContract, Profile, ProbateContract
 from mywish2.settings import config
 from django.core.mail import send_mail
 import logging
 from asgiref.sync import sync_to_async
 
 
-async def get_event(contract: str, noda: list, w3, event: str) -> None:
+def create_token(decoded: list, profile: Profile, noda: list):
+    return TokenContract.objects.update_or_create(
+        address=decoded[0],
+        contract_type=decoded[1],
+        owner=profile,
+        test_noda=noda[1])
+
+
+def create_probate(decoded: list, profile: Profile, noda: list):
+    return ProbateContract.objects.update_or_create(
+        address=decoded[0],
+        identifier=str(decoded[1]),
+        dead=False,
+        owner=profile,
+        test_noda=noda[1])
+
+
+
+
+async def get_event(contract: str, noda: list, w3, event: str, fabrics: dict) -> None:
     if noda[1]:
         logger = logging.getLogger('testnet_scanner')
     else:
@@ -37,35 +56,31 @@ async def get_event(contract: str, noda: list, w3, event: str) -> None:
             try:
                 message = await asyncio.wait_for(ws.recv(), timeout=10)
                 # Decoded response with event
-                decoded = list(decode_single(f'{event}',bytearray.fromhex(json.loads(message)['params']['result']['data'][2:])))
+                decoded = list(decode_single(f'{event}',bytearray.fromhex(
+                    json.loads(message)['params']['result']['data'][2:]
+                )))
                 logger.info(f'New Event {decoded}')
                 decoded.append('0xemyon')
                 try:
-                    profile = await sync_to_async(Profile.objects.get, thread_sensitive=True)(owner_address__iexact=decoded[2])
-                # TODO check probate event
+                    profile = await sync_to_async(Profile.objects.get, thread_sensitive=True)(
+                        owner_address__iexact=decoded[2])
                 except:
                     logger.warning('Profile not exists')
-                    profile = await sync_to_async(Profile.objects.create, thread_sensitive=True)(owner_address=decoded[2])
-                try:
-                    token = await sync_to_async(TokenContract.objects.get, thread_sensitive=True)(address=decoded[0])
-                    token.address = decoded[0]
-                    token.contract_type = decoded[1]
-                    token.owner = profile
-                    token.test_noda = noda[1]
-                    token.save()
-                    logger.info('token is exist')
-                except:
-                    # Save new events history
-                    await sync_to_async(TokenContract.objects.create, thread_sensitive=True)(
-                        address=decoded[0],
-                        contract_type=decoded[1],
-                        owner=profile,
-                        test_noda=noda[1]
-                    )
-                    logger.info('New history note')
-                pass
+                    profile = await sync_to_async(Profile.objects.create, thread_sensitive=True)(
+                        owner_address=decoded[2])
+                logger.info(decoded)
+                if contract in fabrics['probate']:
+                    logger.info('test')
+                    await sync_to_async(create_probate, thread_sensitive=True)(decoded, profile, noda)
+                    logger.info('Probate note')
+                if contract in fabrics['token']:
+                    await sync_to_async(create_token, thread_sensitive=True)(decoded, profile, noda)
+                    logger.info('Token saved')
             except Exception as e:
-                print(e)
+                if not w3.isConnected():
+                    w3.WebSocketProvider(noda[0])
+                else:
+                    pass
 
 
 def send_heirs_mail(owner_mail: str, heirs_mail_list: list) -> None:

@@ -11,9 +11,10 @@ class Network(models.Model):
     erc20nmffabric_address = models.CharField(max_length=128)
     erc20mnffabric_address = models.CharField(max_length=128)
     erc20mffabric_address = models.CharField(max_length=128)
+    probatefabric_address = models.CharField(max_length=128, default='0x0a980179dd1aAa0eEaC71787C4Bdf5a362F0877d')
 
     def __str__(self):
-        return self.name
+        return f'{self.name}'
 
 
 class Profile(models.Model):
@@ -64,14 +65,14 @@ class ProbateContract(models.Model):
     Probate contracts
     """
     address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
-    name = models.CharField(max_length=64, blank=False, help_text='Contract name')
-    mails_array = ArrayField(models.EmailField(blank=True), size=4, help_text='List heirs mails')
-    dead = models.BooleanField(default=False, help_text='Wallet status dead or alive')
+    name = models.CharField(max_length=64, blank=True, help_text='Contract name')
+    mails_array = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
+    dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
     identifier = models.CharField(max_length=128, blank=False,
                                   help_text='ID for identification contract from event and user')
     owner = models.OneToOneField(Profile, on_delete=models.CASCADE, blank=True,
                                  related_name='probate_owner', related_query_name='probates_owner')
-    owner_mail = models.EmailField(blank=False)
+    owner_mail = models.EmailField(blank=True)
     test_noda = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
 
     def change_dead_status(self) -> None:

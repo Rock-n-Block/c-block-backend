@@ -3,6 +3,7 @@ from web3 import Web3
 
 # from .contracts import PROBATE_CONTRACT
 from scanner.utils import send_heirs_mail
+from scanner.contracts import PROBATE_FABRIC
 from scanner.models import ProbateContract
 
 
@@ -19,7 +20,7 @@ def check_dead_wallets(noda: str, test: bool) -> None:
     w3 = Web3(Web3.HTTPProvider(noda))
     for probate in alive_probates:
         # Get contract method for check wallet status
-        contract = w3.eth.contract(address=probate.address, abi=PROBATE_CONTRACT)
-        if contract.functions.someMethod().call():
+        contract = w3.eth.contract(address=w3.toChecksumAddress(probate.address), abi=PROBATE_FABRIC)
+        if contract.functions.isLostKey().call():
             send_heirs_mail(probate.owner_mail, probate.mails_array)
             probate.change_dead_status()
