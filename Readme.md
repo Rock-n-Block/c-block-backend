@@ -41,17 +41,55 @@ docker-compose exec web python manage.py migrate
 - REDIS_PORT - entry port
 
 ### config.py
-- ALLOWED_HOSTS -django allowed hosts list: list
-- SECRET_KEY - django secret key: str
-- DEBUG - django debug: bool
-- TEST_ENDPOINT - celo web socket test RPC: str
-- ENDPOINT - celo web socket RPC: str
-- REDIS_EXPIRATION_TIME - redis expiration date: int
-- REDIS_HOST - redis host: str
-- REDIS_PORT - entry redis port: int
-- EMAIL_HOST - login of the sender of the mail: str
-- EMAIL_PASSWORD - password of the sender of the mail: str
+- allowed_hosts: list allowed hosts
+- secret_key: some django secret key
+- debug: on or off debug
+- static_url: urlpath to statis
+- static_root: path to static files
+- redis_expiration_time: expiration time
+- redis_host: redis host
+- redis_port: port
+- email_host: smtp server
+- email_host_user: admin mail for sending mails
+- email_password: admin mail password
+- email_port: smtp server port
+- test_network:
+  - ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
+  - rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'
+  - token_address:
+    - token address
+    - token address
+    - token address
+    - token address
+  - crowdsale_address:
+    - crowdsale address
+    - crowdsale address
+  - probate_address:
+    - probate address
+    - probate address
+  - wedding_address:
+    - wedding address
+    - wedding address
+  - test: test network or not
+- network:
+  - ws_endpoint: 'wss://forno.celo.org/ws'
+  - rpc_endpoint: 'https://forno.celo.org'
+  - token_address:
+    - token address
+    - token address
+    - token address
+    - token address
+  - crowdsale_address:
+    - crowdsale address
+    - crowdsale address
+  - probate_address:
+    - probate address
+    - probate address
+  - wedding_address:
+    - wedding address
+    - wedding address
+  - test: test network or not
 ### Тесты
 ```
-docker-compose exec python manage.py test
+docker-compose exec web python manage.py test
 ```
