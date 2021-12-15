@@ -1,17 +1,18 @@
 import json
 import asyncio
-import logging
-
+from typing import Callable
 from websockets import connect
 from eth_abi import decode_single
 
 from .models import TokenContract, Profile, ProbateContract
 from mywish2.settings import config
+
 from django.core.mail import send_mail
 from asgiref.sync import sync_to_async
 
 
-def create_token(decoded: list, profile: Profile, test: bool):
+def create_token(decoded: list, profile: Profile, test: bool, logger):
+    logger.info('Token saved')
     return TokenContract.objects.update_or_create(
         address=decoded[0],
         contract_type=decoded[1],
@@ -19,7 +20,8 @@ def create_token(decoded: list, profile: Profile, test: bool):
         test_node=test)
 
 
-def create_probate(decoded: list, profile: Profile, test: bool):
+def create_probate(decoded: list, profile: Profile, test: bool, logger):
+    logger.info('Probate saved')
     return ProbateContract.objects.update_or_create(
         address=decoded[0],
         identifier=str(decoded[1]),
@@ -30,7 +32,7 @@ def create_probate(decoded: list, profile: Profile, test: bool):
 
 
 
-async def get_event(contract: str, node: str, test: bool, w3, event: str, event_type: str) -> None:
+async def get_event(contract: str, node: str, test: bool, w3, event: str, handler: Callable, logger) -> None:
     """
 
     :param contract: contract address
@@ -41,7 +43,6 @@ async def get_event(contract: str, node: str, test: bool, w3, event: str, event_
     :param event_type: type contract
     :return: None or exception
     """
-    logger = logging.getLogger(f'{node}_scanner')
     logger.info(f'Node:{node}\nContract:{contract}')
     async with connect(node) as ws:
         # Send request to Celo with event structure
@@ -69,15 +70,13 @@ async def get_event(contract: str, node: str, test: bool, w3, event: str, event_
                 profile, create = await sync_to_async(Profile.objects.get_or_create, thread_sensitive=True)(
                     owner_address__iexact=decoded[2])
                 logger.info(decoded)
-                if event_type == 'probate':
-                    await sync_to_async(create_probate, thread_sensitive=True)(decoded, profile, test)
-                    logger.info('Probate note')
-                if event_type == 'token':
-                    await sync_to_async(create_token, thread_sensitive=True)(decoded, profile, test)
-                    logger.info('Token saved')
-            except:
+                await sync_to_async(handler, thread_sensitive=True)(decoded, profile, test, logger)
+                logger.info('Done')
+
+            except Exception as e:
                 # Celo disconnect sometimes and we need reconnect
                 if not w3.isConnected():
+                    logger.warning('Connection reset')
                     w3.WebSocketProvider(node)
                 else:
                     pass

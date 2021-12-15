@@ -4,7 +4,7 @@ from web3 import Web3
 import logging
 
 from scanner.utils import send_heirs_mail
-from scanner.contracts import PROBATE_FABRIC
+from scanner.contracts import PROBATE_FABRIC_ABI
 from scanner.models import ProbateContract
 
 
@@ -23,7 +23,7 @@ def check_dead_wallets(node: str, test: bool) -> None:
     w3 = Web3(Web3.HTTPProvider(node))
     for probate in alive_probates:
         # Get contract method for check wallet status
-        contract = w3.eth.contract(address=w3.toChecksumAddress(probate.address), abi=PROBATE_FABRIC)
+        contract = w3.eth.contract(address=w3.toChecksumAddress(probate.address), abi=PROBATE_FABRIC_ABI)
         if contract.functions.isLostKey().call() and not contract.functions.terminated().call():
             logger.info('Send mails and change status')
             probate.change_terminated()

@@ -14,9 +14,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from .config import config
 from .logging_settings import LOGGING
-LOGGING_CONFIG = None
-
 import logging.config
+
 logging.config.dictConfig(LOGGING)
 
 

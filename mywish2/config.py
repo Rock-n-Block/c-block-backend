@@ -1,19 +1,27 @@
 import os
 import yaml
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from marshmallow_dataclass import class_schema
+
+from web3 import Web3
+from web3.middleware import geth_poa_middleware
 
 
 @dataclass
 class Network:
+    name: str
     ws_endpoint: str
     rpc_endpoint: str
-    token_address: list
-    crowdsale_address: list
-    probate_address: list
-    wedding_address: list
+    token_factories: list
+    crowdsale_factories: list
+    probate_factories: list
+    wedding_factories: list
     test: bool
+    w3: Web3 = field(init=False, default=None)
 
+    def __post_init__(self):
+        self.w3 = Web3(Web3.WebsocketProvider(self.ws_endpoint))
+        self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 
 @dataclass

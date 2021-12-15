@@ -56,36 +56,36 @@ docker-compose exec web python manage.py migrate
 - test_network:
   - ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
   - rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'
-  - token_address:
+  - token_factories:
     - token address
     - token address
     - token address
     - token address
-  - crowdsale_address:
+  - crowdsale_factories:
     - crowdsale address
     - crowdsale address
-  - probate_address:
+  - probate_factories:
     - probate address
     - probate address
-  - wedding_address:
+  - wedding_factories:
     - wedding address
     - wedding address
   - test: test network or not
 - network:
   - ws_endpoint: 'wss://forno.celo.org/ws'
   - rpc_endpoint: 'https://forno.celo.org'
-  - token_address:
+  - token_factories:
     - token address
     - token address
     - token address
     - token address
-  - crowdsale_address:
+  - crowdsale_factories:
     - crowdsale address
     - crowdsale address
-  - probate_address:
+  - probate_factories:
     - probate address
     - probate address
-  - wedding_address:
+  - wedding_factories:
     - wedding address
     - wedding address
   - test: test network or not

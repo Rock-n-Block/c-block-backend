@@ -1,11 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from .models import Profile, TokenContract, ProbateContract, CrowdsaleContract, WeddingContract
+from .serializers import TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer, ResponseSerializer
 
 import logging
 
@@ -13,7 +14,7 @@ logger = logging.getLogger('__name__')
 @swagger_auto_schema(
     method='get',
     operation_description="User contract history",
-    responses={'200': 'Success',
+    responses={'200': ResponseSerializer(),
                '404': 'No such user address in the DB'}
 )
 @api_view(http_method_names=['GET'])
@@ -30,30 +31,10 @@ def history(request, address: str):
     probate_contracts = ProbateContract.objects.filter(owner=profile)
     wedding_contracts = WeddingContract.objects.filter(owner=profile)
     history = dict()
-    history['token'] = [{
-        'address': contract.address,
-        'address_list': contract.address_list,
-        'contract_type': contract.contract_type,
-        'test_node': contract.test_node
-    } for contract in token_contracts]
-    history['crowdsale'] = [{
-        'address': contract.address,
-        'contract_name': contract.name,
-        'test_node': contract.test_node
-    } for contract in crowdsale_contracts]
-    history['probate'] = [{
-        'address': contract.address,
-        'contract_name': contract.name,
-        'mails_list': contract.mails_array,
-        'owner_mail': contract.owner_mail,
-        'test_node': contract.test_node
-    } for contract in probate_contracts]
-    history['wedding'] = [{
-        'address': contract.address,
-        'contract_name': contract.name,
-        'mail_list': contract.mail_list,
-        'test_node': contract.test_node
-    } for contract in wedding_contracts]
+    history['token'] = [TokenSerializer(contract).data for contract in token_contracts]
+    history['crowdsale'] = [CrowdsaleSerializer(contract).data for contract in crowdsale_contracts]
+    history['probate'] = [ProbateSerializer(contract).data for contract in probate_contracts]
+    history['wedding'] = [WeddingSerializer(contract).data for contract in wedding_contracts]
     return Response(data=history, status=HTTP_200_OK)
 
 
