@@ -34,25 +34,25 @@ def history(request, address: str):
         'address': contract.address,
         'address_list': contract.address_list,
         'contract_type': contract.contract_type,
-        'test_noda': contract.test_noda
+        'test_node': contract.test_node
     } for contract in token_contracts]
     history['crowdsale'] = [{
         'address': contract.address,
         'contract_name': contract.name,
-        'test_noda': contract.test_noda
+        'test_node': contract.test_node
     } for contract in crowdsale_contracts]
     history['probate'] = [{
         'address': contract.address,
         'contract_name': contract.name,
         'mails_list': contract.mails_array,
         'owner_mail': contract.owner_mail,
-        'test_noda': contract.test_noda
+        'test_node': contract.test_node
     } for contract in probate_contracts]
     history['wedding'] = [{
         'address': contract.address,
         'contract_name': contract.name,
         'mail_list': contract.mail_list,
-        'test_noda': contract.test_noda
+        'test_node': contract.test_node
     } for contract in wedding_contracts]
     return Response(data=history, status=HTTP_200_OK)
 
@@ -68,7 +68,7 @@ def probates(request):
     List 'dead' wallets with heirs
     :return: owner wallet address and list heirs mails
     """
-    probate_list = ProbateContract.objects.filter(dead=True)
+    probate_list = ProbateContract.objects.filter(dead=True, terminated=False)
 
     data = list()
     [data.append({
@@ -110,7 +110,6 @@ def new_probate(request):
         address=request.data['contract_address'],
         name=request.data['contract_name'],
         mails_array=request.data['mail_list'],
-        identifier=request.data['identifier'],
         owner=owner[0],
         owner_mail=request.data['owner_mail'],
     )
