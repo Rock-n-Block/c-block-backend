@@ -14,13 +14,13 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.beat_schedule = {
     'check_dead_wallets': {
         'task': 'scanner.tasks.check_dead_wallets',
-        'schedule': crontab(hour='*/1'),
-        'args': (config.TEST_ENDPOINT, True),
+        'schedule': crontab(minute='*/60'),
+        'args': (config.test_network.rpc_endpoint, True),
     },
     'check_dead_wallets_test': {
         'task': 'scanner.tasks.check_dead_wallets',
-        'schedule': crontab(hour='*/1'),
-        'args': (config.ENDPOINT, False),
+        'schedule': crontab(minute='*/60'),
+        'args': (config.network.rpc_endpoint, False),
     },
 }
 

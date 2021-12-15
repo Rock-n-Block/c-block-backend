@@ -1,12 +1,10 @@
 from django.test import TestCase
 from django.test import Client
-from unittest import skip
+from web3 import Web3
 from django.urls import reverse
 
 from .models import ProbateContract, Profile
-from .tasks import check_dead_wallets
 from .utils import send_heirs_mail
-from mywish2.settings import config
 
 import json
 
@@ -14,31 +12,30 @@ import json
 class ProbateStatusTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
+        cls.client = Client()
         cls.user_profile = Profile.objects.create(owner_address='0x00a0a0aaa0a0a0aaaa0a')
         cls.user_profile2 = Profile.objects.create(owner_address='0x00a0a0aaa00a00aaaa0a')
-        ProbateContract.objects.create(address='0x0a0aaa0aa0a0a0a0aaaa0',
+        ProbateContract.objects.create(address=Web3.toChecksumAddress('0x0a970179dd1aAa0eEaC71787C4Bdf5a362F0877d'),
                                        mails_array=['test@gmail.com', 'tt@mail.ru'],
-                                       dead=False, identifier='165753223',
-                                       owner=cls.user_profile, owner_mail='owner@gmail.com',
-                                       test_noda=True)
+                                       dead=False, owner=cls.user_profile,
+                                       owner_mail='owner@gmail.com', test_node=True)
 
-        ProbateContract.objects.create(address='0x0a0aaa0aa0a0a0a00aa0',
+        ProbateContract.objects.create(address=Web3.toChecksumAddress('0x0a980169dd1aAa0eEaC71787C4Bdf5a362F0877d'),
                                        mails_array=['tt@mail.ru'],
-                                       dead=False, identifier='165123223',
-                                       owner=cls.user_profile2, owner_mail='owner@gmail.com',
-                                       test_noda=True)
+                                       dead=False, owner=cls.user_profile2,
+                                       owner_mail='owner@gmail.com', test_node=True)
 
-    @skip('Probate contracts did not deploy')
     def test_check_dead_wallets(self):
-        check_dead_wallets(config.TEST_ENDPOINT, True)
         first_probate = ProbateContract.objects.first()
+        first_probate.change_dead_status()
         second_probate = ProbateContract.objects.last()
         self.assertEqual(first_probate.dead, True)
-        self.assertEqual(second_probate.dead, True)
+        self.assertEqual(second_probate.dead, False)
 
     def test_send_mails(self):
         done = send_heirs_mail(owner_mail='my@mail.ru', heirs_mail_list=['some@gmail.com', 'another@mail.ru'])
         self.assertEqual(done, None)
+
 
 class CreationContractTestCase(TestCase):
     @classmethod
@@ -77,7 +74,6 @@ class CreationContractTestCase(TestCase):
                 'test@mail.ru',
                 'another@gmail.com'
             ],
-            'identifier': 1234567890,
             'owner_mail': 'ownertest@mail.ru'
         }
         response = self.client.post(path=reverse('new_probate'), data=json.dumps(data), content_type='application/json')

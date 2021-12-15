@@ -14,6 +14,11 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from .config import config
 from .logging_settings import LOGGING
+LOGGING_CONFIG = None
+
+import logging.config
+logging.config.dictConfig(LOGGING)
+
 
 import os
 
@@ -25,11 +30,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config.SECRET_KEY
+SECRET_KEY = config.secret_key
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config.DEBUG
+DEBUG = config.debug
 
-ALLOWED_HOSTS = config.ALLOWED_HOSTS
+ALLOWED_HOSTS = config.allowed_hosts
 
 
 # Application definition
@@ -133,19 +138,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/django-static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = config.static_url
+STATIC_ROOT = os.path.join(BASE_DIR, config.static_root)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = config.EMAIL_HOST
-EMAIL_HOST_PASSWORD = config.EMAIL_PASSWORD
-EMAIL_PORT = 587
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST = config.email_host
+EMAIL_HOST_USER = config.email_host_user
+EMAIL_HOST_PASSWORD = config.email_password
+EMAIL_PORT = config.email_port
 
 CELERY_BROKER_URL = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}"
 CELERY_BROKER_TRANSPORT_OPTION = {'visibility_timeout': 3600}
