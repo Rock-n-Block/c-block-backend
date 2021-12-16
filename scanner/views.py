@@ -82,7 +82,7 @@ Views for create new user contracts
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def new_probate(request):
     """
     Create new probate contract
