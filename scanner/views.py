@@ -6,7 +6,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from .models import Profile, TokenContract, ProbateContract, CrowdsaleContract, WeddingContract
-from .serializers import TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer, ResponseSerializer
+from .serializers import (TokenSerializer, CrowdsaleSerializer,
+                          ProbateSerializer, WeddingSerializer,
+                          ResponseSerializer, ProbateListSerializer)
 
 import logging
 
@@ -41,7 +43,7 @@ def history(request, address: str):
 @swagger_auto_schema(
     method='get',
     operation_description="List dead user wallets",
-    responses={'200': 'Success'}
+    responses={'200': ProbateListSerializer()}
 )
 @api_view(http_method_names=['GET'])
 def probates(request):
@@ -51,12 +53,8 @@ def probates(request):
     """
     probate_list = ProbateContract.objects.filter(dead=True, terminated=False)
 
-    data = list()
-    [data.append({
-        'owner_address': probate.owner.owner_address,
-        'mails': probate.mails_array
-    }) for probate in probate_list]
-    return Response(data=data, status=HTTP_200_OK)
+    [ProbateListSerializer(probate) for probate in probate_list]
+    return Response(data=ProbateListSerializer, status=HTTP_200_OK)
 
 
 """

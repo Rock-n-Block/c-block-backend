@@ -25,8 +25,15 @@ class WeddingSerializer(serializers.ModelSerializer):
         model = WeddingContract
         fields = ('address', 'name', 'mail_list', 'test_node')
 
+
 class ResponseSerializer(serializers.Serializer):
     token = TokenSerializer()
     probate = ProbateSerializer()
     crowdsale = CrowdsaleSerializer()
     wedding = WeddingSerializer()
+
+
+class ProbateListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProbateContract
+        fields = ('address', 'mails_array', 'owner_mail')
