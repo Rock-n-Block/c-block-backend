@@ -144,6 +144,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, config.static_root)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 EMAIL_HOST = config.email_host
