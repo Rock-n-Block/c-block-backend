@@ -53,7 +53,7 @@ class ProbateContract(models.Model):
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
     mails_array = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
-    owner = models.OneToOneField(Profile, on_delete=models.CASCADE, blank=True,
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True,
                                  related_name='probate_owner', related_query_name='probates_owner')
     terminated = models.BooleanField(default=False, help_text='Terminated contract or not')
     owner_mail = models.EmailField(blank=True)

@@ -24,7 +24,6 @@ def create_probate(decoded: list, profile: Profile, test: bool, logger):
     logger.info('Probate saved')
     return ProbateContract.objects.update_or_create(
         address=decoded[0],
-        identifier=str(decoded[1]),
         dead=False,
         owner=profile,
         test_node=test)

@@ -1,14 +1,15 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from rest_framework.permissions import IsAuthenticated
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from .models import Profile, TokenContract, ProbateContract, CrowdsaleContract, WeddingContract
-from .serializers import (TokenSerializer, CrowdsaleSerializer,
-                          ProbateSerializer, WeddingSerializer,
-                          ResponseSerializer, ProbateListSerializer)
+from .serializers import (TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer,
+                          ResponseSerializer, ProbateListSerializer, ProbateCreateSerializer, CrowdsaleCreateSerializer,
+                          WeddingCreateSerializer, TokenCreateSerializer)
 
 import logging
 
@@ -20,6 +21,7 @@ logger = logging.getLogger('__name__')
                '404': 'No such user address in the DB'}
 )
 @api_view(http_method_names=['GET'])
+@permission_classes([IsAuthenticated])
 def history(request, address: str):
     """
     Account(address) history.
@@ -46,6 +48,7 @@ def history(request, address: str):
     responses={'200': ProbateListSerializer()}
 )
 @api_view(http_method_names=['GET'])
+@permission_classes([IsAuthenticated])
 def probates(request):
     """
     List 'dead' wallets with heirs
@@ -71,27 +74,29 @@ Views for create new user contracts
             'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
             'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
                                         items=openapi.TYPE_STRING),
-            'identifier': openapi.Schema(type=openapi.TYPE_STRING, description='ID for check contract'),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
             # 'type': openapi.Schema(type=openapi.TYPE_STRING, description='Type lost_key or dead'),
         },
-        required=['owner_address', 'contract_address', 'contract_name', 'mail_list', 'identifier', 'owner_mail']
+        required=['owner_address', 'contract_address', 'contract_name', 'mail_list', 'owner_mail']
     ),
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
+# @permission_classes([IsAuthenticated])
 def new_probate(request):
     """
     Create new probate contract
     """
-    owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    ProbateContract.objects.update_or_create(
-        address=request.data['contract_address'],
-        name=request.data['contract_name'],
-        mails_array=request.data['mail_list'],
-        owner=owner[0],
-        owner_mail=request.data['owner_mail'],
-    )
+    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
+    serializer = ProbateCreateSerializer(data={
+        'address': request.data['contract_address'],
+        'name': request.data['contract_name'],
+        'mails_array': request.data['mail_list'],
+        'owner': owner.pk,
+        'owner_mail': request.data['owner_mail'],
+    })
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 
 
@@ -110,16 +115,20 @@ def new_probate(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticated])
 def new_crowdsale(request):
     """
     Create new crowdsale contract
     """
-    owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
+    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
 
-    CrowdsaleContract.objects.update_or_create(
-        address=request.data['contract_address'],
-        name=request.data['contract_name'],
-        owner=owner[0])
+    serializer = CrowdsaleCreateSerializer(data={
+        'address': request.data['contract_address'],
+        'name': request.data['contract_name'],
+        'owner': owner.pk
+    })
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 
 
@@ -140,17 +149,20 @@ def new_crowdsale(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticated])
 def new_wedding(request):
     """
     Create new wedding contract
     """
-    owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    WeddingContract.objects.update_or_create(
-        address=request.data['contract_address'],
-        name=request.data['contract_name'],
-        mail_list=request.data['mail_list'],
-        owner=owner[0]
-    )
+    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
+    serializer = WeddingCreateSerializer(data={
+        'address': request.data['contract_address'],
+        'name': request.data['contract_name'],
+        'mail_list': request.data['mail_list'],
+        'owner': owner.pk
+    })
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 
 
@@ -171,16 +183,19 @@ def new_wedding(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticated])
 def new_token(request):
     """
     Create new token contract
     """
-    owner = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
+    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
 
-    TokenContract.objects.update_or_create(
-        address=request.data['contract_address'],
-        address_list=request.data['address_list'],
-        name=request.data['contract_name'],
-        owner=owner[0]
+    serializer = TokenCreateSerializer(data={
+        'address': request.data['contract_address'],
+        'address_list': request.data['address_list'],
+        'name': request.data['contract_name'],
+        'owner': owner.pk}
     )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
