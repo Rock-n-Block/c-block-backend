@@ -72,7 +72,7 @@ async def get_event(contract: str, node: str, test: bool, w3, event: str, handle
                 await sync_to_async(handler, thread_sensitive=True)(decoded, profile, test, logger)
                 logger.info('Done')
 
-            except Exception as e:
+            except:
                 # Celo disconnect sometimes and we need reconnect
                 if not w3.isConnected():
                     logger.warning('Connection reset')
