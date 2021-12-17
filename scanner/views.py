@@ -8,8 +8,7 @@ from drf_yasg import openapi
 
 from .models import Profile, TokenContract, ProbateContract, CrowdsaleContract, WeddingContract
 from .serializers import (TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer,
-                          ResponseSerializer, ProbateListSerializer, ProbateCreateSerializer, CrowdsaleCreateSerializer,
-                          WeddingCreateSerializer, TokenCreateSerializer)
+                          HistoryResponseSerializer, ProbateListSerializer)
 
 import logging
 
@@ -17,7 +16,7 @@ logger = logging.getLogger('__name__')
 @swagger_auto_schema(
     method='get',
     operation_description="User contract history",
-    responses={'200': ResponseSerializer(),
+    responses={'200': HistoryResponseSerializer(),
                '404': 'No such user address in the DB'}
 )
 @api_view(http_method_names=['GET'])
@@ -35,10 +34,10 @@ def history(request, address: str):
     probate_contracts = ProbateContract.objects.filter(owner=profile)
     wedding_contracts = WeddingContract.objects.filter(owner=profile)
     history = dict()
-    history['token'] = [TokenSerializer(contract).data for contract in token_contracts]
-    history['crowdsale'] = [CrowdsaleSerializer(contract).data for contract in crowdsale_contracts]
-    history['probate'] = [ProbateSerializer(contract).data for contract in probate_contracts]
-    history['wedding'] = [WeddingSerializer(contract).data for contract in wedding_contracts]
+    history['tokens'] = TokenSerializer(token_contracts, many=True).data
+    history['crowdsales'] = CrowdsaleSerializer(crowdsale_contracts, many=True).data
+    history['probates'] = ProbateSerializer(probate_contracts, many=True).data
+    history['weddings'] = WeddingSerializer(wedding_contracts, many=True).data
     return Response(data=history, status=HTTP_200_OK)
 
 
@@ -75,7 +74,6 @@ Views for create new user contracts
             'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
                                         items=openapi.TYPE_STRING),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
-            # 'type': openapi.Schema(type=openapi.TYPE_STRING, description='Type lost_key or dead'),
         },
         required=['owner_address', 'contract_address', 'contract_name', 'mail_list', 'owner_mail']
     ),
