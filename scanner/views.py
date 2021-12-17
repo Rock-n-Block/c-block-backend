@@ -86,7 +86,7 @@ def new_probate(request):
     Create new probate contract
     """
     owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    serializer = ProbateCreateSerializer(data={
+    serializer = ProbateSerializer(data={
         'address': request.data['contract_address'],
         'name': request.data['contract_name'],
         'mails_array': request.data['mail_list'],
@@ -120,7 +120,7 @@ def new_crowdsale(request):
     """
     owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
 
-    serializer = CrowdsaleCreateSerializer(data={
+    serializer = CrowdsaleSerializer(data={
         'address': request.data['contract_address'],
         'name': request.data['contract_name'],
         'owner': owner.pk
@@ -153,7 +153,7 @@ def new_wedding(request):
     Create new wedding contract
     """
     owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    serializer = WeddingCreateSerializer(data={
+    serializer = WeddingSerializer(data={
         'address': request.data['contract_address'],
         'name': request.data['contract_name'],
         'mail_list': request.data['mail_list'],
@@ -188,7 +188,7 @@ def new_token(request):
     """
     owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
 
-    serializer = TokenCreateSerializer(data={
+    serializer = TokenSerializer(data={
         'address': request.data['contract_address'],
         'address_list': request.data['address_list'],
         'name': request.data['contract_name'],
