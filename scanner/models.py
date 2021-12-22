@@ -20,6 +20,7 @@ class TokenContract(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                                   related_name='token_owner', related_query_name='tokens_owner')
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
 
 
 class CrowdsaleContract(models.Model):
@@ -31,6 +32,7 @@ class CrowdsaleContract(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                                   related_name='crowdsale_owner', related_query_name='crowdsales_owner')
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
 
 
 class WeddingContract(models.Model):
@@ -43,6 +45,7 @@ class WeddingContract(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                               related_name='wedding_owner', related_query_name='weddings_owner')
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
 
 
 class ProbateContract(models.Model):
@@ -58,6 +61,7 @@ class ProbateContract(models.Model):
     terminated = models.BooleanField(default=False, help_text='Terminated contract or not')
     owner_mail = models.EmailField(blank=True)
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
 
     def change_dead_status(self) -> None:
         self.dead = True

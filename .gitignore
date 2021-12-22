@@ -3,6 +3,6 @@ venv/
 */migrations/
 config.yaml
 .docker/
-*/__pycache__/
+**/__pycache__/
 static/
 debug.log
