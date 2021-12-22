@@ -26,7 +26,6 @@ def check_dead_wallets(node: str, test: bool) -> None:
         contract = w3.eth.contract(address=w3.toChecksumAddress(probate.address), abi=PROBATE_FABRIC_ABI)
         if contract.functions.isLostKey().call() and not contract.functions.terminated().call():
             logger.info('Send mails and change status')
-            probate.change_terminated()
             probate.change_dead_status()
             send_heirs_mail(probate.owner_mail, probate.mails_array)
 
