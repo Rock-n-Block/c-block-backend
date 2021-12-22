@@ -20,6 +20,7 @@ if __name__ == "__main__":
         futures = list()
         loop = asyncio.get_event_loop()
         for network in [config.test_network, config.network]:
+            network.w3 = Web3(Web3.WebsocketProvider(network.ws_endpoint))
             logger = logging.getLogger(f'{network.name}_scanner')
             logger.info('Start scanner')
 
