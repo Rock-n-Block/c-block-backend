@@ -9,10 +9,11 @@ from drf_yasg import openapi
 from .models import Profile, TokenContract, ProbateContract, CrowdsaleContract, WeddingContract
 from .serializers import (TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer,
                           HistoryResponseSerializer, ProbateListSerializer)
+from scanner.utils import check_terminated_contract
 
 import logging
 
-logger = logging.getLogger('__name__')
+logger = logging.getLogger(__name__)
 @swagger_auto_schema(
     method='get',
     operation_description="User contract history",
@@ -26,12 +27,13 @@ def history(request, address: str):
     Account(address) history.
     :return: contract list with information which created this owner
     """
-    profile = Profile.objects.filter(owner_address__iexact=address).first()
+    profile = Profile.objects.filter(owner_address=address).first()
     if not profile:
         return Response(data={'Error': 'No such user address in the DB'}, status=HTTP_404_NOT_FOUND)
     token_contracts = TokenContract.objects.filter(owner=profile)
     crowdsale_contracts = CrowdsaleContract.objects.filter(owner=profile)
     probate_contracts = ProbateContract.objects.filter(owner=profile)
+    print(probate_contracts[0].__dict__)
     wedding_contracts = WeddingContract.objects.filter(owner=profile)
     history = dict()
     history['tokens'] = TokenSerializer(token_contracts, many=True).data
@@ -53,10 +55,15 @@ def probates(request):
     List 'dead' wallets with heirs
     :return: owner wallet address and list heirs mails
     """
+    probates = ProbateContract.objects.filter(dead=True, terminated=False)
+    for probate in probates:
+        check_terminated_contract(probate.test_node, probate.address)
     probate_list = ProbateContract.objects.filter(dead=True, terminated=False)
-
-    [ProbateListSerializer(probate) for probate in probate_list]
-    return Response(data=ProbateListSerializer, status=HTTP_200_OK)
+    probates = dict()
+    if not probate_list.exists():
+        return Response(status=HTTP_200_OK)
+    probates['probates'] = [ProbateListSerializer(probate).data for probate in probate_list]
+    return Response(data=probates, status=HTTP_200_OK)
 
 
 """
@@ -68,14 +75,13 @@ Views for create new user contracts
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
             'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
                                         items=openapi.TYPE_STRING),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
         },
-        required=['owner_address', 'contract_address', 'contract_name', 'mail_list', 'owner_mail']
+        required=['tx_hash', 'contract_name', 'mail_list', 'owner_mail']
     ),
     responses={'200': 'Success'}
 )
@@ -85,16 +91,20 @@ def new_probate(request):
     """
     Create new probate contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    serializer = ProbateSerializer(data={
-        'address': request.data['contract_address'],
+    data = {
+        'tx_hash': request.data['tx_hash'],
         'name': request.data['contract_name'],
         'mails_array': request.data['mail_list'],
-        'owner': owner.pk,
         'owner_mail': request.data['owner_mail'],
-    })
+    }
+    probate = ProbateContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if probate.exists():
+        serializer = ProbateSerializer(probate[0], data=data)
+    else:
+        serializer = ProbateSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
+    
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 
 
@@ -106,9 +116,9 @@ def new_probate(request):
         properties={
             'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
             'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
         },
-        required=['owner_address', 'contract_name', 'contract_address']
+        required=['owner_address', 'contract_name', 'tx_hash']
     ),
     responses={'200': 'Success'}
 )
@@ -118,13 +128,17 @@ def new_crowdsale(request):
     """
     Create new crowdsale contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-
-    serializer = CrowdsaleSerializer(data={
+    data = {
+        'tx_hash': request.data['tx_hash'],
         'address': request.data['contract_address'],
         'name': request.data['contract_name'],
-        'owner': owner.pk
-    })
+    }
+    serializer = CrowdsaleSerializer(data=data)
+    crowdsale = CrowdsaleContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if crowdsale.exists():
+        serializer = CrowdsaleSerializer(crowdsale[0], data=data)
+    else:
+        serializer = CrowdsaleSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
@@ -136,13 +150,12 @@ def new_crowdsale(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
             'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 2)',
                                         items=openapi.TYPE_STRING),
         },
-        required=['owner_address', 'contract_address', 'contract_name', 'mail_list']
+        required=['tx_hash', 'contract_name', 'mail_list']
     ),
     responses={'200': 'Success'}
 )
@@ -152,13 +165,17 @@ def new_wedding(request):
     """
     Create new wedding contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    serializer = WeddingSerializer(data={
-        'address': request.data['contract_address'],
+    data = {
+        'tx_hash': request.data['tx_hash'],
         'name': request.data['contract_name'],
         'mail_list': request.data['mail_list'],
-        'owner': owner.pk
-    })
+    }
+    serializer = WeddingSerializer(data=data)
+    wedding = WeddingContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if wedding.exists():
+        serializer = WeddingSerializer(wedding[0], data=data)
+    else:
+        serializer = WeddingSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
@@ -170,13 +187,12 @@ def new_wedding(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
             'address_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 5)',
                                         items=openapi.TYPE_ARRAY),
         },
-        required=['owner_address', 'contract_address', 'contract_name', 'address_list']
+        required=['tx_hash', 'contract_name', 'address_list']
     ),
     responses={'200': 'Success'}
 )
@@ -186,14 +202,17 @@ def new_token(request):
     """
     Create new token contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-
-    serializer = TokenSerializer(data={
-        'address': request.data['contract_address'],
+    data = {
+        'tx_hash': request.data['tx_hash'],
         'address_list': request.data['address_list'],
         'name': request.data['contract_name'],
-        'owner': owner.pk}
-    )
+    }
+    serializer = TokenSerializer(data=data)
+    token = TokenContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if token.exists():
+        serializer = TokenSerializer(token[0], data=data)
+    else:
+        serializer = TokenSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
