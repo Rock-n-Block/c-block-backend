@@ -18,9 +18,9 @@ class TokenContract(models.Model):
     name = models.CharField(max_length=128, help_text='Contract name')
     contract_type = models.CharField(max_length=1, blank=False, help_text='0 or 1')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
-                                  related_name='token_owner', related_query_name='tokens_owner')
+                              related_name='token_owner', related_query_name='tokens_owner')
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
-    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
 
 
 class CrowdsaleContract(models.Model):
@@ -30,9 +30,9 @@ class CrowdsaleContract(models.Model):
     address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
     name = models.CharField(max_length=128, help_text='Contract name')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
-                                  related_name='crowdsale_owner', related_query_name='crowdsales_owner')
+                              related_name='crowdsale_owner', related_query_name='crowdsales_owner')
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
-    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
 
 
 class WeddingContract(models.Model):
@@ -40,12 +40,11 @@ class WeddingContract(models.Model):
     Wedding contract
     """
     address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
-    name = models.CharField(max_length=128, help_text='Contract name')
-    mail_list = ArrayField(models.CharField(max_length=64, blank=True), size=2)
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
-                              related_name='wedding_owner', related_query_name='weddings_owner')
+    name = models.CharField(max_length=128, help_text='Contract name', blank=True)
+    mail_list = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
+    owner = models.ManyToManyField(Profile)  # wedding contract have 2 owner
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
-    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
 
 
 class ProbateContract(models.Model):
@@ -54,20 +53,11 @@ class ProbateContract(models.Model):
     """
     address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
-    mails_array = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
+    mail_list = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True,
-                                 related_name='probate_owner', related_query_name='probates_owner')
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
+                              related_name='probate_owner', related_query_name='probates_owner')
     terminated = models.BooleanField(default=False, help_text='Terminated contract or not')
     owner_mail = models.EmailField(blank=True)
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
-    tx_hash = models.CharField(max_length=128, unique=True, help_text='Hash transaction')
-
-    def change_dead_status(self) -> None:
-        self.dead = True
-        self.save()
-
-    def change_terminated(self) -> None:
-        self.terminated = True
-        self.save()
-
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')

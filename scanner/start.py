@@ -9,7 +9,9 @@ import django
 django.setup()
 
 from mywish2.settings import config
-from scanner.utils import get_event, create_token, create_probate, create_wedding
+from scanner.utils import EventScanner
+from scanner.models import WeddingContract
+
 import logging
 
 
@@ -20,26 +22,38 @@ if __name__ == "__main__":
         for network in [config.test_network, config.network]:
             logger = logging.getLogger(f'{network.name}_scanner')
             logger.info('Start scanner')
+
             network.w3 = Web3(Web3.WebsocketProvider(network.ws_endpoint))
-            # List contract addresses
-            token_contracts = network.token_factories
-            probate_contracts = network.probate_factories
-            wedding_contracts = network.wedding_factories
-            provider_url = network.ws_endpoint
-            # add all contracts event
-            futures += [get_event(
-                address, provider_url,
-                network.test, network.w3, '(address,uint8)',
-                create_token, logger
-            ) for address in token_contracts]
-            futures += [get_event(
-                address, provider_url,
-                network.test, network.w3, '(address,uint256)',
-                create_probate, logger
-            ) for address in probate_contracts]
-            futures += [get_event(
-                address, provider_url,
-                network.test, network.w3, '(address,address)',
-                create_wedding, logger
-            ) for address in probate_contracts]
+            # Add all fabrics contract event
+            scanner = EventScanner(network.ws_endpoint, network.test, network.w3,  logger, loop)
+            futures += [scanner.get_event(
+                address,
+                ['NewContract', '(address,uint8)'],
+                scanner.create_token
+            ) for address in network.token_factories]
+            futures += [scanner.get_event(
+                address,
+                ['NewContract', '(address)'],
+                scanner.create_probate
+            ) for address in network.probate_factories]
+            futures += [scanner.get_event(
+                address,
+                ['NewContract', '(address,address,address)'],
+                scanner.create_wedding
+            ) for address in network.wedding_factories]
+            futures += [scanner.get_event(
+                address,
+                ['NewContract', '(address,uint8)'],
+                scanner.create_wedding
+            ) for address in network.crowdsale_factories]
+
+            """Check contract events"""
+            futures += [scanner.get_event(
+                address, ['WithdrawalProposed', '(address,address,uint256,address)'],
+                scanner.send_wedding_mail
+            ) for address in WeddingContract.objects.all().values_list('address', flat=True)]
+            futures += [scanner.get_event(
+                address, ['DivorceProposed', '(address)'],
+                scanner.send_wedding_mail
+            ) for address in WeddingContract.objects.all().values_list('address', flat=True)]
         loop.run_until_complete(asyncio.wait(futures))

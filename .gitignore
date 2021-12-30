@@ -5,4 +5,4 @@ config.yaml
 .docker/
 **/__pycache__/
 static/
-debug.log
+*.log

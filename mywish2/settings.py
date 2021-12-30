@@ -15,14 +15,11 @@ from pathlib import Path
 from .config import config
 from .logging_settings import LOGGING
 import logging.config
-
-logging.config.dictConfig(LOGGING)
-
-
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+logging.config.dictConfig(LOGGING)
 
 
 # Quick-start development settings - unsuitable for production
@@ -94,7 +91,7 @@ REST_FRAMEWORK = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql',а
         'NAME': os.getenv('POSTGRES_DB', 'wish'),
         'USER': os.getenv('POSTGRES_USER', 'wish'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'wish'),
