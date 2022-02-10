@@ -6,7 +6,7 @@ from .models import TokenContract, ProbateContract, WeddingContract, CrowdsaleCo
 class ProbateListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProbateContract
-        fields = ('address', 'mail_list', 'owner_mail')
+        fields = ('address', 'mails', 'owner_mail')
 
 
 class ProbateSerializer(serializers.ModelSerializer):
@@ -18,16 +18,14 @@ class ProbateSerializer(serializers.ModelSerializer):
             'address': {'read_only': True}
         }
             
-        fields = ('address', 'tx_hash', 'name', 'mail_list', 'owner_mail', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'mails', 'owner_mail', 'test_node')
 
     def create(self, validated_data):
         return ProbateContract.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
-        instance.tx_hash = validated_data.get('tx_hash', instance.tx_hash)
-        instance.name = validated_data.get('name', instance.name)
-        instance.mail_list = validated_data.get('mail_list', instance.mail_list)
-        instance.owner_mail = validated_data.get('owner_mail', instance.owner_mail)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
         return instance
 
@@ -46,9 +44,8 @@ class CrowdsaleSerializer(serializers.ModelSerializer):
         return CrowdsaleContract.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
-        instance.tx_hash = validated_data.get('tx_hash', instance.tx_hash)
-        instance.name = validated_data.get('name', instance.name)
-        instance.address = validated_data.get('address', instance.address)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
         return instance
 
@@ -61,16 +58,14 @@ class WeddingSerializer(serializers.ModelSerializer):
             'test_node': {'read_only': True},
             'address': {'read_only': True},
         }
-        fields = ('address', 'tx_hash', 'name', 'mail_list', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'mails', 'test_node')
 
     def create(self, validated_data):
         return WeddingContract.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
-        instance.tx_hash = validated_data.get('tx_hash', instance.tx_hash)
-        instance.name = validated_data.get('name', instance.name)
-        instance.address = validated_data.get('address', instance.address)
-        instance.mail_list = validated_data.get('mail_list', instance.mail_list)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
         return instance
 
@@ -84,15 +79,14 @@ class TokenSerializer(serializers.ModelSerializer):
             'test_node': {'read_only': True},
             'address': {'read_only': True},
         }
-        fields = ('address', 'tx_hash', 'name', 'address_list', 'contract_type', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'addresses', 'contract_type', 'test_node')
 
     def create(self, validated_data):
         return TokenContract.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
-        instance.tx_hash = validated_data.get('tx_hash', instance.tx_hash)
-        instance.name = validated_data.get('name', instance.name)
-        instance.address_list = validated_data.get('address_list', instance.address_list)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
         return instance
 

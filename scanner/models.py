@@ -14,7 +14,7 @@ class TokenContract(models.Model):
     Token and crowdsale contracts
     """
     address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
-    address_list = ArrayField(models.CharField(max_length=128, blank=True), size=5, null=True)
+    addresses = ArrayField(models.CharField(max_length=128, blank=True), size=5, null=True)
     name = models.CharField(max_length=128, help_text='Contract name')
     contract_type = models.CharField(max_length=1, blank=False, help_text='0 or 1')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
@@ -41,7 +41,7 @@ class WeddingContract(models.Model):
     """
     address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
     name = models.CharField(max_length=128, help_text='Contract name', blank=True)
-    mail_list = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
+    mails = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
     owner = models.ManyToManyField(Profile)  # wedding contract have 2 owner
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
@@ -53,7 +53,7 @@ class ProbateContract(models.Model):
     """
     address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
-    mail_list = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
+    mails = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
                               related_name='probate_owner', related_query_name='probates_owner')

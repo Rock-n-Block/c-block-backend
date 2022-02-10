@@ -100,7 +100,7 @@ class EventScanner:
         if len(decoded) > 1:
             title = 'withdraw'
             body = f'{decoded[1]} want withdraw {decoded[2]} tokens'
-        for mail in wedding.mail_list:
+        for mail in wedding.mails:
             send_mail(
                 title,
                 body,

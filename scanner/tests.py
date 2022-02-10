@@ -16,12 +16,12 @@ class ProbateStatusTestCase(TestCase):
         cls.user_profile = Profile.objects.create(owner_address='0x00a0a0aaa0a0a0aaaa0a')
         cls.user_profile2 = Profile.objects.create(owner_address='0x00a0a0aaa00a00aaaa0a')
         ProbateContract.objects.create(address=Web3.toChecksumAddress('0x0a970179dd1aAa0eEaC71787C4Bdf5a362F0877d'),
-                                       mails_array=['test@gmail.com', 'tt@mail.ru'],
+                                       mails=['test@gmail.com', 'tt@mail.ru'],
                                        dead=False, owner=cls.user_profile,
                                        owner_mail='owner@gmail.com', test_node=True)
 
         ProbateContract.objects.create(address=Web3.toChecksumAddress('0x0a980169dd1aAa0eEaC71787C4Bdf5a362F0877d'),
-                                       mails_array=['tt@mail.ru'],
+                                       mails=['tt@mail.ru'],
                                        dead=False, owner=cls.user_profile2,
                                        owner_mail='owner@gmail.com', test_node=True)
 
@@ -57,7 +57,7 @@ class CreationContractTestCase(TestCase):
             'owner_address': '0xt0e0s0t0a0d0d0r0e0s0s0',
             'contract_address': '0xtestcontractaddress',
             'contract_name': 'test name',
-            'mail_list': [
+            'mails': [
                 'test@mail.ru',
                 'another@gmail.com'
             ]
@@ -70,7 +70,7 @@ class CreationContractTestCase(TestCase):
             'owner_address': '0xt0e0s0t0a0d0d0r0e0s0s0',
             'contract_address': '0xtestcontractaddress',
             'contract_name': 'test name',
-            'mail_list': [
+            'mails': [
                 'test@mail.ru',
                 'another@gmail.com'
             ],
@@ -83,7 +83,7 @@ class CreationContractTestCase(TestCase):
         data = {
             'owner_address': '0xt0e0s0t0a0d0d0r0e0s0s0',
             'contract_name': 'test name',
-            'address_list': [
+            'addresses': [
                 '0xtestcontractaddress',
                 '0xtestcontractaddress2'
             ],

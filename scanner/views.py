@@ -57,10 +57,10 @@ def probates(request):
     List 'dead' wallets with heirs
     :return: owner wallet address and list heirs mails
     """
-    probates_list = ProbateContract.objects.filter(dead=True, terminated=False, test_node=False)
-    probates = check_terminated_contract(probates_list)
+    probates = ProbateContract.objects.filter(dead=True, terminated=False, test_node=False)
+    probates = check_terminated_contract(probates)
     if not probates.exists():
-        return Response(status=HTTP_200_OK)
+        return Response(status=HTTP_404_NOT_FOUND)
     probates['probates'] = ProbateListSerializer(probates, many=True).data
     return Response(data=probates, status=HTTP_200_OK)
 
@@ -78,11 +78,11 @@ Views for create new user contracts
         properties={
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
+            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
                                         items=openapi.TYPE_STRING),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
         },
-        required=['tx_hash', 'name', 'mail_list', 'owner_mail']
+        required=['tx_hash', 'name', 'mails', 'owner_mail']
     ),
     responses={'200': 'Success'}
 )
@@ -140,10 +140,10 @@ def new_crowdsale(request):
         properties={
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 2)',
+            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 2)',
                                         items=openapi.TYPE_STRING),
         },
-        required=['tx_hash', 'name', 'mail_list']
+        required=['tx_hash', 'name', 'mails']
     ),
     responses={'200': 'Success'}
 )
@@ -171,10 +171,10 @@ def new_wedding(request):
         properties={
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'address_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 5)',
+            'addresses': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 5)',
                                            items=openapi.TYPE_ARRAY),
         },
-        required=['tx_hash', 'name', 'address_list']
+        required=['tx_hash', 'name', 'addresses']
     ),
     responses={'200': 'Success'}
 )

@@ -16,6 +16,7 @@ def check_dead_wallets(node: str, test: bool) -> None:
     :return: None
     """
     logger = logging.getLogger('tasks')
+    # Platform do not support test probate contracts
     alive_probates = ProbateContract.objects.filter(dead=False, test_node=test)
     if not alive_probates.exists():
         logger.info('Alive probate contract not exists')
