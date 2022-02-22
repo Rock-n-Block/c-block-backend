@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
                '404': 'No such user address in the DB'}
 )
 @api_view(http_method_names=['GET'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def history(request, address: str):
     """
     Account(address) history.
@@ -51,7 +51,7 @@ def history(request, address: str):
     responses={'200': ProbateListSerializer()}
 )
 @api_view(http_method_names=['GET'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def probates(request):
     """
     List 'dead' wallets with heirs
@@ -87,7 +87,7 @@ Views for create new user contracts
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def new_probate(request):
     """
     Create new probate contract
@@ -117,7 +117,7 @@ def new_probate(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def new_crowdsale(request):
     """
     Create new crowdsale contract
@@ -148,7 +148,7 @@ def new_crowdsale(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def new_wedding(request):
     """
     Create new wedding contract
@@ -179,7 +179,7 @@ def new_wedding(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def new_token(request):
     """
     Create new token contract

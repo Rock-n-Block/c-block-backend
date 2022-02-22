@@ -13,7 +13,7 @@ class TokenContract(models.Model):
     """
     Token and crowdsale contracts
     """
-    address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
+    address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     addresses = ArrayField(models.CharField(max_length=128, blank=True), size=5, null=True)
     name = models.CharField(max_length=128, help_text='Contract name')
     contract_type = models.CharField(max_length=1, blank=False, help_text='0 or 1')
@@ -27,7 +27,7 @@ class CrowdsaleContract(models.Model):
     """
     Token and crowdsale contracts
     """
-    address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
+    address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=128, help_text='Contract name')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                               related_name='crowdsale_owner', related_query_name='crowdsales_owner')
@@ -39,7 +39,7 @@ class WeddingContract(models.Model):
     """
     Wedding contract
     """
-    address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
+    address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=128, help_text='Contract name', blank=True)
     mails = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
     owner = models.ManyToManyField(Profile)  # wedding contract have 2 owner
@@ -51,7 +51,7 @@ class ProbateContract(models.Model):
     """
     Probate contracts
     """
-    address = models.CharField(max_length=64, unique=True, blank=False, help_text='Contract address')
+    address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
     mails = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
