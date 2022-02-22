@@ -44,7 +44,7 @@ if __name__ == "__main__":
             futures += [scanner.get_event(
                 address,
                 ['NewContract', '(address,uint8)'],
-                scanner.create_wedding
+                scanner.create_crowdsale
             ) for address in network.crowdsale_factories]
 
             """Check contract events"""
