@@ -26,8 +26,8 @@ class TokenContract(models.Model):
 class TokenHolder(models.Model):
     token_contract = models.ForeignKey(TokenContract, on_delete=models.CASCADE, null=True, default=None,
                                        related_name='token_contract', related_query_name='tokens_contract')
-    name = models.CharField(max_length=128, blank=False, help_text='Token holder name')
-    address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token holder address')
+    name = models.CharField(max_length=128, help_text='Token holder name')
+    address = models.CharField(max_length=64, unique=True, blank=False, help_text='Token holder address')
 
 
 class CrowdsaleContract(models.Model):
