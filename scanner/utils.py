@@ -54,7 +54,7 @@ class EventScanner:
                 'owner': profile,
                 'test_node': self.test
             })
-        self.logger.info('New probate contract saved')
+        self.logger.info(f'New {contract_type} contract saved')
 
     def create_lastwill(self, decoded: list, tx_hash: str,) -> None:
         self.create_lastwill_lostkey(decoded=decoded, tx_hash=tx_hash, contract_type='lastwill')
