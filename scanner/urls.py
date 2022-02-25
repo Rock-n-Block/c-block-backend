@@ -5,8 +5,8 @@ from .views import history, lastwill_dead_list, lostkey_dead_list, new_lastwill,
 
 urlpatterns = [
     path('history/<str:address>/', history, name='history_read'),
-    path('lastwill_dead_list/', lastwill_dead_list, name='lastwill_dead_list'),
-    path('lostkey_dead_list/', lostkey_dead_list, name='lostkey_dead_list'),
+    path('lastwill_finished/', lastwill_dead_list, name='lastwill_finished'),
+    path('lostkey_finished/', lostkey_dead_list, name='lostkey_finished'),
     path('new_lastwill/', new_lastwill, name='new_lastwill'),
     path('new_lostkey/', new_lostkey, name='new_lostkey'),
     path('new_wedding/', new_wedding, name='new_wedding'),
