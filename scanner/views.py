@@ -203,6 +203,7 @@ def new_token(request):
 
     holders_object_list = []
     for name, address in token_holders.items():
+        logging.info(f'{name} - {address}')
         holders_object_list.append(
             TokenHolder(token_contract=token, name=name, address=address)
         )

@@ -156,14 +156,14 @@ def send_heirs_mail(owner_mail: str, heirs_mail_list: list) -> None:
     for mail in heirs_mail_list:
         send_mail(
             'Owner is dead',
-            'My apologise, but owner is fucking dead.\nSadness =-(',
+            'My apologise, but owner is dead.\nSadness =-(',
             from_email=config.email_host_user,
             recipient_list=[mail],
             fail_silently=True,
         )
     send_mail(
         'You are dead',
-        'My apologise, but owner is fucking dead.\nSadness =-(',
+        'My apologise, but owner is dead.\nSadness =-(',
         from_email=config.email_host_user,
         recipient_list=[owner_mail],
         fail_silently=True,
