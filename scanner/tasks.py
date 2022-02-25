@@ -32,3 +32,4 @@ def check_dead_wallets(node: str, test: bool) -> None:
             logger.info('Send mails and change status')
             alive_contract.change_dead_status()
             send_heirs_mail(alive_contract.owner_mail, alive_contract.mails_list)
+
