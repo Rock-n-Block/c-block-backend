@@ -9,6 +9,11 @@ from drf_yasg import openapi
 from scanner.models import Profile, TokenContract, TokenHolder, ProbateContract, CrowdsaleContract, WeddingContract
 from scanner.serializers import (TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer,
                           HistoryResponseSerializer, ProbateListSerializer)
+from scanner.models import Profile, TokenContract, TokenHolder, LastWillContract, LostKeyContract, CrowdsaleContract,\
+    WeddingContract
+from scanner.serializers import (TokenSerializer, CrowdsaleSerializer, LastWillSerializer, LostKeySerializer,
+                                 WeddingSerializer, HistoryResponseSerializer, LastWillListSerializer,
+                                 LostKeyListSerializer)
 from scanner.utils import check_terminated_contract
 
 import logging
@@ -35,39 +40,95 @@ def history(request, address: str):
         return Response(data={'Error': 'No such user address in the DB'}, status=HTTP_404_NOT_FOUND)
     token_contracts = TokenContract.objects.filter(owner=profile)
     crowdsale_contracts = CrowdsaleContract.objects.filter(owner=profile)
-    probate_contracts = ProbateContract.objects.filter(owner=profile)
+    lastwill_contracts = LastWillContract.objects.filter(owner=profile)
+    lostkey_contracts = LastWillContract.objects.filter(owner=profile)
     wedding_contracts = WeddingContract.objects.filter(owner=profile)
     profile_history = dict()
     profile_history['tokens'] = TokenSerializer(token_contracts, many=True).data
     profile_history['crowdsales'] = CrowdsaleSerializer(crowdsale_contracts, many=True).data
-    profile_history['probates'] = ProbateSerializer(probate_contracts, many=True).data
+    profile_history['lastwills'] = LastWillSerializer(lastwill_contracts, many=True).data
+    profile_history['lostkeys'] = LostKeySerializer(lostkey_contracts, many=True).data
     profile_history['weddings'] = WeddingSerializer(wedding_contracts, many=True).data
     return Response(data=profile_history, status=HTTP_200_OK)
 
 
 @swagger_auto_schema(
     method='get',
-    operation_description="List dead user wallets",
-    responses={'200': ProbateListSerializer()}
+    operation_description="List dead user wallets (lastwill)",
+    responses={'200': LastWillListSerializer()}
 )
 @api_view(http_method_names=['GET'])
-#@permission_classes([IsAuthenticated])
-def probates(request):
+# @permission_classes([IsAuthenticated])
+def lastwill_dead_list(request):
     """
     List 'dead' wallets with heirs
     :return: owner wallet address and list heirs mails
     """
-    probates = ProbateContract.objects.filter(dead=True, terminated=False, test_node=False)
-    probates = check_terminated_contract(probates)
-    if not probates.exists():
+    lastwills = LastWillContract.objects.filter(dead=True, terminated=False, test_node=False)
+    lastwills = check_terminated_contract(lastwills)
+    if not lastwills.exists():
         return Response(status=HTTP_404_NOT_FOUND)
-    probates['probates'] = ProbateListSerializer(probates, many=True).data
-    return Response(data=probates, status=HTTP_200_OK)
+    lastwills['lastwills'] = LastWillListSerializer(lastwills, many=True).data
+    return Response(data=lastwills, status=HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="List dead user wallets (lastwill)",
+    responses={'200': LastWillListSerializer()}
+)
+@api_view(http_method_names=['GET'])
+# @permission_classes([IsAuthenticated])
+def lostkey_dead_list(request):
+    """
+    List 'dead' wallets with heirs
+    :return: owner wallet address and list heirs mails
+    """
+    lostkeys = LostKeyContract.objects.filter(dead=True, terminated=False, test_node=False)
+    lostkeys = check_terminated_contract(lostkeys)
+    if not lostkeys.exists():
+        return Response(status=HTTP_404_NOT_FOUND)
+    lostkeys['lostkeys'] = LostKeyListSerializer(lostkeys, many=True).data
+    return Response(data=lostkeys, status=HTTP_200_OK)
+
 
 
 """
 Views for create new user contracts
 """
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Create new user lastwill contract",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
+            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
+                                        items=openapi.TYPE_STRING),
+            'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
+        },
+        required=['tx_hash', 'name', 'mails', 'owner_mail']
+    ),
+    responses={'200': 'Success'}
+)
+@api_view(http_method_names=['POST'])
+# @permission_classes([IsAuthenticated])
+def new_lastwill(request):
+    """
+    Create new probate contract
+    """
+    probate = LastWillContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if probate.exists():
+        serializer = LastWillSerializer(probate[0], data=request.data)
+    else:
+        serializer = LastWillSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 
 
 @swagger_auto_schema(
@@ -87,16 +148,16 @@ Views for create new user contracts
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-#@permission_classes([IsAuthenticated])
-def new_probate(request):
+# @permission_classes([IsAuthenticated])
+def new_lostkey(request):
     """
     Create new probate contract
     """
-    probate = ProbateContract.objects.filter(tx_hash=request.data['tx_hash'])
+    probate = LostKeyContract.objects.filter(tx_hash=request.data['tx_hash'])
     if probate.exists():
-        serializer = ProbateSerializer(probate[0], data=request.data)
+        serializer = LostKeySerializer(probate[0], data=request.data)
     else:
-        serializer = ProbateSerializer(data=request.data)
+        serializer = LostKeySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
 
@@ -117,7 +178,7 @@ def new_probate(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-#@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def new_crowdsale(request):
     """
     Create new crowdsale contract
@@ -148,7 +209,7 @@ def new_crowdsale(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-#@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def new_wedding(request):
     """
     Create new wedding contract
@@ -186,7 +247,7 @@ def new_wedding(request):
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-#@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def new_token(request):
     """
     Create new token contract

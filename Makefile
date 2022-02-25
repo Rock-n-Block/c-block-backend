@@ -1,6 +1,6 @@
 include .env
 compose_file := docker-compose.yaml
-compose := docker compose -f $(compose_file)
+compose := docker-compose -f $(compose_file)
 
 build:
 	$(compose) build --parallel

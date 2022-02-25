@@ -4,7 +4,7 @@ from typing import Callable
 from websockets import connect
 from eth_abi import decode_single
 
-from .models import TokenContract, Profile, ProbateContract, WeddingContract, CrowdsaleContract
+from .models import TokenContract, Profile, LastWillContract, LostKeyContract, WeddingContract, CrowdsaleContract
 from mywish2.settings import config
 from .contracts import PROBATE_FABRIC_ABI
 
@@ -36,12 +36,17 @@ class EventScanner:
             })
         self.logger.info('New token contract saved')
 
-    def create_probate(self, decoded: list, tx_hash: str) -> None:
+    def create_lastwill_lostkey(self, decoded: list, tx_hash: str, contract_type: str) -> None:
         owner_address = self.w3.eth.waitForTransactionReceipt(tx_hash, timeout=4)['from']
         self.logger.info(f'Owner address: {owner_address}')
         profile, _ = Profile.objects.get_or_create(
             owner_address=owner_address)
-        ProbateContract.objects.update_or_create(
+
+        if contract_type not in ['lastwill', 'lostkey']:
+            raise Exception(f'Incorrect contract type in lastwill/lostkey creation: {contract_type}')
+
+        contract_model = LastWillContract if contract_type == 'lastwill' else LostKeyContract
+        contract_model.objects.update_or_create(
             tx_hash=tx_hash,
             defaults={
                 'address': decoded[0],
@@ -50,6 +55,12 @@ class EventScanner:
                 'test_node': self.test
             })
         self.logger.info('New probate contract saved')
+
+    def create_lastwill(self, decoded: list, tx_hash: str,) -> None:
+        self.create_lastwill_lostkey(decoded=decoded, tx_hash=tx_hash, contract_type='lastwill')
+
+    def create_lostkey(self, decoded: list, tx_hash: str, ) -> None:
+        self.create_lastwill_lostkey(decoded=decoded, tx_hash=tx_hash, contract_type='lostkey')
 
     def create_wedding(self, decoded: list, tx_hash: str, ) -> None:
         profile_one, _ = Profile.objects.get_or_create(owner_address=self.w3.toChecksumAddress(decoded[1]))

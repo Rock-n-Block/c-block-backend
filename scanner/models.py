@@ -62,9 +62,20 @@ class ProbateContract(models.Model):
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
     mails = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
-                              related_name='probate_owner', related_query_name='probates_owner')
     terminated = models.BooleanField(default=False, help_text='Terminated contract or not')
     owner_mail = models.EmailField(blank=True)
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+
+    class Meta:
+        abstract = True
+
+
+class LastWillContract(ProbateContract):
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
+                              related_name='lastwill_owner', related_query_name='lastwills_owner')
+
+
+class LostKeyContract(ProbateContract):
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
+                              related_name='lostkey_owner', related_query_name='lostkeys_owner')
