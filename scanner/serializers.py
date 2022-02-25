@@ -1,18 +1,26 @@
 from rest_framework import serializers
 
-from .models import TokenContract, ProbateContract, WeddingContract, CrowdsaleContract
+from .models import TokenContract, LastWillContract, LostKeyContract, WeddingContract, CrowdsaleContract
 
 
 class ProbateListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProbateContract
         fields = ('address', 'mails', 'owner_mail')
+
+
+class LastWillListSerializer(ProbateListSerializer):
+    class Meta(ProbateListSerializer.Meta):
+        model = LastWillContract
+
+
+class LostKeyListSerializer(ProbateListSerializer):
+    class Meta(ProbateListSerializer.Meta):
+        model = LostKeyContract
 
 
 class ProbateSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = ProbateContract
         extra_kwargs = {
             'test_node': {'read_only': True},
             'address': {'read_only': True}
@@ -20,14 +28,27 @@ class ProbateSerializer(serializers.ModelSerializer):
             
         fields = ('address', 'tx_hash', 'name', 'mails', 'owner_mail', 'test_node')
 
-    def create(self, validated_data):
-        return ProbateContract.objects.create(**validated_data)
-    
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class LastWillSerializer(ProbateSerializer):
+    class Meta(ProbateSerializer.Meta):
+        model = LastWillContract
+
+    def create(self, validated_data):
+        return LastWillContract.objects.create(**validated_data)
+
+
+class LostKeySerializer(ProbateSerializer):
+    class Meta(ProbateSerializer.Meta):
+        model = LostKeyContract
+
+    def create(self, validated_data):
+        return LostKeyContract.objects.create(**validated_data)
 
 
 class CrowdsaleSerializer(serializers.ModelSerializer):
@@ -93,6 +114,7 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class HistoryResponseSerializer(serializers.Serializer):
     tokens = TokenSerializer()
-    probates = ProbateSerializer()
+    lastwills = LastWillSerializer()
+    lostkeys = LostKeySerializer()
     crowdsales = CrowdsaleSerializer()
     weddings = WeddingSerializer()

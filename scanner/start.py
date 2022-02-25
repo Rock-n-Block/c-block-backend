@@ -35,8 +35,13 @@ if __name__ == "__main__":
             futures += [scanner.get_event(
                 address,
                 ['NewContract', '(address)'],
-                scanner.create_probate
-            ) for address in network.probate_factories]
+                scanner.create_lostkey
+            ) for address in network.lastwill_factories]
+            futures += [scanner.get_event(
+                address,
+                ['NewContract', '(address)'],
+                scanner.create_lostkey
+            ) for address in network.lostkey_factories]
             futures += [scanner.get_event(
                 address,
                 ['NewContract', '(address,address,address)'],
