@@ -35,7 +35,7 @@ if __name__ == "__main__":
             futures += [scanner.get_event(
                 address,
                 ['NewContract', '(address)'],
-                scanner.create_lostkey
+                scanner.create_lastwill
             ) for address in network.lastwill_factories]
             futures += [scanner.get_event(
                 address,
