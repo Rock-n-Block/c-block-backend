@@ -31,5 +31,5 @@ def check_dead_wallets(node: str, test: bool) -> None:
         if contract.functions.isLostKey().call() and not contract.functions.terminated().call():
             logger.info('Send mails and change status')
             alive_contract.change_dead_status()
-            send_heirs_mail(alive_contract.owner_mail, alive_contract.mails_list)
+            send_heirs_mail(alive_contract.owner_mail, alive_contract.mails)
 
