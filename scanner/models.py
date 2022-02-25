@@ -70,6 +70,14 @@ class ProbateContract(models.Model):
     class Meta:
         abstract = True
 
+    def change_dead_status(self) -> None:
+        self.dead = True
+        self.save()
+
+    def change_terminated(self) -> None:
+        self.terminated = True
+        self.save()
+
 
 class LastWillContract(ProbateContract):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
