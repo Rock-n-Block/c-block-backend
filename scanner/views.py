@@ -36,7 +36,7 @@ def history(request, address: str):
     token_contracts = TokenContract.objects.filter(owner=profile)
     crowdsale_contracts = CrowdsaleContract.objects.filter(owner=profile)
     lastwill_contracts = LastWillContract.objects.filter(owner=profile)
-    lostkey_contracts = LastWillContract.objects.filter(owner=profile)
+    lostkey_contracts = LostKeyContract.objects.filter(owner=profile)
     wedding_contracts = WeddingContract.objects.filter(owner=profile)
     profile_history = dict()
     profile_history['tokens'] = TokenSerializer(token_contracts, many=True).data
