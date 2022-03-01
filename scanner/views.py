@@ -6,9 +6,13 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from scanner.models import Profile, TokenContract, LastWillContract, LostKeyContract, CrowdsaleContract, WeddingContract
+
+from scanner.models import Profile, TokenContract, TokenHolder, LastWillContract, LostKeyContract, CrowdsaleContract,\
+    WeddingContract
 from scanner.serializers import (TokenSerializer, CrowdsaleSerializer, LastWillSerializer, LostKeySerializer,
-                                 WeddingSerializer, HistoryResponseSerializer, LastWillListSerializer, LostKeyListSerializer)
+                                 WeddingSerializer, HistoryResponseSerializer, LastWillListSerializer,
+                                 LostKeyListSerializer)
+
 from scanner.utils import check_terminated_contract
 
 import logging
@@ -227,8 +231,15 @@ def new_wedding(request):
         properties={
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'addresses': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 5)',
-                                           items=openapi.TYPE_ARRAY),
+            'addresses': openapi.Schema(type=openapi.TYPE_ARRAY,
+                                        description='User wallet list(max 5)',
+                                        items=openapi.Schema(
+                                            type=openapi.TYPE_OBJECT,
+                                            properties={
+                                                'name': openapi.Schema(type=openapi.TYPE_STRING, description='Holder name'),
+                                                'address': openapi.Schema(type=openapi.TYPE_STRING, description='Holder address'),
+                                            }
+                                        )),
         },
         required=['tx_hash', 'name', 'addresses']
     ),
@@ -241,10 +252,26 @@ def new_token(request):
     Create new token contract
     """
     token = TokenContract.objects.filter(tx_hash=request.data['tx_hash'])
+    token_holders = request.data.pop('addresses')
+
     if token.exists():
         serializer = TokenSerializer(token[0], data=request.data)
     else:
         serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
+    token = serializer.save()
+
+    existing_holders = TokenHolder.objects.filter(token_contract=token)
+    if existing_holders:
+        existing_holders.delete()
+
+    holders_object_list = []
+    for name, address in token_holders.items():
+        logging.info(f'{name} - {address}')
+        holders_object_list.append(
+            TokenHolder(token_contract=token, name=name, address=address)
+        )
+
+    TokenHolder.objects.bulk_create(holders_object_list)
+
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)

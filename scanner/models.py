@@ -14,13 +14,20 @@ class TokenContract(models.Model):
     Token and crowdsale contracts
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
-    addresses = ArrayField(models.CharField(max_length=128, blank=True), size=5, null=True)
+    # addresses = ArrayField(models.CharField(max_length=128, blank=True), size=5, null=True)
     name = models.CharField(max_length=128, help_text='Contract name')
     contract_type = models.CharField(max_length=1, blank=False, help_text='0 or 1')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                               related_name='token_owner', related_query_name='tokens_owner')
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+
+
+class TokenHolder(models.Model):
+    token_contract = models.ForeignKey(TokenContract, on_delete=models.CASCADE, null=True, default=None,
+                                       related_name='addresses', related_query_name='token_contract')
+    name = models.CharField(max_length=128, blank=False, help_text='Token holder name')
+    address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token holder address')
 
 
 class CrowdsaleContract(models.Model):
