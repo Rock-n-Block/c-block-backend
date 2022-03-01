@@ -33,7 +33,7 @@ app.conf.beat_schedule = {
         ),
     },
     'check_and_send_notifications_test': {
-        'task': 'scanner.tasks.check_dead_wallets',
+        'task': 'scanner.tasks.check_and_send_notifications',
         'schedule': crontab(minute=f'*/{int(config.test_network.day_seconds / 60)}'),
         'args': (
             config.test_network.rpc_endpoint,
