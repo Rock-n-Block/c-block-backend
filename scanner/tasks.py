@@ -45,11 +45,12 @@ def check_dead_wallets(node: str, test: bool) -> None:
         if not alive_contract.confirmation_period:
             alive_contract.confirmation_period = int(contract.functions.CONFIRMATION_PERIOD().call())
             alive_contract.save()
-            logger.info(f'Set confirmation period of contract {alive_contract.address} '
+            logger.info(f'DEAD WALLETS: Set confirmation period of contract {alive_contract.address} '
                         f'to {alive_contract.confirmation_period} seconds')
 
         if contract.functions.isLostKey().call() and not contract.functions.terminated().call():
-            logger.info('ALIVE STATUS: No alive contracts to process')
+            logger.info(f'DEAD WALLETS: Send death notification to {alive_contract.owner_mail} '
+                        f'and {alive_contract.mails} (contract {alive_contract.address})')
             alive_contract.change_dead_status()
             send_heirs_finished(alive_contract.owner_mail, alive_contract.mails)
 
@@ -70,6 +71,8 @@ def check_and_send_notifications(node: str, test: bool, day_seconds: int, checkp
         time_delta_days = int((deadline - current_time) / day_seconds)
 
         if time_delta_days in checkpoints:
+            logger.info(f'NOTIFICATIONS: Send {time_delta_days}-day reminder to {alive_contract.owner_mail}'
+                        f'(contract {alive_contract.address})')
             send_owner_reminder(alive_contract.owner_mail, time_delta_days)
 
 
