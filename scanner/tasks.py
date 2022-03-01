@@ -72,7 +72,7 @@ def check_and_send_notifications(node: str, test: bool, day_seconds: int, checkp
         time_delta_days = int((deadline - current_time) / day_seconds)
 
         if time_delta_days in checkpoints:
-            logger.info(f'NOTIFICATIONS: Send {time_delta_days}-day reminder to {alive_contract.owner_mail}'
+            logger.info(f'NOTIFICATIONS: Send {time_delta_days}-day reminder to {alive_contract.owner_mail} '
                         f'(contract {alive_contract.address})')
             send_owner_reminder(alive_contract.owner_mail, time_delta_days)
 
