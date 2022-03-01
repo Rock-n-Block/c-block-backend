@@ -72,6 +72,8 @@ make migrate_all
     - wedding address
     - wedding address
   - test: test network or not
+  - day_seconds: 60
+  - confirmation_checkpoints: [ 5, 10, 15 ]
 - network:
   - ws_endpoint: 'wss://forno.celo.org/ws'
   - rpc_endpoint: 'https://forno.celo.org'
@@ -91,6 +93,8 @@ make migrate_all
     - wedding address
     - wedding address
   - test: test network or not
+  - day_seconds: 86400
+  - confirmation_checkpoints: [ 1, 3, 7 ]
 ### Тесты
 ```
 docker-compose exec web python manage.py test
