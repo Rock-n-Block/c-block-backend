@@ -64,7 +64,8 @@ def check_and_send_notifications(node: str, test: bool, day_seconds: int, checkp
         return
 
     for alive_contract in alive_contracts:
-        last_recorded_time = int(alive_contract.functions.lastRecordedTime().call())
+        contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_FABRIC_ABI)
+        last_recorded_time = int(contract.functions.lastRecordedTime().call())
         deadline = last_recorded_time + alive_contract.confirmation_period
         current_time = timezone.now().timestamp()
 
