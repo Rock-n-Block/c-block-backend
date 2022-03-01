@@ -163,7 +163,7 @@ class EventScanner:
                     pass
 
 
-def send_heirs_mail(owner_mail: str, heirs_mail_list: list) -> None:
+def send_heirs_finished(owner_mail: str, heirs_mail_list: list) -> None:
     for mail in heirs_mail_list:
         send_mail(
             'Owner is dead',
@@ -175,6 +175,16 @@ def send_heirs_mail(owner_mail: str, heirs_mail_list: list) -> None:
     send_mail(
         'You are dead',
         'My apologise, but owner is dead.\nSadness =-(',
+        from_email=config.email_host_user,
+        recipient_list=[owner_mail],
+        fail_silently=True,
+    )
+
+
+def send_owner_reminder(owner_mail: str, days: int) -> None:
+    send_mail(
+        'Contract notification',
+        f'Your contract confirmation period will be ended in {days} days',
         from_email=config.email_host_user,
         recipient_list=[owner_mail],
         fail_silently=True,

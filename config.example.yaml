@@ -29,6 +29,9 @@ test_network:
   wedding_factories:
     - '0x0000000000000000000000000000000000000000'
   test: True
+  day_seconds: 60
+  confirmation_checkpoints: [ 5, 10, 15 ]
+
 network:
   name: 'mainnet'
   ws_endpoint: 'wss://forno.celo.org/ws'
@@ -47,3 +50,5 @@ network:
   wedding_factories:
     - '0x0000000000000000000000000000000000000000'
   test: False
+  day_seconds: 86400
+  confirmation_checkpoints: [ 1, 3, 7 ]

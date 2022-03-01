@@ -66,6 +66,7 @@ class ProbateContract(models.Model):
     owner_mail = models.EmailField(blank=True)
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+    confirmation_period = models.IntegerField(null=True, blank=True)
 
     class Meta:
         abstract = True
