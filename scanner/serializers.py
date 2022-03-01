@@ -1,7 +1,10 @@
 from rest_framework import serializers
 
-from .models import TokenContract, LastWillContract, LostKeyContract, WeddingContract, CrowdsaleContract
+from .models import TokenContract, TokenHolder, LastWillContract, LostKeyContract, WeddingContract, CrowdsaleContract
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ProbateListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -99,8 +102,9 @@ class TokenSerializer(serializers.ModelSerializer):
             'contract_type': {'read_only': True},
             'test_node': {'read_only': True},
             'address': {'read_only': True},
+            'addresses': {'read_only': False},
         }
-        fields = ('address', 'tx_hash', 'name', 'addresses', 'contract_type', 'test_node')
+        fields = ('address', 'tx_hash', 'name',  'contract_type', 'test_node')
 
     def create(self, validated_data):
         return TokenContract.objects.create(**validated_data)
@@ -110,6 +114,16 @@ class TokenSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        token_holders = {}
+        logger.info(instance)
+        for token_holder in instance.addresses.all():
+            token_holders[token_holder.name] = token_holder.address
+
+        representation['addresses'] = token_holders
+        return representation
 
 
 class HistoryResponseSerializer(serializers.Serializer):

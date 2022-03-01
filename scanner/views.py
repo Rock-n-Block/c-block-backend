@@ -42,6 +42,8 @@ def history(request, address: str):
     wedding_contracts = WeddingContract.objects.filter(owner=profile)
     profile_history = dict()
     profile_history['tokens'] = TokenSerializer(token_contracts, many=True).data
+    # for token in profile_history:
+    #     token['addresses']
     profile_history['crowdsales'] = CrowdsaleSerializer(crowdsale_contracts, many=True).data
     profile_history['lastwills'] = LastWillSerializer(lastwill_contracts, many=True).data
     profile_history['lostkeys'] = LostKeySerializer(lostkey_contracts, many=True).data
@@ -257,7 +259,7 @@ def new_token(request):
     else:
         serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
+    token = serializer.save()
 
     existing_holders = TokenHolder.objects.filter(token_contract=token)
     if existing_holders:
