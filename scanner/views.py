@@ -6,12 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-<<<<<<< HEAD
-from scanner.models import Profile, TokenContract, TokenHolder, ProbateContract, CrowdsaleContract, WeddingContract
-from scanner.serializers import (TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer,
-                          HistoryResponseSerializer, ProbateListSerializer)
-=======
->>>>>>> add token holder names
 from scanner.models import Profile, TokenContract, TokenHolder, LastWillContract, LostKeyContract, CrowdsaleContract,\
     WeddingContract
 from scanner.serializers import (TokenSerializer, CrowdsaleSerializer, LastWillSerializer, LostKeySerializer,
