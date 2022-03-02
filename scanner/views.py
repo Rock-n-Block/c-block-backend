@@ -231,15 +231,12 @@ def new_wedding(request):
         properties={
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'addresses': openapi.Schema(type=openapi.TYPE_ARRAY,
-                                        description='User wallet list(max 5)',
-                                        items=openapi.Schema(
-                                            type=openapi.TYPE_OBJECT,
-                                            properties={
-                                                'name': openapi.Schema(type=openapi.TYPE_STRING, description='Holder name'),
-                                                'address': openapi.Schema(type=openapi.TYPE_STRING, description='Holder address'),
+            'addresses': openapi.Schema(type=openapi.TYPE_OBJECT,
+                                        properties={
+                                            'owner_name': openapi.Schema(type=openapi.TYPE_STRING,
+                                                                         description='Holder address'),
                                             }
-                                        )),
+                                        )
         },
         required=['tx_hash', 'name', 'addresses']
     ),
