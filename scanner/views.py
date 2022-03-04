@@ -6,97 +6,160 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from .models import Profile, TokenContract, ProbateContract, CrowdsaleContract, WeddingContract
-from .serializers import (TokenSerializer, CrowdsaleSerializer, ProbateSerializer, WeddingSerializer,
-                          ResponseSerializer, ProbateListSerializer, ProbateCreateSerializer, CrowdsaleCreateSerializer,
-                          WeddingCreateSerializer, TokenCreateSerializer)
+
+from scanner.models import Profile, TokenContract, TokenHolder, LastWillContract, LostKeyContract, CrowdsaleContract,\
+    WeddingContract
+from scanner.serializers import (TokenSerializer, CrowdsaleSerializer, LastWillSerializer, LostKeySerializer,
+                                 WeddingSerializer, HistoryResponseSerializer, LastWillListSerializer,
+                                 LostKeyListSerializer)
+
+from scanner.utils import check_terminated_contract
 
 import logging
 
-logger = logging.getLogger('__name__')
+logger = logging.getLogger(__name__)
+
+
 @swagger_auto_schema(
     method='get',
     operation_description="User contract history",
-    responses={'200': ResponseSerializer(),
+    responses={'200': HistoryResponseSerializer(),
                '404': 'No such user address in the DB'}
 )
 @api_view(http_method_names=['GET'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def history(request, address: str):
     """
     Account(address) history.
     :return: contract list with information which created this owner
     """
-    profile = Profile.objects.filter(owner_address__iexact=address).first()
-    if not profile:
+    try:
+        profile = Profile.objects.get(owner_address__iexact=address)
+    except Profile.DoesNotExist:
         return Response(data={'Error': 'No such user address in the DB'}, status=HTTP_404_NOT_FOUND)
     token_contracts = TokenContract.objects.filter(owner=profile)
     crowdsale_contracts = CrowdsaleContract.objects.filter(owner=profile)
-    probate_contracts = ProbateContract.objects.filter(owner=profile)
+    lastwill_contracts = LastWillContract.objects.filter(owner=profile)
+    lostkey_contracts = LostKeyContract.objects.filter(owner=profile)
     wedding_contracts = WeddingContract.objects.filter(owner=profile)
-    history = dict()
-    history['token'] = [TokenSerializer(contract).data for contract in token_contracts]
-    history['crowdsale'] = [CrowdsaleSerializer(contract).data for contract in crowdsale_contracts]
-    history['probate'] = [ProbateSerializer(contract).data for contract in probate_contracts]
-    history['wedding'] = [WeddingSerializer(contract).data for contract in wedding_contracts]
-    return Response(data=history, status=HTTP_200_OK)
+    profile_history = dict()
+    profile_history['tokens'] = TokenSerializer(token_contracts, many=True).data
+    profile_history['crowdsales'] = CrowdsaleSerializer(crowdsale_contracts, many=True).data
+    profile_history['lastwills'] = LastWillSerializer(lastwill_contracts, many=True).data
+    profile_history['lostkeys'] = LostKeySerializer(lostkey_contracts, many=True).data
+    profile_history['weddings'] = WeddingSerializer(wedding_contracts, many=True).data
+    return Response(data=profile_history, status=HTTP_200_OK)
 
 
 @swagger_auto_schema(
     method='get',
-    operation_description="List dead user wallets",
-    responses={'200': ProbateListSerializer()}
+    operation_description="List dead user wallets (lastwill)",
+    responses={'200': LastWillListSerializer()}
 )
 @api_view(http_method_names=['GET'])
-@permission_classes([IsAuthenticated])
-def probates(request):
+# @permission_classes([IsAuthenticated])
+def lastwill_dead_list(request):
     """
     List 'dead' wallets with heirs
     :return: owner wallet address and list heirs mails
     """
-    probate_list = ProbateContract.objects.filter(dead=True, terminated=False)
+    lastwills = LastWillContract.objects.filter(dead=True, terminated=False, test_node=False)
+    lastwills = check_terminated_contract(lastwills)
+    if not lastwills.exists():
+        return Response(status=HTTP_404_NOT_FOUND)
+    lastwills['lastwills'] = LastWillListSerializer(lastwills, many=True).data
+    return Response(data=lastwills, status=HTTP_200_OK)
 
-    [ProbateListSerializer(probate) for probate in probate_list]
-    return Response(data=ProbateListSerializer, status=HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="List dead user wallets (lastwill)",
+    responses={'200': LastWillListSerializer()}
+)
+@api_view(http_method_names=['GET'])
+# @permission_classes([IsAuthenticated])
+def lostkey_dead_list(request):
+    """
+    List 'dead' wallets with heirs
+    :return: owner wallet address and list heirs mails
+    """
+    lostkeys = LostKeyContract.objects.filter(dead=True, terminated=False, test_node=False)
+    lostkeys = check_terminated_contract(lostkeys)
+    if not lostkeys.exists():
+        return Response(status=HTTP_404_NOT_FOUND)
+    lostkeys['lostkeys'] = LostKeyListSerializer(lostkeys, many=True).data
+    return Response(data=lostkeys, status=HTTP_200_OK)
+
 
 
 """
 Views for create new user contracts
 """
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Create new user lastwill contract",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
+            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
+                                        items=openapi.TYPE_STRING),
+            'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
+        },
+        required=['tx_hash', 'name', 'mails', 'owner_mail']
+    ),
+    responses={'200': 'Success'}
+)
+@api_view(http_method_names=['POST'])
+# @permission_classes([IsAuthenticated])
+def new_lastwill(request):
+    """
+    Create new probate contract
+    """
+    probate = LastWillContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if probate.exists():
+        serializer = LastWillSerializer(probate[0], data=request.data)
+    else:
+        serializer = LastWillSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    return Response(data={'Success': 'True'}, status=HTTP_200_OK)
+
+
 @swagger_auto_schema(
     method='post',
     operation_description="Create new user probate contract",
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
-            'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
+            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
                                         items=openapi.TYPE_STRING),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
-            # 'type': openapi.Schema(type=openapi.TYPE_STRING, description='Type lost_key or dead'),
         },
-        required=['owner_address', 'contract_address', 'contract_name', 'mail_list', 'owner_mail']
+        required=['tx_hash', 'name', 'mails', 'owner_mail']
     ),
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
-def new_probate(request):
+# @permission_classes([IsAuthenticated])
+def new_lostkey(request):
     """
     Create new probate contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    serializer = ProbateCreateSerializer(data={
-        'address': request.data['contract_address'],
-        'name': request.data['contract_name'],
-        'mails_array': request.data['mail_list'],
-        'owner': owner.pk,
-        'owner_mail': request.data['owner_mail'],
-    })
+    probate = LostKeyContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if probate.exists():
+        serializer = LostKeySerializer(probate[0], data=request.data)
+    else:
+        serializer = LostKeySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
+
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 
 
@@ -106,27 +169,24 @@ def new_probate(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
         },
-        required=['owner_address', 'contract_name', 'contract_address']
+        required=['name', 'tx_hash']
     ),
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def new_crowdsale(request):
     """
     Create new crowdsale contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-
-    serializer = CrowdsaleCreateSerializer(data={
-        'address': request.data['contract_address'],
-        'name': request.data['contract_name'],
-        'owner': owner.pk
-    })
+    crowdsale = CrowdsaleContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if crowdsale.exists():
+        serializer = CrowdsaleSerializer(crowdsale[0], data=request.data)
+    else:
+        serializer = CrowdsaleSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
@@ -138,29 +198,26 @@ def new_crowdsale(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
-            'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'mail_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 2)',
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
+            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 2)',
                                         items=openapi.TYPE_STRING),
         },
-        required=['owner_address', 'contract_address', 'contract_name', 'mail_list']
+        required=['tx_hash', 'name', 'mails']
     ),
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def new_wedding(request):
     """
     Create new wedding contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
-    serializer = WeddingCreateSerializer(data={
-        'address': request.data['contract_address'],
-        'name': request.data['contract_name'],
-        'mail_list': request.data['mail_list'],
-        'owner': owner.pk
-    })
+    wedding = WeddingContract.objects.filter(tx_hash=request.data['tx_hash'])
+    if wedding.exists():
+        serializer = WeddingSerializer(wedding[0], data=request.data)
+    else:
+        serializer = WeddingSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
@@ -172,30 +229,46 @@ def new_wedding(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'owner_address': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'contract_address': openapi.Schema(type=openapi.TYPE_STRING, description='Contract address'),
-            'contract_name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
-            'address_list': openapi.Schema(type=openapi.TYPE_ARRAY, description='User wallet list(max 5)',
-                                        items=openapi.TYPE_ARRAY),
+            'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
+            'addresses': openapi.Schema(type=openapi.TYPE_OBJECT,
+                                        properties={
+                                            'owner_name': openapi.Schema(type=openapi.TYPE_STRING,
+                                                                         description='Holder address'),
+                                            }
+                                        )
         },
-        required=['owner_address', 'contract_address', 'contract_name', 'address_list']
+        required=['tx_hash', 'name', 'addresses']
     ),
     responses={'200': 'Success'}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def new_token(request):
     """
     Create new token contract
     """
-    owner, created = Profile.objects.get_or_create(owner_address=request.data['owner_address'])
+    token = TokenContract.objects.filter(tx_hash=request.data['tx_hash'])
+    token_holders = request.data.pop('addresses')
 
-    serializer = TokenCreateSerializer(data={
-        'address': request.data['contract_address'],
-        'address_list': request.data['address_list'],
-        'name': request.data['contract_name'],
-        'owner': owner.pk}
-    )
+    if token.exists():
+        serializer = TokenSerializer(token[0], data=request.data)
+    else:
+        serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
+    token = serializer.save()
+
+    existing_holders = TokenHolder.objects.filter(token_contract=token)
+    if existing_holders:
+        existing_holders.delete()
+
+    holders_object_list = []
+    for name, address in token_holders.items():
+        logging.info(f'{name} - {address}')
+        holders_object_list.append(
+            TokenHolder(token_contract=token, name=name, address=address)
+        )
+
+    TokenHolder.objects.bulk_create(holders_object_list)
+
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)

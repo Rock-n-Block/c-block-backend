@@ -15,14 +15,11 @@ from pathlib import Path
 from .config import config
 from .logging_settings import LOGGING
 import logging.config
-
-logging.config.dictConfig(LOGGING)
-
-
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+logging.config.dictConfig(LOGGING)
 
 
 # Quick-start development settings - unsuitable for production
@@ -45,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'drf_yasg',
     'rest_framework',
     'scanner',
@@ -84,9 +82,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+#    'DEFAULT_PERMISSION_CLASSES': (
+ #       'rest_framework.permissions.IsAuthenticated',
+  #  ),
 }
 
 # Database
@@ -135,6 +133,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+SHELL_PLUS = 'ptpython'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -146,6 +145,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, config.static_root)
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True

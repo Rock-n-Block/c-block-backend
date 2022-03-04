@@ -14,10 +14,13 @@ class Network:
     rpc_endpoint: str
     token_factories: list
     crowdsale_factories: list
-    probate_factories: list
+    lastwill_factories: list
+    lostkey_factories: list
     wedding_factories: list
     test: bool
     w3: Web3 = field(init=False, default=None)
+    day_seconds: int
+    confirmation_checkpoints: list
 
     def __post_init__(self):
         self.w3 = Web3(Web3.WebsocketProvider(self.ws_endpoint))

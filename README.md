@@ -7,26 +7,26 @@
 - [x] Сканер евентов фабрик
 - [x] Ручки для отдачи истории пользователей
 - [x] Ручка для сохранения новых контрактов
-## Компоненты
-- Веб на django
-- Сканнер евентов web sockets
-- База данных postgresql
-- Периодические задачи celery + redis + scheduler
-## Сервисы
+## Components
+- Web (Django)
+- Event scanner (websockets)
+- Database (PostgreSQK)
+- Periodic tasks (celery + redis + scheduler) 
+## Services
 - Django
 - Celery
 - Postgresql
 - Scheduler
 - Redis
-### Сборка
+### Build
 ```
-docker-compose up -d --build
-```
-```
-docker-compose exec web python manage.py makemigrations
+make up
 ```
 ```
-docker-compose exec web python manage.py migrate
+make make_all_migrations
+```
+```
+make migrate_all
 ```
 ### .env file
 - DJANGO_PORT - entry port
@@ -64,13 +64,16 @@ docker-compose exec web python manage.py migrate
   - crowdsale_factories:
     - crowdsale address
     - crowdsale address
-  - probate_factories:
-    - probate address
-    - probate address
+  - lastwill_factories:
+    - lastwill address
+  - lostkey_factories:
+    - lostkey address
   - wedding_factories:
     - wedding address
     - wedding address
   - test: test network or not
+  - day_seconds: 60
+  - confirmation_checkpoints: [ 5, 10, 15 ]
 - network:
   - ws_endpoint: 'wss://forno.celo.org/ws'
   - rpc_endpoint: 'https://forno.celo.org'
@@ -82,13 +85,16 @@ docker-compose exec web python manage.py migrate
   - crowdsale_factories:
     - crowdsale address
     - crowdsale address
-  - probate_factories:
-    - probate address
-    - probate address
+  - lastwill_factories:
+    - lastwill address
+  - lostkey_factories:
+    - lostkey address
   - wedding_factories:
     - wedding address
     - wedding address
   - test: test network or not
+  - day_seconds: 86400
+  - confirmation_checkpoints: [ 1, 3, 7 ]
 ### Тесты
 ```
 docker-compose exec web python manage.py test

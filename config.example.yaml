@@ -1,0 +1,54 @@
+allowed_hosts: []
+secret_key: ''
+debug: True
+static_url: ''
+static_root: ''
+redis_expiration_time: 
+redis_host: 
+redis_port: 
+email_host: ''
+email_host_user: ''
+email_password: ''
+email_port: 
+test_network:
+  name: 'test'
+  ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
+  rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'
+  token_factories:
+    - '0x0000000000000000000000000000000000000000'
+    - '0x0000000000000000000000000000000000000000'
+    - '0x0000000000000000000000000000000000000000'
+    - '0x0000000000000000000000000000000000000000'
+  crowdsale_factories:
+    - '0x0000000000000000000000000000000000000000'
+  lastwill_factories:
+    - '0x0000000000000000000000000000000000000000'
+  lostkey_factories:
+    - '0x0000000000000000000000000000000000000000'
+    - '0x0000000000000000000000000000000000000000'
+  wedding_factories:
+    - '0x0000000000000000000000000000000000000000'
+  test: True
+  day_seconds: 60
+  confirmation_checkpoints: [ 5, 10, 15 ]
+
+network:
+  name: 'mainnet'
+  ws_endpoint: 'wss://forno.celo.org/ws'
+  rpc_endpoint: 'https://forno.celo.org'
+  token_factories:
+    - '0x0000000000000000000000000000000000000000'
+    - '0x0000000000000000000000000000000000000000'
+    - '0x0000000000000000000000000000000000000000'
+    - '0x0000000000000000000000000000000000000000'
+  crowdsale_factories:
+    - '0x0000000000000000000000000000000000000000'
+  lastwill_factories:
+    - '0x0000000000000000000000000000000000000000'
+  lostkey_factories:
+    - '0x0000000000000000000000000000000000000000'
+  wedding_factories:
+    - '0x0000000000000000000000000000000000000000'
+  test: False
+  day_seconds: 86400
+  confirmation_checkpoints: [ 1, 3, 7 ]
