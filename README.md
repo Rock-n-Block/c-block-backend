@@ -1,12 +1,13 @@
 # C-Block
-## Описание
-- [x] Сохранение истории контрактов токенов
-- [x] Сохранение истории контрактов краудсейлов
-- [x] Сохранение истории контрактов завещания
-- [x] Сохранение истории контрактов свадебных
-- [x] Сканер евентов фабрик
-- [x] Ручки для отдачи истории пользователей
-- [x] Ручка для сохранения новых контрактов
+## Description
+- [x] Contract history for:
+  - [x] Tokens
+  - [x] Crowdsales
+  - [x] Wedding contracts
+  - [x] LastWill/LostKey contract 
+- [x] Scanner for events on factories
+- [x] API for retrieving user history
+- [x] API for creating of new contracts
 ## Components
 - Web (Django)
 - Event scanner (websockets)
@@ -95,7 +96,7 @@ make migrate_all
   - test: test network or not
   - day_seconds: 86400
   - confirmation_checkpoints: [ 1, 3, 7 ]
-### Тесты
+### Tests
 ```
 docker-compose exec web python manage.py test
 ```
