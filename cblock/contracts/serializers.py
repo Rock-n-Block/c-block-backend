@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 
-from .models import TokenContract, LastWillContract, LostKeyContract, WeddingContract, CrowdsaleContract
+from cblock.contracts.models import TokenContract, LastWillContract, LostKeyContract, WeddingContract, CrowdsaleContract
 
 import logging
 

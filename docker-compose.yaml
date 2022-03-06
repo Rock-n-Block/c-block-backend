@@ -2,13 +2,29 @@ version: "3"
 
 services:
   db:
+    container_name: db
+    restart: unless-stopped
     image: postgres:14.0
     env_file: ./.env
     volumes:
       - ./.docker/postgres-data:/var/lib/postgresql/data
     networks:
-      wish-net:
+      cblock-network:
+  redis:
+    container_name: redis
+    image: redis:5.0
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ./.docker/redis-data:/data
+    #    ports:
+    #      - "6379"
+    networks:
+      cblock-network:
   web:
+    container_name: web
+    restart: unless-stopped
+    image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,10 +37,12 @@ services:
       - ./:/code/
       - ./static/:/code/static/
     command: python manage.py runserver 0.0.0.0:${DJANGO_PORT}
-    restart: unless-stopped
     networks:
-      wish-net:
+      cblock-network:
   scanner:
+    container_name: scanner
+    restart: unless-stopped
+    image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
     build:
       context: .
       dockerfile: Dockerfile
@@ -32,64 +50,44 @@ services:
     depends_on:
       - db
       - redis
-    restart: unless-stopped
     volumes:
       - ./:/code/
+      - ./scanner_logs/:/code/scanner_logs/
     command: ["python", "scanner/start.py"]
     networks:
-      wish-net:
-  redis:
-    image: redis:5.0
-    env_file: .env
+      cblock-network:
+  dramatiq:
+    container_name: dramatiq
     restart: unless-stopped
-    volumes:
-      - ./.docker/redis-data:/data
-    ports:
-      - "6379"
-    networks:
-      wish-net:
-  celery:
+    image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
     build:
       context: .
       dockerfile: Dockerfile
-    env_file: .env
-    image: celery:3.1
-    command: "celery -A mywish2 worker -l info"
+    env_file:
+      - .env
     depends_on:
+      - db
       - redis
-    environment:
-      CELERY_BROKER_URL: redis://redis:6379/
-      CELERY_RESULT_BACKEND: redis://redis:6379/
-    restart: always
+    volumes:
+      - .:/code
+    command: python manage.py rundramatiq
     networks:
-      wish-net:
-  celery-beat:
+      cblock-network:
+  scheduler:
+    container_name: scheduler
+    restart: unless-stopped
+    image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
+    env_file: .env
     build:
       context: .
       dockerfile: Dockerfile
-    env_file: .env
-    image: celery:3.1
-    command: "celery -A mywish2 beat -l info"
     depends_on:
+      - db
       - redis
-    environment:
-      CELERY_BROKER_URL: redis://redis:6379/
-      CELERY_RESULT_BACKEND: redis://redis:6379/
-    restart: always
-    networks:
-      wish-net:
-  flower:
-    build: .
-    command: "celery -A mywish2 flower --loglevel=info --broker=redis://redis:6379/"
-    env_file: .env
     volumes:
-      - ./:/data
-    ports:
-      - ${FLOWER_PORT}:${FLOWER_PORT}
-    environment:
-      CELERY_BROKER_URL: redis://redis:6379/
-      CELERY_RESULT_BACKEND: redis://redis:6379/
+      - .:/code
+    command: python manage.py run_scheduler
     networks:
-      wish-net:
+      cblock-network:
 networks:
-  wish-net:
+  cblock-network:

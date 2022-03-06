@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import history, lastwill_dead_list, lostkey_dead_list, new_lastwill, new_lostkey, \
+from cblock.contracts.views import history, lastwill_dead_list, lostkey_dead_list, new_lastwill, new_lostkey, \
     new_token, new_wedding, new_crowdsale
 
 

@@ -31,6 +31,7 @@ test_network:
   test: True
   day_seconds: 60
   confirmation_checkpoints: [ 5, 10, 15 ]
+  dead_wallets_check_interval: 60
 
 network:
   name: 'mainnet'
@@ -52,3 +53,4 @@ network:
   test: False
   day_seconds: 86400
   confirmation_checkpoints: [ 1, 3, 7 ]
+  dead_wallets_check_interval: 3600

@@ -1,19 +1,32 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
-from rest_framework.permissions import IsAuthenticated
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
-from scanner.models import Profile, TokenContract, TokenHolder, LastWillContract, LostKeyContract, CrowdsaleContract,\
+from cblock.contracts.models import (
+    Profile,
+    TokenContract,
+    TokenHolder,
+    LastWillContract,
+    LostKeyContract,
+    CrowdsaleContract,
     WeddingContract
-from scanner.serializers import (TokenSerializer, CrowdsaleSerializer, LastWillSerializer, LostKeySerializer,
-                                 WeddingSerializer, HistoryResponseSerializer, LastWillListSerializer,
-                                 LostKeyListSerializer)
+)
+from cblock.contracts.serializers import (
+    TokenSerializer,
+    CrowdsaleSerializer,
+    LastWillSerializer,
+    LostKeySerializer,
+    WeddingSerializer,
+    HistoryResponseSerializer,
+    LastWillListSerializer,
+    LostKeyListSerializer
+)
 
-from scanner.utils import check_terminated_contract
+from cblock.contracts.utils import check_terminated_contract
 
 import logging
 
@@ -93,7 +106,7 @@ def lostkey_dead_list(request):
 
 
 """
-Views for create new user contracts
+Views for create new user contract_abi
 """
 
 

@@ -2,6 +2,7 @@ import os
 import yaml
 from dataclasses import dataclass, field
 from marshmallow_dataclass import class_schema
+from typing import List
 
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
@@ -21,6 +22,7 @@ class Network:
     w3: Web3 = field(init=False, default=None)
     day_seconds: int
     confirmation_checkpoints: list
+    dead_wallets_check_interval: int
 
     def __post_init__(self):
         self.w3 = Web3(Web3.WebsocketProvider(self.ws_endpoint))
@@ -41,8 +43,8 @@ class Config:
     email_host_user: str
     email_password: str
     email_port: int
-    test_network: Network
-    network: Network
+    scanner_sleep: int
+    networks: List[Network]
 
 
 config_path = '/../config.yaml'

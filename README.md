@@ -31,7 +31,6 @@ make migrate_all
 ### .env file
 - DJANGO_PORT - entry port
 - DOCKER_EXPOSE_PORT - expose port
-- FLOWER_PROT - flower entry and expose port
 - POSTGRES_DB - database name
 - POSTGRES_USER- database user
 - POSTGRES_PASSWORD - database password
@@ -74,6 +73,7 @@ make migrate_all
   - test: test network or not
   - day_seconds: 60
   - confirmation_checkpoints: [ 5, 10, 15 ]
+  - dead_wallets_check_interval: 60
 - network:
   - ws_endpoint: 'wss://forno.celo.org/ws'
   - rpc_endpoint: 'https://forno.celo.org'
@@ -95,7 +95,9 @@ make migrate_all
   - test: test network or not
   - day_seconds: 86400
   - confirmation_checkpoints: [ 1, 3, 7 ]
-### Тесты
+  - dead_wallets_check_interval: 3600
+
+### Tests
 ```
 docker-compose exec web python manage.py test
 ```

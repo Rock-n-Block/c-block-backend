@@ -11,7 +11,7 @@ class Profile(models.Model):
 
 class TokenContract(models.Model):
     """
-    Token and crowdsale contracts
+    Token and crowdsale contract_abi
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     # addresses = ArrayField(models.CharField(max_length=128, blank=True), size=5, null=True)
@@ -32,7 +32,7 @@ class TokenHolder(models.Model):
 
 class CrowdsaleContract(models.Model):
     """
-    Token and crowdsale contracts
+    Token and crowdsale contract_abi
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=128, help_text='Contract name')
@@ -56,7 +56,7 @@ class WeddingContract(models.Model):
 
 class ProbateContract(models.Model):
     """
-    Probate contracts
+    Probate contract_abi
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
@@ -88,3 +88,12 @@ class LastWillContract(ProbateContract):
 class LostKeyContract(ProbateContract):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
                               related_name='lostkey_owner', related_query_name='lostkeys_owner')
+
+
+CONTRACT_MODELS = {
+    'token': TokenContract,
+    'crowdsale': CrowdsaleContract,
+    'lastwill': LastWillContract,
+    'lostkey': LostKeyContract,
+    'wedding': WeddingContract
+}
