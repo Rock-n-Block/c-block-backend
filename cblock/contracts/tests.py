@@ -3,8 +3,8 @@ from django.test import Client
 from web3 import Web3
 from django.urls import reverse
 
-from .models import ProbateContract, Profile
-from .utils import send_heirs_mail
+from cblock.contracts.models import ProbateContract, Profile
+from cblock.contracts.utils import send_heirs_mail
 
 import json
 

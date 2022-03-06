@@ -1,4 +1,4 @@
-"""mywish2 URL Configuration
+"""cblock URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
@@ -22,7 +22,7 @@ from rest_framework import permissions
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="MyWish2 API",
+      title="C-Block API",
       default_version='v1',
       description="Test description",
       terms_of_service="https://www.google.com/policies/terms/",
@@ -37,5 +37,5 @@ urlpatterns = [
     re_path(r'^api/v1/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
     path('django-admin/', admin.site.urls),
-    path('api/v1/', include('scanner.urls')),
+    path('api/v1/', include('cblock.contracts.urls')),
 ]

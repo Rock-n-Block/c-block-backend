@@ -12,3 +12,6 @@ RUN pip install -r requirements.txt
 EXPOSE 8456
 
 COPY . /code/
+
+RUN mkdir -p /root/.config/ptpython
+COPY ptpython-config.py /root/.config/ptpython/config.py

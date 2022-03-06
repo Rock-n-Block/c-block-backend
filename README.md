@@ -96,6 +96,7 @@ make migrate_all
   - test: test network or not
   - day_seconds: 86400
   - confirmation_checkpoints: [ 1, 3, 7 ]
+  - dead_wallets_check_interval: 3600
 ### Tests
 ```
 docker-compose exec web python manage.py test
