@@ -2,7 +2,7 @@ version: "3"
 
 services:
   db:
-    container_name: db
+    # container_name: cblock-db
     restart: unless-stopped
     image: postgres:14.0
     env_file: ./.env
@@ -11,7 +11,7 @@ services:
     networks:
       cblock-network:
   redis:
-    container_name: redis
+    # container_name: redis
     image: redis:5.0
     env_file: .env
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
     networks:
       cblock-network:
   web:
-    container_name: web
+    # container_name: web
     restart: unless-stopped
     image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
     build:
@@ -40,7 +40,7 @@ services:
     networks:
       cblock-network:
   scanner:
-    container_name: scanner
+    # container_name: scanner
     restart: unless-stopped
     image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
     build:
@@ -57,7 +57,7 @@ services:
     networks:
       cblock-network:
   dramatiq:
-    container_name: dramatiq
+    # container_name: dramatiq
     restart: unless-stopped
     image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
     build:
@@ -74,7 +74,7 @@ services:
     networks:
       cblock-network:
   scheduler:
-    container_name: scheduler
+    # container_name: scheduler
     restart: unless-stopped
     image: "${GITHUB_IMAGE_NAME}:${GITHUB_BUILD_BRANCH}"
     env_file: .env
