@@ -78,10 +78,13 @@ def lastwill_dead_list(request):
     """
     lastwills = LastWillContract.objects.filter(dead=True, terminated=False)
     lastwills = check_terminated_contract(lastwills)
-    if not lastwills.exists():
+    if not lastwills:
         return Response(status=HTTP_404_NOT_FOUND)
-    lastwills['lastwills'] = LastWillListSerializer(lastwills, many=True).data
-    return Response(data=lastwills, status=HTTP_200_OK)
+
+    res = {
+        'lastwills': LastWillListSerializer(lastwills, many=True).data
+    }
+    return Response(data=res, status=HTTP_200_OK)
 
 
 @swagger_auto_schema(
@@ -98,10 +101,13 @@ def lostkey_dead_list(request):
     """
     lostkeys = LostKeyContract.objects.filter(dead=True, terminated=False)
     lostkeys = check_terminated_contract(lostkeys)
-    if not lostkeys.exists():
+    if not lostkeys:
         return Response(status=HTTP_404_NOT_FOUND)
-    lostkeys['lostkeys'] = LostKeyListSerializer(lostkeys, many=True).data
-    return Response(data=lostkeys, status=HTTP_200_OK)
+
+    res = {
+        'lastwills': LostKeyListSerializer(lostkeys, many=True).data
+    }
+    return Response(data=res, status=HTTP_200_OK)
 
 
 
