@@ -50,12 +50,17 @@ def check_terminated_contract(probates):
     """
     Check that contract is not terminated and change status if terminated
     """
-    w3 = config.network.w3
-    for probate in probates:
-        contract = w3.eth.contract(address=w3.toChecksumAddress(probate.address), abi=PROBATE_FACTORY_ABI)
-        terminated = contract.functions.terminated().call()
-        probate.terminated = terminated
-        probate.save()
+    for network in config.networks:
+        network_contracts = probates.filter(test_node=network.test)
+
+        for probate in network_contracts:
+            contract = network.w3.eth.contract(
+                address=network.w3.toChecksumAddress(probate.address),
+                abi=PROBATE_FACTORY_ABI
+            )
+            terminated = contract.functions.terminated().call()
+            probate.terminated = terminated
+            probate.save()
     return probates.filter(terminated=False)
 
 

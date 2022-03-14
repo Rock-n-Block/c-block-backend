@@ -76,7 +76,7 @@ def lastwill_dead_list(request):
     List 'dead' wallets with heirs
     :return: owner wallet address and list heirs mails
     """
-    lastwills = LastWillContract.objects.filter(dead=True, terminated=False, test_node=False)
+    lastwills = LastWillContract.objects.filter(dead=True, terminated=False)
     lastwills = check_terminated_contract(lastwills)
     if not lastwills.exists():
         return Response(status=HTTP_404_NOT_FOUND)
@@ -96,7 +96,7 @@ def lostkey_dead_list(request):
     List 'dead' wallets with heirs
     :return: owner wallet address and list heirs mails
     """
-    lostkeys = LostKeyContract.objects.filter(dead=True, terminated=False, test_node=False)
+    lostkeys = LostKeyContract.objects.filter(dead=True, terminated=False)
     lostkeys = check_terminated_contract(lostkeys)
     if not lostkeys.exists():
         return Response(status=HTTP_404_NOT_FOUND)
