@@ -89,8 +89,8 @@ def lastwill_dead_list(request):
 
 @swagger_auto_schema(
     method='get',
-    operation_description="List dead user wallets (lastwill)",
-    responses={'200': LastWillListSerializer()}
+    operation_description="List dead user wallets (lostkey)",
+    responses={'200': LostKeyListSerializer()}
 )
 @api_view(http_method_names=['GET'])
 # @permission_classes([IsAuthenticated])
