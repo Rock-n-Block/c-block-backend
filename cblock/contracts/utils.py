@@ -2,7 +2,7 @@ from web3 import Web3
 
 from cblock.contracts.models import CONTRACT_MODELS, WeddingContract
 from cblock.settings import config
-from contract_abi import PROBATE_FACTORY_ABI
+from contract_abi import PROBATE_ABI
 
 from django.core.mail import send_mail
 
@@ -56,7 +56,7 @@ def check_terminated_contract(probates):
         for probate in network_contracts:
             contract = network.w3.eth.contract(
                 address=network.w3.toChecksumAddress(probate.address),
-                abi=PROBATE_FACTORY_ABI
+                abi=PROBATE_ABI
             )
             terminated = contract.functions.terminated().call()
             probate.terminated = terminated
