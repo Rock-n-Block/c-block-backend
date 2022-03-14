@@ -67,7 +67,7 @@ class NewContractMixinBase(EventMixinBase):
             address=self.network.w3.toChecksumAddress(contract_address),
             abi=OWNABLE_ABI
         )
-        return contract.functions.owner().call()
+        return contract.functions.owner().call().lower()
 
 
 class NewContractTokenMixin(NewContractMixinBase):

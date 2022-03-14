@@ -47,7 +47,7 @@ def history(request, address: str):
     :return: contract list with information which created this owner
     """
     try:
-        profile = Profile.objects.get(owner_address__iexact=address)
+        profile = Profile.objects.get(owner_address__iexact=address.lower())
     except Profile.DoesNotExist:
         return Response(data={'Error': 'No such user address in the DB'}, status=HTTP_404_NOT_FOUND)
     token_contracts = TokenContract.objects.filter(owner=profile)
