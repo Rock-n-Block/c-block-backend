@@ -105,7 +105,7 @@ def lostkey_dead_list(request):
         return Response(status=HTTP_404_NOT_FOUND)
 
     res = {
-        'lastwills': LostKeyListSerializer(lostkeys, many=True).data
+        'lostkeys': LostKeyListSerializer(lostkeys, many=True).data
     }
     return Response(data=res, status=HTTP_200_OK)
 
