@@ -17,7 +17,7 @@ class HandlerNewContractCrowdsale(HandlerABC):
         data = self.scanner.parse_data_new_contract_crowdsale(event_data)
         self.logger.info(f"New event: {data}")
 
-        owner_profile = self.get_owner(data.sender)
+        owner_profile = self.get_owner(data.owner)
         self.logger.info(f'Owner address: {owner_profile.owner_address}')
 
         CrowdsaleContract.objects.update_or_create(
@@ -36,7 +36,7 @@ class HandlerNewContractToken(HandlerABC):
         data = self.scanner.parse_data_new_contract_token(event_data)
         self.logger.info(f"New event: {data}")
 
-        owner_profile = self.get_owner(data.sender)
+        owner_profile = self.get_owner(data.owner)
         self.logger.info(f'Owner address: {owner_profile.owner_address}')
 
         TokenContract.objects.update_or_create(

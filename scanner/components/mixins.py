@@ -10,6 +10,7 @@ from contract_abi import (
     PROBATE_FACTORY_ABI,
     PROBATE_ABI,
     WEDDING_ABI,
+    OWNABLE_ABI
 )
 from scanner.components.datatypes import (
     NewContractToken,
@@ -60,6 +61,14 @@ class NewContractMixinBase(EventMixinBase):
             to_block=to_block
         )
 
+    def _parse_data_get_owner(self, event):
+        contract_address = event['args']['contractAddress'].lower()
+        contract = self.network.w3.eth.contract(
+            address=self.network.w3.toChecksumAddress(contract_address),
+            abi=OWNABLE_ABI
+        )
+        return contract.functions.owner()
+
 
 class NewContractTokenMixin(NewContractMixinBase):
     def get_events_new_contract_token(self, last_checked_block, last_network_block):
@@ -74,7 +83,8 @@ class NewContractTokenMixin(NewContractMixinBase):
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['args']['contractAddress'].lower(),
-            contract_type=event['args']['contractType']
+            contract_type=event['args']['contractType'],
+            owner=self._parse_data_get_owner(event)
         )
 
 
@@ -91,7 +101,8 @@ class NewContractCrowdsaleMixin(NewContractMixinBase):
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['args']['contractAddress'].lower(),
-            contract_type=event['args']['contractType']
+            contract_type=event['args']['contractType'],
+            owner=self._parse_data_get_owner(event)
         )
 
 

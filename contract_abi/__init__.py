@@ -18,3 +18,6 @@ with Path("contract_abi", "probate.json").open() as f:
 
 with Path("contract_abi", "wedding.json").open() as f:
     WEDDING_ABI = json.load(f)
+
+with Path("contract_abi", "ownable.json").open() as f:
+    OWNABLE_ABI = json.load(f)
