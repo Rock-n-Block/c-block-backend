@@ -25,7 +25,7 @@ class Network:
     dead_wallets_check_interval: int
 
     def __post_init__(self):
-        self.w3 = Web3(Web3.WebsocketProvider(self.ws_endpoint))
+        self.w3 = Web3(Web3.HTTPProvider(self.rpc_endpoint))
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 
