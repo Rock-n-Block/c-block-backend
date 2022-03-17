@@ -43,3 +43,11 @@ ps:
 
 logs:
 	$(compose) logs --timestamps -f $(service)
+
+pull_git:
+	git pull origin ${git branch --show-current}
+
+pull_docker:
+	$(compose) pull
+
+pull: pull_git pull_docker
