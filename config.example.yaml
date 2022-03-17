@@ -9,7 +9,9 @@ redis_port:
 email_host: ''
 email_host_user: ''
 email_password: ''
-email_port: 
+email_port:
+scanner_sleep: 60
+sentry_dsn: ''
 test_network:
   name: 'test'
   ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'

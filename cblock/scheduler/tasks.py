@@ -72,6 +72,13 @@ def check_and_send_notifications(
     for alive_contract in alive_contracts:
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
         last_recorded_time = int(contract.functions.lastRecordedTime().call())
+
+        if not alive_contract.confirmation_period:
+            alive_contract.confirmation_period = int(contract.functions.CONFIRMATION_PERIOD().call())
+            alive_contract.save()
+            logger.info(f'NOTIFICATIONS: Set confirmation period of contract {alive_contract.address} '
+                        f'to {alive_contract.confirmation_period} seconds')
+
         deadline = last_recorded_time + alive_contract.confirmation_period
         current_time = timezone.now().timestamp()
 

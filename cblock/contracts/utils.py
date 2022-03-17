@@ -8,6 +8,9 @@ from django.core.mail import send_mail
 
 
 def send_heirs_finished(owner_mail: str, heirs_mail_list: list) -> None:
+    if not heirs_mail_list or len(heirs_mail_list) == 0:
+        return
+
     for mail in heirs_mail_list:
         send_mail(
             'Owner is dead',

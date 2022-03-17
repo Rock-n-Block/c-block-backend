@@ -54,6 +54,8 @@ make migrate_all
 - email_host_user: admin mail for sending mails
 - email_password: admin mail password
 - email_port: smtp server port
+- scanner_sleep: timeout between block scannings
+- sentry_dsn: (Optional) url for Sentry endpoint
 - test_network:
   - ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
   - rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'

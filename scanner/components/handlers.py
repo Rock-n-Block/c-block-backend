@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from scanner.components.base import HandlerABC
 from cblock.contracts.models import (
     CrowdsaleContract,
@@ -115,7 +117,7 @@ class HandlerTransferOwnership(HandlerABC):
         data = self.scanner.parse_data_transfer_ownership(event_data)
         self.logger.info(f"New event: {data}")
 
-        ownable_models = CONTRACT_MODELS.deepcopy()
+        ownable_models = deepcopy(CONTRACT_MODELS)
         if 'wedding' in ownable_models.keys():
             ownable_models.pop('wedding')
 
