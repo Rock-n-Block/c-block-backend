@@ -115,7 +115,7 @@ class HandlerTransferOwnership(HandlerABC):
         data = self.scanner.parse_data_transfer_ownership(event_data)
         self.logger.info(f"New event: {data}")
 
-        ownable_models = CONTRACT_MODELS
+        ownable_models = CONTRACT_MODELS.deepcopy()
         if 'wedding' in ownable_models.keys():
             ownable_models.pop('wedding')
 

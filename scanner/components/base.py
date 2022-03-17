@@ -133,4 +133,5 @@ class NewContract(NewContractBase):
 
 @dataclass
 class WeddingBase(EventBase):
+    contract_address: str
     proposed_by: str

@@ -216,10 +216,11 @@ class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
         return WeddingWithdrawalProposed(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
-            token=event['token'].lower(),
-            receiver=event['receiver'].lower(),
-            token_amount=event['amount'],
-            proposed_by=event['proposedBy'].lower()
+            contract_address=event['address'].lower(),
+            token=event['args']['token'].lower(),
+            receiver=event['args']['receiver'].lower(),
+            token_amount=event['args']['amount'],
+            proposed_by=event['args']['proposedBy'].lower()
         )
 
     def preload_contracts_wedding_withdrawal_proposed(self, network) -> List[str]:
@@ -238,7 +239,8 @@ class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
         return WeddingDivorceProposed(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
-            proposed_by=event['proposedBy'].lower()
+            contract_address=event['address'].lower(),
+            proposed_by=event['args']['proposedBy'].lower()
         )
 
     def preload_contracts_wedding_divorce_proposed(self, network) -> List[str]:

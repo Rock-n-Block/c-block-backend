@@ -36,6 +36,9 @@ def send_owner_reminder(owner_mail: str, days: int) -> None:
 
 
 def send_wedding_mail(contract: WeddingContract, title: str, body: str) -> None:
+    if not contract.mails or len(contract.mails) == 0:
+        return
+
     for mail in contract.mails:
         send_mail(
             title,
