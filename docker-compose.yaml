@@ -36,7 +36,7 @@ services:
     volumes:
       - ./:/code/
       - ./static/:/code/static/
-    command: python manage.py runserver 0.0.0.0:${DJANGO_PORT}
+    command: /runserver.sh
     networks:
       cblock-network:
   scanner:

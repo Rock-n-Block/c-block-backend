@@ -1,2 +1,14 @@
 .docker/
+Dockerfile
+docker-compose.yml
+
+.idea
+.git
+
+**/__pycache__
+**/*.pyc
+
+venv
+.venv
+
 scanner_logs
