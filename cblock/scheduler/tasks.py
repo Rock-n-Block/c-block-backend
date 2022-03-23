@@ -87,5 +87,5 @@ def check_and_send_notifications(
         if time_delta_days in confirmation_checkpoints:
             logger.info(f'NOTIFICATIONS: Send {time_delta_days}-day reminder to {alive_contract.owner_mail} '
                         f'(contract {alive_contract.address})')
-            send_owner_reminder(alive_contract.owner_mail, time_delta_days)
+            send_owner_reminder(alive_contract, alive_contract.owner_mail, time_delta_days)
 

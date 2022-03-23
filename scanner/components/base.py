@@ -126,6 +126,7 @@ class NewContractWithType(NewContractBase):
     contract_type: int
     owner: str
 
+
 @dataclass
 class NewContract(NewContractBase):
     pass

@@ -1,44 +1,83 @@
 from web3 import Web3
+from typing import Any
 
-from cblock.contracts.models import CONTRACT_MODELS, WeddingContract
+from cblock.contracts.models import CONTRACT_MODELS, WeddingContract, LastWillContract, LostKeyContract
+from cblock.contracts.mail_messages import EMAIL_TEXTS
 from cblock.settings import config
 from contract_abi import PROBATE_ABI
 
 from django.core.mail import send_mail
 
 
-def send_heirs_finished(owner_mail: str, heirs_mail_list: list) -> None:
+def get_probate_text_type(contract: Any[LastWillContract, LostKeyContract]) -> str:
+    if contract.__class__.__name__ == 'LastWillContract':
+        text_type = 'lastwill'
+    else:
+        text_type = 'lostkey'
+
+    return text_type
+
+
+def send_heirs_finished(
+        contract: Any[LastWillContract, LostKeyContract],
+        owner_mail: str,
+        heirs_mail_list: list
+) -> None:
     if not heirs_mail_list or len(heirs_mail_list) == 0:
         return
 
+    if not contract.owner:
+        return
+
+    text_type = get_probate_text_type(contract)
+    message_texts = EMAIL_TEXTS.get(text_type).get('triggered')
+    title = message_texts.get('title')
+    body = message_texts.get('body').format(
+        user_address=contract.owner.owner_address
+    )
+
+    heirs_mail_list.append(owner_mail)
     for mail in heirs_mail_list:
         send_mail(
-            'Owner is dead',
-            'My apologise, but owner is dead.\nSadness =-(',
+            title,
+            body,
             from_email=config.email_host_user,
             recipient_list=[mail],
             fail_silently=True,
         )
+
+
+def send_owner_reminder(contract: Any[LastWillContract, LostKeyContract], owner_mail: str, days: int) -> None:
+
+    text_type = get_probate_text_type(contract)
+    message_texts = EMAIL_TEXTS.get(text_type).get('reminder')
+    title = message_texts.get('title')
+    body = message_texts.get('body').format(
+        days=days
+    )
+
     send_mail(
-        'You are dead',
-        'My apologise, but owner is dead.\nSadness =-(',
+        title,
+        body,
         from_email=config.email_host_user,
         recipient_list=[owner_mail],
         fail_silently=True,
     )
 
 
-def send_owner_reminder(owner_mail: str, days: int) -> None:
-    send_mail(
-        'Contract notification',
-        f'Your contract confirmation period will be ended in {days} days',
-        from_email=config.email_host_user,
-        recipient_list=[owner_mail],
-        fail_silently=True,
-    )
+def send_wedding_mail(contract: WeddingContract, handler_type: str, event_data: Any) -> None:
+
+    wedding_emails = EMAIL_TEXTS.get('wedding')
+
+    if handler_type == 'wedding_withdrawal_proposed':
+        from_partner_message = wedding_emails.get('divorce_from_partner')
+        to_partner_message = wedding_emails.get('divorce_from_partner')
 
 
-def send_wedding_mail(contract: WeddingContract, title: str, body: str) -> None:
+
+
+    elif handler_type == 'wedding_divorce_proposed':
+
     if not contract.mails or len(contract.mails) == 0:
         return
 

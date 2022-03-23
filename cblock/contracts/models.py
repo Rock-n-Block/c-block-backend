@@ -48,10 +48,17 @@ class WeddingContract(models.Model):
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=128, help_text='Contract name', blank=True)
-    mails = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
+    # mails = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
     owner = models.ManyToManyField(Profile)  # wedding contract have 2 owner
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+
+
+class WeddingEmails(models.Model):
+    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
+                                       related_name='mails', related_query_name='wedding_contract')
+    email = models.CharField(max_length=128, blank=False, help_text='Token holder name')
+    address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token holder address')
 
 
 class ProbateContract(models.Model):

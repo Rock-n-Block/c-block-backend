@@ -156,9 +156,7 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
-        title = 'withdraw'
-        body = f'{data.receiver} want withdraw {data.token_amount} tokens'
-        send_wedding_mail(contract=contract_instance, title=title, body=body)
+        send_wedding_mail(contract=contract_instance, handler_type=self.TYPE)
 
 
 class HandlerWeddingDivorceProposed(HandlerABC):
@@ -177,7 +175,5 @@ class HandlerWeddingDivorceProposed(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
-        title = 'divorce'
-        body = f'Sorry, but {data.proposed_by} wants divorce'
-        send_wedding_mail(contract=contract_instance, title=title, body=body)
+        send_wedding_mail(contract=contract_instance, handler_type=self.TYPE, event_data=event_data)
 
