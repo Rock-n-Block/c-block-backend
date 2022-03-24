@@ -248,7 +248,7 @@ def new_wedding(request):
     else:
         serializer = WeddingSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
+    wedding = serializer.save()
 
     existing_emails = WeddingEmail.objects.filter(wedding_contract=wedding)
     if existing_emails:
@@ -258,7 +258,7 @@ def new_wedding(request):
     for email, address in partners_emails.items():
         logging.info(f'{email} - {address}')
         emails_objects_list.append(
-            WeddingEmail(wedding_contract=wedding, email=email, address=address)
+            WeddingEmail(wedding_contract=wedding, email=email, address=address.lower())
         )
 
     WeddingEmail.objects.bulk_create(emails_objects_list)
@@ -309,7 +309,7 @@ def new_token(request):
     for name, address in token_holders.items():
         logging.info(f'{name} - {address}')
         holders_object_list.append(
-            TokenHolder(token_contract=token, name=name, address=address)
+            TokenHolder(token_contract=token, name=name, address=address.lower())
         )
 
     TokenHolder.objects.bulk_create(holders_object_list)
