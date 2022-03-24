@@ -52,13 +52,15 @@ class WeddingContract(models.Model):
     owner = models.ManyToManyField(Profile)  # wedding contract have 2 owner
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+    decision_time_withdrawal = models.IntegerField(null=True, blank=True)
+    decision_time_divorce = models.IntegerField(null=True, blank=True)
 
 
-class WeddingEmails(models.Model):
+class WeddingEmail(models.Model):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
                                        related_name='mails', related_query_name='wedding_contract')
-    email = models.CharField(max_length=128, blank=False, help_text='Token holder name')
-    address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token holder address')
+    email = models.EmailField(blank=True, help_text='Partner email')
+    address = models.CharField(max_length=64, unique=False, blank=False, help_text='Partner address')
 
 
 class ProbateContract(models.Model):

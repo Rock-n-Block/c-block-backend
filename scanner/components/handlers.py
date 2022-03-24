@@ -9,7 +9,7 @@ from cblock.contracts.models import (
     LostKeyContract,
     CONTRACT_MODELS
 )
-from cblock.contracts.utils import send_wedding_mail
+from cblock.mails.services import send_wedding_mail
 
 
 class HandlerNewContractCrowdsale(HandlerABC):
@@ -61,11 +61,18 @@ class HandlerNewContractWedding(HandlerABC):
         owner_second_profile = self.get_owner(data.owner_second)
         self.logger.info(f'Owners addresses: {owner_first_profile.owner_address}, {owner_second_profile.owner_address}')
 
+        self.logger.info(f'Wedding decision times will be set, '
+                         f'withdrawal: {data.decision_time_withdrawal}, '
+                         f'divorce: {data.decision_time_divorce}'
+                         )
+
         wedding_contract, _ = WeddingContract.objects.update_or_create(
             tx_hash=data.tx_hash,
             defaults={
                 'address': data.contract_address,
-                'test_node': self.network.test
+                'test_node': self.network.test,
+                'decision_time_withdrawal': data.decision_time_withdrawal,
+                'decision_time_divorce': data.decision_time_divorce
             })
         wedding_contract.owner.add(owner_first_profile)
         wedding_contract.owner.add(owner_second_profile)
@@ -82,12 +89,14 @@ class HandlerNewContractLastwill(HandlerABC):
         owner_profile = self.get_owner(data.sender)
         self.logger.info(f'Owner address: {owner_profile.owner_address}')
 
+        self.logger.info(f"LastWill confirmation period will be set: {data.confirmation_period}")
         LastWillContract.objects.update_or_create(
             tx_hash=data.tx_hash,
             defaults={
                 'address': data.contract_address,
                 'owner': owner_profile,
                 'test_node': self.network.test,
+                'confirmation_period': data.confirmation_period
             })
 
 
@@ -101,12 +110,14 @@ class HandlerNewContractLostkey(HandlerABC):
         owner_profile = self.get_owner(data.sender)
         self.logger.info(f'Owner address: {owner_profile.owner_address}')
 
+        self.logger.info(f"LostKey confirmation period will be set: {data.confirmation_period}")
         LostKeyContract.objects.update_or_create(
             tx_hash=data.tx_hash,
             defaults={
                 'address': data.contract_address,
                 'owner': owner_profile,
                 'test_node': self.network.test,
+                'confirmation_period': data.confirmation_period
             })
 
 
@@ -156,7 +167,12 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
-        send_wedding_mail(contract=contract_instance, handler_type=self.TYPE)
+        send_wedding_mail(
+            contract=contract_instance,
+            email_type=self.TYPE,
+            proposed_by=self.get_owner(data.proposed_by),
+            mail_data=event_data
+        )
 
 
 class HandlerWeddingDivorceProposed(HandlerABC):
@@ -175,5 +191,9 @@ class HandlerWeddingDivorceProposed(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
-        send_wedding_mail(contract=contract_instance, handler_type=self.TYPE, event_data=event_data)
-
+        send_wedding_mail(
+            contract=contract_instance,
+            email_type=self.TYPE,
+            proposed_by=self.get_owner(data.proposed_by),
+            mail_data=event_data
+        )

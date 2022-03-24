@@ -104,22 +104,7 @@ EMAIL_TEXTS = {
         },
     },
     'wedding': {
-        'divorce_from_partner': {
-          'title': 'Divorce requested',
-          'body': """
-          Hello! 
-          
-          We would like to inform you that your Partner "{user_address}"  has requested a divorce. 
-          To approve or reject the divorce please visit  app.c-block.io/my-contracts . 
-          Contract will be executed if no confirmation during the next {days} days. 
-          If you approve the divorce, the funds will be divided equally between you and your partner. 
-          If you reject or ignore the divorce, the funds will be divided in accordance with the the initial % settings. 
-          If you have any questions please contact c-support@bitflex.app.
-
-          Best wishes, Bitflex Team
-          """
-        },
-        'divorce_to_partner': {
+        'divorce_proposed_from_partner': {
           'title': 'Divorce requested',
           'body': """
           Hello! 
@@ -128,6 +113,21 @@ EMAIL_TEXTS = {
           Please wait until your Partner approves or rejects the divorce.
            Contract will be executed if no confirmation during the next {days} days. 
            If you have any questions please contact c-support@bitflex.app.
+
+          Best wishes, Bitflex Team
+          """
+        },
+        'divorce_proposed_to_partner': {
+            'title': 'Divorce requested',
+            'body': """
+          Hello! 
+
+          We would like to inform you that your Partner "{user_address}"  has requested a divorce. 
+          To approve or reject the divorce please visit  app.c-block.io/my-contracts . 
+          Contract will be executed if no confirmation during the next {days} days. 
+          If you approve the divorce, the funds will be divided equally between you and your partner. 
+          If you reject or ignore the divorce, the funds will be divided in accordance with the the initial % settings. 
+          If you have any questions please contact c-support@bitflex.app.
 
           Best wishes, Bitflex Team
           """
@@ -156,7 +156,7 @@ EMAIL_TEXTS = {
 
           Best wishes, Bitflex Team"""
         },
-        'withdraw_requested': {
+        'withdraw_proposed': {
           'title': 'Funds withdrawal was requested',
           'body': """
           Hello! 

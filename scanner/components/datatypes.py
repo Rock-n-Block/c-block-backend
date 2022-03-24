@@ -16,16 +16,18 @@ class NewContractCrowdsale(NewContractWithType):
 class NewContractWedding(NewContractBase):
     owner_first: str
     owner_second: str
+    decision_time_withdrawal: int
+    decision_time_divorce: int
 
 
 @dataclass
 class NewContractLastWill(NewContractBase):
-    pass
+    confirmation_period: int
 
 
 @dataclass
 class NewContractLostKey(NewContractBase):
-    pass
+    confirmation_period: int
 
 
 @dataclass

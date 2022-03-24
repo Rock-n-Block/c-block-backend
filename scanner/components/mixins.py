@@ -114,17 +114,43 @@ class NewContractWeddingMixin(NewContractMixinBase):
             to_block=last_network_block
         )
 
+    def _parse_data_get_decision_times(self, event):
+        contract_address = event['args']['contractAddress'].lower()
+        contract = self.network.w3.eth.contract(
+            address=self.network.w3.toChecksumAddress(contract_address),
+            abi=WEDDING_ABI
+        )
+
+        return {
+            'withdrawal': int(contract.functions.decisionTimeWithdrawal().call()),
+            'divorce': int(contract.functions.decisionTimeDivorce().call()),
+        }
+
     def parse_data_new_contract_wedding(self, event) -> NewContractWedding:
+        decision_times = self._parse_data_get_decision_times(event)
         return NewContractWedding(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['args']['contractAddress'].lower(),
             owner_first=event['args']['firstPartner'].lower(),
-            owner_second=event['args']['secondPartner'].lower()
+            owner_second=event['args']['secondPartner'].lower(),
+            decision_time_withdrawal=decision_times.get('withdrawal'),
+            decision_time_divorce=decision_times.get('divorce')
         )
 
 
-class NewContractLastwillMixin(NewContractMixinBase):
+class NewContractProbateMixinBasae(NewContractMixinBase):
+    def _parse_data_get_confirmation_period(self, event):
+        contract_address = event['args']['contractAddress'].lower()
+        contract = self.network.w3.eth.contract(
+            address=self.network.w3.toChecksumAddress(contract_address),
+            abi=PROBATE_ABI
+        )
+
+        return int(contract.functions.CONFIRMATION_PERIOD().call())
+
+
+class NewContractLastwillMixin(NewContractProbateMixinBasae):
     def get_events_new_contract_lastwill(self, last_checked_block, last_network_block):
         return self._get_events_new_contract(
             contract_abi=PROBATE_FACTORY_ABI,
@@ -136,11 +162,12 @@ class NewContractLastwillMixin(NewContractMixinBase):
         return NewContractLastWill(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
-            contract_address=event['args']['contractAddress'].lower()
+            contract_address=event['args']['contractAddress'].lower(),
+            confirmation_period=self._parse_data_get_confirmation_period(event)
         )
 
 
-class NewContractLostkeyMixin(NewContractMixinBase):
+class NewContractLostkeyMixin(NewContractProbateMixinBasae):
     def get_events_new_contract_lostkey(self, last_checked_block, last_network_block):
         return self._get_events_new_contract(
             contract_abi=PROBATE_FACTORY_ABI,
@@ -152,7 +179,8 @@ class NewContractLostkeyMixin(NewContractMixinBase):
         return NewContractLostKey(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
-            contract_address=event['args']['contractAddress'].lower()
+            contract_address=event['args']['contractAddress'].lower(),
+            confirmation_period=self._parse_data_get_confirmation_period(event)
         )
 
 
