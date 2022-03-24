@@ -21,7 +21,7 @@ class MailToSend:
     recipients: List[str]
 
 
-def get_probate_text_type(contract: Any[LastWillContract, LostKeyContract]) -> str:
+def get_probate_text_type(contract: object) -> str:
     if contract.__class__.__name__ == 'LastWillContract':
         text_type = 'lastwill'
     else:
@@ -30,7 +30,7 @@ def get_probate_text_type(contract: Any[LastWillContract, LostKeyContract]) -> s
     return text_type
 
 
-def send_heirs_finished(contract: Any[LastWillContract, LostKeyContract],) -> None:
+def send_heirs_finished(contract) -> None:
     if not contract.mails or len(contract.mails) == 0:
         return
 
@@ -55,7 +55,7 @@ def send_heirs_finished(contract: Any[LastWillContract, LostKeyContract],) -> No
     )
 
 
-def send_owner_reminder(contract: Any[LastWillContract, LostKeyContract], owner_mail: str, days: int) -> None:
+def send_owner_reminder(contract, owner_mail: str, days: int) -> None:
 
     text_type = get_probate_text_type(contract)
     message_texts = EMAIL_TEXTS.get(text_type).get('reminder')
