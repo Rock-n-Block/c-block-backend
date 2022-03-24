@@ -103,7 +103,7 @@ class WeddingSerializer(serializers.ModelSerializer):
         for mail_address in instance.mails.all():
             wedding_mails[mail_address.email] = mail_address.address.lower()
 
-        representation['addresses'] = wedding_mails
+        representation['mails'] = wedding_mails
         return representation
 
 
