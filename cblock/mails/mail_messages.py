@@ -19,9 +19,9 @@ EMAIL_TEXTS = {
           Hello! 
 
           In accordance with the Will contract created on С-block platform by {user_address}, 
-          Funds will be  transferred to your address "{user_address}" 
-          To speed up the process, visit the app.c-block.io/earn and press 
-          Transfer button next to the {user_address}. Otherwise, you have to wait until other user performs this action.
+          Funds will be transferred to your address.
+          To speed up the process, visit the app.c-block.io/earn and press Transfer button next to the your address. 
+          Otherwise, you have to wait until other user performs this action.
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team
@@ -32,7 +32,7 @@ EMAIL_TEXTS = {
           'body': """Hello! 
           
           In accordance with the contract created on С-block platform, 
-          Funds were transferred to address "{user_address}" :  "{link_tx}"
+          Funds were transferred to backup address.
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team"""
@@ -43,7 +43,7 @@ EMAIL_TEXTS = {
           Hello! 
           
           In accordance with the Will contract created on С-block platform by {user_address}, 
-          Funds have been transferred to your address "{user_address}" :  "{link_tx}. 
+          Funds have been transferred to your address. 
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team
@@ -70,9 +70,9 @@ EMAIL_TEXTS = {
           Hello! 
 
           In accordance with the Lost Key contract created on С-block platform by {user_address}, 
-          Funds will be  transferred to your address "{user_address}". 
-          To speed up the process, visit the app.c-block.io/earn and press Transfer button next to the {user_address}. 
-          Otherwise, you have to wait until other user performs this action.  
+          Funds will be transferred to your address. 
+          To speed up the process, visit the app.c-block.io/earn and press Transfer button next to the your address. 
+          Otherwise, you have to wait until other user performs this action.
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team
@@ -84,7 +84,7 @@ EMAIL_TEXTS = {
           Hello! 
           
           In accordance with the contract created on С-block platform, 
-          Funds have been transferred to address "{user_address}" :  "{link_tx}"
+          Funds have been transferred to backup addresses.
           If you have any questions, please contact c-support@bitflex.app
           
           Best wishes, Bitflex Team
@@ -96,7 +96,7 @@ EMAIL_TEXTS = {
             Hello! 
             
             In accordance with the Lost Key contract created on С-block platform by {user_address}, 
-            Funds have been transferred to your address "{user_address}" :  "{link_tx}. 
+            Funds have been transferred to your address. 
             If you have any questions, please contact c-support@bitflex.app.
             
             Best wishes, Bitflex Team

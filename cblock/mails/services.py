@@ -30,11 +30,31 @@ def get_probate_text_type(contract: object) -> str:
     return text_type
 
 
-def send_heirs_finished(contract) -> None:
+def send_owner_reminder(contract, days: int) -> None:
+    if not contract.owner or not contract.owner_mail:
+        return
+
+    text_type = get_probate_text_type(contract)
+    message_texts = EMAIL_TEXTS.get(text_type).get('reminder')
+    title = message_texts.get('title')
+    body = message_texts.get('body').format(
+        days=days
+    )
+
+    send_mail(
+        title,
+        body,
+        from_email=config.email_host_user,
+        recipient_list=[contract.owner_mail],
+        fail_silently=True,
+    )
+
+
+def send_heirs_notification(contract) -> None:
     if not contract.mails or len(contract.mails) == 0:
         return
 
-    if not contract.owner:
+    if not contract.owner or not contract.owner_mail:
         return
 
     text_type = get_probate_text_type(contract)
@@ -55,22 +75,50 @@ def send_heirs_finished(contract) -> None:
     )
 
 
-def send_owner_reminder(contract, owner_mail: str, days: int) -> None:
+def send_probate_transferred(contract) -> None:
+    if not contract.mails or len(contract.mails) == 0:
+        return
 
+    if not contract.owner or not contract.owner_mail:
+        return
+
+    mails_to_send = []
     text_type = get_probate_text_type(contract)
-    message_texts = EMAIL_TEXTS.get(text_type).get('reminder')
-    title = message_texts.get('title')
-    body = message_texts.get('body').format(
-        days=days
+    to_owner_message = EMAIL_TEXTS.get(text_type).get('transferred_from_owner')
+
+    to_owner_title = to_owner_message.get('title')
+    to_owner_body = to_owner_message.get('body')
+
+    mails_to_send.append(
+        MailToSend(
+            title=to_owner_title,
+            body=to_owner_body,
+            recipients=[contract.owner_mail]
+        )
     )
 
-    send_mail(
-        title,
-        body,
-        from_email=config.email_host_user,
-        recipient_list=[owner_mail],
-        fail_silently=True,
+    to_heirs_message = EMAIL_TEXTS.get(text_type).get('transferred_to_heirs')
+    to_heirs_title = to_heirs_message.get('title')
+    to_heirs_body = to_heirs_message.get('body').format(
+        user_address=contract.owner.owner_address
     )
+
+    mails_to_send.append(
+        MailToSend(
+            title=to_heirs_title,
+            body=to_heirs_body,
+            recipients=[contract.mails]
+        )
+    )
+
+    for mail in mails_to_send:
+        send_mail(
+            mail.title,
+            mail.body,
+            from_email=config.email_host_user,
+            recipient_list=mail.recipients,
+            fail_silently=True,
+        )
 
 
 def send_wedding_mail(

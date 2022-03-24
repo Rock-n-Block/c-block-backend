@@ -5,6 +5,10 @@ from cblock.settings import config
 from contract_abi import PROBATE_ABI
 
 
+def get_web3(rpc_endpoint):
+    return Web3(Web3.HTTPProvider(rpc_endpoint))
+
+
 def check_terminated_contract(probates):
     """
     Check that contract is not terminated and change status if terminated

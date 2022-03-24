@@ -2,7 +2,7 @@ from apscheduler.schedulers.background import BlockingScheduler
 from django.core.management.base import BaseCommand
 
 from cblock.settings import config
-from cblock.scheduler.tasks import check_dead_wallets, check_and_send_notifications
+from cblock.scheduler.tasks import check_alive_wallets, check_and_send_notifications, check_dead_wallets
 
 
 class Command(BaseCommand):
@@ -14,9 +14,9 @@ class Command(BaseCommand):
 
         for network in config.networks:
 
-            # Dead wallets job
+            # Alive wallets job
             scheduler.add_job(
-                func=check_dead_wallets.send,
+                func=check_alive_wallets.send,
                 trigger='interval',
                 args=[
                     network.rpc_endpoint,
@@ -36,6 +36,16 @@ class Command(BaseCommand):
                     network.confirmation_checkpoints
                 ],
                 seconds=network.day_seconds,
+            )
+
+            scheduler.add_job(
+                func=check_dead_wallets.send,
+                trigger='interval',
+                args=[
+                    network.rpc_endpoint,
+                    network.test
+                ],
+                seconds=network.dead_wallets_check_interval,
             )
 
         self.stdout.write(self.style.NOTICE('Start scheduler'))
