@@ -162,9 +162,7 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
         data = self.scanner.parse_data_wedding_withdrawal_proposed(event_data)
         self.logger.info(f"New event: {data}")
 
-        wedding_model = CONTRACT_MODELS.get('wedding')
-
-        contract_filter = wedding_model.objects.filter(address=data.contract_address.lower())
+        contract_filter = WeddingContract.objects.filter(address=data.contract_address.lower())
         if contract_filter:
             contract_instance = contract_filter.get()
         else:
@@ -199,9 +197,7 @@ class HandlerWeddingWithdrawalStatusChanged(HandlerABC):
         data = self.scanner.parse_data_wedding_withdrawal_status_changed(event_data)
         self.logger.info(f"New event: {data}")
 
-        wedding_model = CONTRACT_MODELS.get('wedding')
-
-        contract_filter = wedding_model.objects.filter(address=data.contract_address.lower())
+        contract_filter = WeddingContract.objects.filter(address=data.contract_address.lower())
         if contract_filter:
             contract_instance = contract_filter.get()
         else:
@@ -241,9 +237,7 @@ class HandlerWeddingDivorceProposed(HandlerABC):
         data = self.scanner.parse_data_wedding_divorce_proposed(event_data)
         self.logger.info(f"New event: {data}")
 
-        wedding_model = CONTRACT_MODELS.get('wedding')
-
-        contract_filter = wedding_model.objects.filter(address=data.contract_address.lower())
+        contract_filter = WeddingContract.objects.filter(address=data.contract_address.lower())
         if contract_filter:
             contract_instance = contract_filter.get()
         else:
@@ -275,9 +269,7 @@ class HandlerWeddingDivorceStatusChanged(HandlerABC):
         data = self.scanner.parse_data_wedding_divorce_status_changed(event_data)
         self.logger.info(f"New event: {data}")
 
-        wedding_model = CONTRACT_MODELS.get('wedding')
-
-        contract_filter = wedding_model.objects.filter(address=data.contract_address.lower())
+        contract_filter = WeddingContract.objects.filter(address=data.contract_address.lower())
         if contract_filter:
             contract_instance = contract_filter.get()
         else:
@@ -313,13 +305,8 @@ class HandlerProbateFundsDistributed(HandlerABC):
         data = self.scanner.parse_data_probate_funds_distributed(event_data)
         self.logger.info(f"New event: {data}")
 
-        probate_models = {
-            'lastwill': CONTRACT_MODELS.get('lastwill'),
-            'lostkey': CONTRACT_MODELS.get('lostkey')
-        }
-
         contract_instance = None
-        for model in probate_models.values():
+        for model in [LastWillContract, LostKeyContract]:
             contract = model.objects.filter(address=data.contract_address.lower())
             if contract:
                 contract_instance = contract.get()
