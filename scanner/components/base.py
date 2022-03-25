@@ -54,7 +54,7 @@ class HandlerABC(ABC):
         self.logger = loggers.get(logger_name)
 
     def get_owner(self, owner_address: str) -> Optional[Profile]:
-        user, _ = Profile.objects.get_or_create(owner_address=owner_address)
+        user, _ = Profile.objects.get_or_create(owner_address=owner_address.lower())
         return user
 
     def get_file_handler(self, name):
@@ -135,4 +135,14 @@ class NewContract(NewContractBase):
 @dataclass
 class WeddingBase(EventBase):
     contract_address: str
+
+
+@dataclass
+class WeddingProposalBase(WeddingBase):
     proposed_by: str
+    proposed_at: int
+
+
+@dataclass
+class WeddingStatusBase(WeddingBase):
+    agreed: bool

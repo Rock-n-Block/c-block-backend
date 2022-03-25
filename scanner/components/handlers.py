@@ -1,15 +1,19 @@
 from copy import deepcopy
+from django.utils import timezone
 
 from scanner.components.base import HandlerABC
 from cblock.contracts.models import (
     CrowdsaleContract,
     TokenContract,
     WeddingContract,
+    WeddingWithdrawal,
+    WeddingDivorce,
+    WeddingActionStatus,
     LastWillContract,
     LostKeyContract,
     CONTRACT_MODELS
 )
-from cblock.mails.services import send_wedding_mail
+from cblock.mails.services import send_wedding_mail, send_probate_transferred
 
 
 class HandlerNewContractCrowdsale(HandlerABC):
@@ -167,11 +171,66 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
+        proposer = self.get_owner(data.proposed_by)
+
+        withdrawal = WeddingWithdrawal.objects.create(
+            wedding_contract=contract_instance,
+            status=WeddingActionStatus.PROPOSED,
+            proposed_at=timezone.datetime.utcfromtimestamp(data.proposed_at),
+            proposed_by=proposer,
+            receiver=self.get_owner(data.receiver),
+            token_address=data.token_address.lower(),
+            token_amount=int(data.token_amount)
+        )
+        withdrawal.save()
+
         send_wedding_mail(
             contract=contract_instance,
+            wedding_action=withdrawal,
             email_type=self.TYPE,
-            proposed_by=self.get_owner(data.proposed_by),
-            mail_data=event_data
+            day_seconds=self.network.day_seconds
+        )
+
+
+class HandlerWeddingWithdrawalStatusChanged(HandlerABC):
+    TYPE = "wedding_withdrawal_status_changed"
+
+    def save_event(self, event_data):
+        data = self.scanner.parse_data_wedding_withdrawal_status_changed(event_data)
+        self.logger.info(f"New event: {data}")
+
+        wedding_model = CONTRACT_MODELS.get('wedding')
+
+        contract_filter = wedding_model.objects.filter(address=data.contract_address.lower())
+        if contract_filter:
+            contract_instance = contract_filter.get()
+        else:
+            self.logger.info(f'No contract found with address {data.contract_address.lower()}')
+            return
+
+        withdrawal = contract_instance.withdraw.filter(
+            status=WeddingActionStatus.PROPOSED
+        ).order_by('-proposed_at').first()
+
+        if not withdrawal:
+            self.logger.info(f'No withdrawal found on contract address {data.contract_address.lower()}')
+            return
+
+        if data.agreed:
+            new_status = WeddingActionStatus.APPROVED
+            email_type = 'wedding_withdrawal_approved'
+        else:
+            new_status = WeddingActionStatus.REJECTED
+            email_type = 'wedding_withdrawal_rejected'
+
+        withdrawal.status = new_status
+        withdrawal.save()
+
+        send_wedding_mail(
+            contract=contract_instance,
+            wedding_action=withdrawal,
+            email_type=email_type,
+            day_seconds=self.network.day_seconds
         )
 
 
@@ -191,9 +250,86 @@ class HandlerWeddingDivorceProposed(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
+        proposer = self.get_owner(data.proposed_by)
+
+        divorce = WeddingDivorce.objects.create(
+            wedding_contract=contract_instance,
+            status=WeddingActionStatus.PROPOSED,
+            proposed_at=timezone.datetime.utcfromtimestamp(data.proposed_at),
+            proposed_by=proposer,
+        )
+        divorce.save()
+
         send_wedding_mail(
             contract=contract_instance,
+            wedding_action=divorce,
             email_type=self.TYPE,
-            proposed_by=self.get_owner(data.proposed_by),
-            mail_data=event_data
+            day_seconds=self.network.day_seconds,
         )
+
+
+class HandlerWeddingDivorceStatusChanged(HandlerABC):
+    TYPE = "wedding_divorce_status_changed"
+
+    def save_event(self, event_data):
+        data = self.scanner.parse_data_wedding_divorce_status_changed(event_data)
+        self.logger.info(f"New event: {data}")
+
+        wedding_model = CONTRACT_MODELS.get('wedding')
+
+        contract_filter = wedding_model.objects.filter(address=data.contract_address.lower())
+        if contract_filter:
+            contract_instance = contract_filter.get()
+        else:
+            self.logger.info(f'No contract found with address {data.contract_address.lower()}')
+            return
+
+        divorce = contract_instance.divorce.filter(
+            status=WeddingActionStatus.PROPOSED
+        ).order_by('-proposed_at').first()
+
+        if data.agreed:
+            new_status = WeddingActionStatus.APPROVED
+            email_type = 'wedding_divorce_approved'
+        else:
+            new_status = WeddingActionStatus.REJECTED
+            email_type = 'wedding_divorce_rejected'
+
+        divorce.status = new_status
+        divorce.save()
+
+        send_wedding_mail(
+            contract=contract_instance,
+            wedding_action=divorce,
+            email_type=email_type,
+            day_seconds=self.network.day_seconds
+        )
+
+
+class HandlerProbateFundsDistributed(HandlerABC):
+    TYPE = "probate_funds_distributed"
+
+    def save_event(self, event_data):
+        data = self.scanner.parse_data_probate_funds_distributed(event_data)
+        self.logger.info(f"New event: {data}")
+
+        probate_models = {
+            'lastwill': CONTRACT_MODELS.get('lastwill'),
+            'lostkey': CONTRACT_MODELS.get('lostkey')
+        }
+
+        contract_instance = None
+        for model in probate_models.values():
+            contract = model.objects.filter(address=data.contract_address.lower())
+            if contract:
+                contract_instance = contract.get()
+                break
+
+        if not contract_instance:
+            self.logger.info(f'No contract found with address {data.contract_address}')
+            return
+
+        self.logger.info(f'Funds are distributed on contract {data.contract_address}) to {data.backup_addresses}')
+
+        contract_instance.change_terminated()
+        send_probate_transferred(self.network.explorer_tx_uri, contract_instance, data)

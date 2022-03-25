@@ -1,5 +1,5 @@
 from web3 import Web3
-from typing import Any, List
+from typing import Any, List, Optional
 from dataclasses import dataclass
 
 from cblock.config import config
@@ -75,7 +75,7 @@ def send_heirs_notification(contract) -> None:
     )
 
 
-def send_probate_transferred(contract) -> None:
+def send_probate_transferred(explorer_uri, contract, event_data) -> None:
     if not contract.mails or len(contract.mails) == 0:
         return
 
@@ -87,7 +87,9 @@ def send_probate_transferred(contract) -> None:
     to_owner_message = EMAIL_TEXTS.get(text_type).get('transferred_from_owner')
 
     to_owner_title = to_owner_message.get('title')
-    to_owner_body = to_owner_message.get('body')
+    to_owner_body = to_owner_message.get('body').format(
+        link_tx=explorer_uri.format(link_tx=event_data.tx_hash)
+    )
 
     mails_to_send.append(
         MailToSend(
@@ -100,7 +102,8 @@ def send_probate_transferred(contract) -> None:
     to_heirs_message = EMAIL_TEXTS.get(text_type).get('transferred_to_heirs')
     to_heirs_title = to_heirs_message.get('title')
     to_heirs_body = to_heirs_message.get('body').format(
-        user_address=contract.owner.owner_address
+        user_address=contract.owner.owner_address,
+        link_tx=explorer_uri.format(link_tx=event_data.tx_hash)
     )
 
     mails_to_send.append(
@@ -123,37 +126,42 @@ def send_probate_transferred(contract) -> None:
 
 def send_wedding_mail(
         contract: WeddingContract,
+        wedding_action: Any,
         email_type: str,
-        proposed_by: Profile,
-        mail_data: Any
+        day_seconds: int,
+        # explorer_uri: str
 ) -> None:
 
     if not contract.mails.all() or len(list(contract.mails.all())) != 2:
         logger.info(f'No mails found for wedding contract {WeddingContract.__dict__}, skipping for now')
         return
 
+    withdraw_decision_days = int(contract.decision_time_divorce / day_seconds) if contract.decision_time_divorce else 0
+    divorce_decision_days = int(contract.decision_time_divorce / day_seconds) if contract.decision_time_divorce else 0
+
     wedding_emails = EMAIL_TEXTS.get('wedding')
+    message_subtype = email_type.split('_', 1)[-1]
 
     mails_to_send = []
 
-    if email_type == 'wedding_divorce_proposed':
+    if message_subtype == 'divorce_proposed':
         from_partner_message = wedding_emails.get('divorce_proposed_from_partner')
         to_partner_message = wedding_emails.get('divorce_proposed_to_partner')
 
         for partners_mail in contract.mails.all():
             other_partner = contract.mails.exclude(pk=partners_mail.pk).get()
 
-            if proposed_by.owner_address == partners_mail.address:
+            if wedding_action.proposed_by.owner_address == partners_mail.address:
                 message_title = from_partner_message.get('title')
                 message_body = from_partner_message.get('body').format(
                     user_address=other_partner.address,
-                    days=1
+                    days=divorce_decision_days
                 ),
             else:
                 message_title = to_partner_message.get('title')
                 message_body = to_partner_message.get('body').format(
                     user_address=other_partner.address,
-                    days=1
+                    days=divorce_decision_days
                 )
 
             recipients = [partners_mail.email]
@@ -167,31 +175,32 @@ def send_wedding_mail(
             )
 
     else:
-        to_partner_mail = contract.mails.exclude(address=proposed_by.owner_address).get()
+        to_partner_mail = contract.mails.exclude(address=wedding_action.proposed_by.owner_address).get()
         recipients = [to_partner_mail.email]
 
-        message_title = None
-        message_body = None
+        message_text = wedding_emails.get(message_subtype)
+        message_title = message_text.get('title')
 
-        if email_type == 'wedding_divorce_completed':
-            message_text = wedding_emails.get('divorce_completed')
-            message_title = message_text.get('title')
+        if message_subtype in ['divorce_approved', 'divorce_rejected']:
             message_body = message_text.get('body').format(
-                user_address=mail_data.receiver,
-                amount=mail_data.token_amount,
-                token_address=mail_data.token,
-                days=1
+                user_address=wedding_action.receiver.owner_address,
+                days=divorce_decision_days
             )
 
-        elif email_type == 'wedding_withdrawal_proposed':
-            message_text = wedding_emails.get('withdraw_proposed')
-            message_title = message_text.get('title')
+        elif message_subtype in [
+            'withdrawal_proposed',
+            'withrawal_rejected',
+            'withdrawal_approved'
+        ]:
             message_body = message_text.get('body').format(
-                user_address=mail_data.receiver,
-                amount=mail_data.token_amount,
-                token_address=mail_data.token,
-                days=1
+                user_address=wedding_action.receiver.owner_address,
+                amount=wedding_action.token_amount,
+                token_address=wedding_action.token,
+                days=withdraw_decision_days
             )
+        else:
+            logger.error(f'SEND WEDDING_MAIL: Cannot find specified message subtype: {message_subtype}')
+            return
 
         mails_to_send.append(
             MailToSend(

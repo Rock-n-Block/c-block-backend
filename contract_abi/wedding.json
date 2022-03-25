@@ -38,9 +38,28 @@
         "internalType": "address",
         "name": "proposedBy",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
     "name": "DivorceProposed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "agreed",
+        "type": "bool"
+      }
+    ],
+    "name": "DivorceStatus",
     "type": "event"
   },
   {
@@ -72,6 +91,25 @@
       }
     ],
     "name": "WithdrawalProposed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "agreed",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "executedBy",
+        "type": "address"
+      }
+    ],
+    "name": "WithdrawalStatus",
     "type": "event"
   },
   {

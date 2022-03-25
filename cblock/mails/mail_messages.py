@@ -32,7 +32,7 @@ EMAIL_TEXTS = {
           'body': """Hello! 
           
           In accordance with the contract created on С-block platform, 
-          Funds were transferred to backup address.
+          Funds were transferred to backup address: {link_tx}
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team"""
@@ -43,7 +43,7 @@ EMAIL_TEXTS = {
           Hello! 
           
           In accordance with the Will contract created on С-block platform by {user_address}, 
-          Funds have been transferred to your address. 
+          Funds have been transferred to your address: {link_tx}
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team
@@ -70,7 +70,7 @@ EMAIL_TEXTS = {
           Hello! 
 
           In accordance with the Lost Key contract created on С-block platform by {user_address}, 
-          Funds will be transferred to your address. 
+          Funds will be transferred to your address.:
           To speed up the process, visit the app.c-block.io/earn and press Transfer button next to the your address. 
           Otherwise, you have to wait until other user performs this action.
           If you have any questions, please contact c-support@bitflex.app
@@ -84,7 +84,7 @@ EMAIL_TEXTS = {
           Hello! 
           
           In accordance with the contract created on С-block platform, 
-          Funds have been transferred to backup addresses.
+          Funds have been transferred to backup addresses: {link_tx}
           If you have any questions, please contact c-support@bitflex.app
           
           Best wishes, Bitflex Team
@@ -96,7 +96,7 @@ EMAIL_TEXTS = {
             Hello! 
             
             In accordance with the Lost Key contract created on С-block platform by {user_address}, 
-            Funds have been transferred to your address. 
+            Funds have been transferred to your address: {link_tx} 
             If you have any questions, please contact c-support@bitflex.app.
             
             Best wishes, Bitflex Team
@@ -132,7 +132,7 @@ EMAIL_TEXTS = {
           Best wishes, Bitflex Team
           """
         },
-        'divorce_completed': {
+        'divorce_approved': {
           'title': 'Divorce was approved',
           'body': """
           Hello! 
@@ -156,12 +156,12 @@ EMAIL_TEXTS = {
 
           Best wishes, Bitflex Team"""
         },
-        'withdraw_proposed': {
+        'withdrawal_proposed': {
           'title': 'Funds withdrawal was requested',
           'body': """
           Hello! 
           
-          We would like to inform you that your Partner "{user_address}" has requested a withdrawal of {amount} {token_name}. 
+          We would like to inform you that your Partner "{user_address}" has requested a withdrawal of {amount} {token_address}. 
           To approve or reject the withdrwal please visit  app.c-block.io/my-contracts . 
           Contract will be executed if no confirmation during the next {days} days. 
           If you have any questions please contact c-support@bitflex.app.
@@ -169,24 +169,24 @@ EMAIL_TEXTS = {
           Best wishes, Bitflex Team
           """
         },
-        'withdraw_approved': {
+        'withdrawal_approved': {
           'title': 'Funds withdrawal was approved',
           'body': """
           Hello! 
           
-          We would like to inform you that your Partner "{user_address}" has approved the withdrawal of {amount} {token_name}.  
+          We would like to inform you that your Partner "{user_address}" has approved the withdrawal of {amount} {token_address}.  
           The funds were transferred to your address. 
           If you have any questions please contact c-support@bitflex.app.
 
           Best wishes, Bitflex Team
           """
         },
-        'withdraw_rejected': {
+        'withdrawal_rejected': {
           'title': 'Funds withdrawal was rejected',
           'body': """
           Hello! 
           
-          We would like to inform you that your Partner "{user_address}" has rejected the withdrawal of {amount} {token_name}. 
+          We would like to inform you that your Partner "{user_address}" has rejected the withdrawal of {amount} {token_address}. 
           If you have any questions please contact c-support@bitflex.app.
 
           Best wishes, Bitflex Team

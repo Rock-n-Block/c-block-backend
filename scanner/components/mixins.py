@@ -1,7 +1,8 @@
 from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 from typing import List
-from cblock.contracts.utils import get_contract_addresses
+from cblock.contracts.utils import get_contract_addresses, get_probates, get_weddings
+from cblock.contracts.models import WeddingContract, WeddingActionStatus, WeddingWithdrawal, WeddingDivorce
 
 from contract_abi import (
     CROWDSALE_FACTORY_ABI,
@@ -19,8 +20,11 @@ from scanner.components.datatypes import (
     NewContractLastWill,
     NewContractLostKey,
     WeddingWithdrawalProposed,
+    WeddingWithdrawalStatusChanged,
     WeddingDivorceProposed,
-    TransferOwnership
+    WeddingDivorceStatusChanged,
+    TransferOwnership,
+    ProbateFundsDistributed
 )
 
 
@@ -187,7 +191,7 @@ class NewContractLostkeyMixin(NewContractProbateMixinBasae):
 class TransferOwnershipMixin(EventMixinBase):
     def get_events_transfer_ownership(self, last_checked_block, last_network_block):
         return self._get_events_base(
-            contract_abi=PROBATE_ABI,
+            contract_abi=OWNABLE_ABI,
             event_name="OwnershipTransferred",
             from_block=last_checked_block,
             to_block=last_network_block
@@ -227,9 +231,25 @@ class WeddingEventdMixinBase(EventMixinBase):
         contract_addresses = get_contract_addresses(network.test)
         wedding_addresses = []
         if 'wedding' in contract_addresses.keys():
-            wedding_addresses = contract_addresses.pop('wedding')
+            wedding_addresses = contract_addresses.get('wedding')
 
         return wedding_addresses
+
+    def preload_contracts_wedding_pending_withrawal(self, network) -> List[str]:
+        pending_contracts = WeddingContract.objects.filter(
+            test_node=network.test,
+            withdraw__status=WeddingActionStatus.PROPOSED
+        )
+
+        return pending_contracts.values_list('address', flat=True)
+
+    def preload_contracts_wedding_pending_divorce(self, network) -> List[str]:
+        pending_contracts = WeddingContract.objects.filter(
+            test_node=network.test,
+            divorce__status=WeddingActionStatus.PROPOSED
+        )
+
+        return pending_contracts.values_list('address', flat=True)
 
 
 class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
@@ -248,11 +268,33 @@ class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
             token=event['args']['token'].lower(),
             receiver=event['args']['receiver'].lower(),
             token_amount=event['args']['amount'],
-            proposed_by=event['args']['proposedBy'].lower()
+            proposed_by=event['args']['proposedBy'].lower(),
+            proposed_at=int(event['timestamp'])
         )
 
     def preload_contracts_wedding_withdrawal_proposed(self, network) -> List[str]:
         return self.preload_contracts_wedding(network=network)
+
+
+class WeddingWithdrawalStatusChangedMixin(WeddingEventdMixinBase):
+    def get_events_wedding_withdrawal_status_changed(self, last_checked_block, last_network_block):
+        return self._get_events_wedding(
+            event_name="WithdrawalStatus",
+            last_checked_block=last_checked_block,
+            last_network_block=last_network_block
+        )
+
+    def parse_data_wedding_withdrawal_status_changed(self, event) -> WeddingWithdrawalStatusChanged:
+        return WeddingWithdrawalStatusChanged(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            contract_address=event['address'].lower(),
+            executed_by=event['args']['executedBy'].lower(),
+            agreed=event['args']['agreed']
+        )
+
+    def preload_contracts_wedding_withdrawal_status_changed(self, network) -> List[str]:
+        return self.preload_contracts_wedding_pending_withrawal(network=network)
 
 
 class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
@@ -268,10 +310,52 @@ class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['address'].lower(),
-            proposed_by=event['args']['proposedBy'].lower()
+            proposed_by=event['args']['proposedBy'].lower(),
+            timestamp=event['args']['timestamp']
         )
 
     def preload_contracts_wedding_divorce_proposed(self, network) -> List[str]:
         return self.preload_contracts_wedding(network=network)
 
 
+class WeddingDivorceStatusChangeddMixin(WeddingEventdMixinBase):
+    def get_events_wedding_divorce_status_changed(self, last_checked_block, last_network_block):
+        return self._get_events_wedding(
+            event_name="DivorceStatus",
+            last_checked_block=last_checked_block,
+            last_network_block=last_network_block
+        )
+
+    def parse_data_wedding_divorce_status_changed(self, event) -> WeddingDivorceStatusChanged:
+        return WeddingDivorceStatusChanged(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            contract_address=event['address'].lower(),
+            agreed=event['args']['agreed']
+        )
+
+    def preload_contracts_wedding_divorce_status_changed(self, network) -> List[str]:
+        return self.preload_contracts_wedding_pending_divorce(network=network)
+
+
+class ProbateFundsDistributedMixin(EventMixinBase):
+    def get_events_probate_funds_distributed(self, last_checked_block, last_network_block):
+        return self._get_events_base(
+            contract_abi=PROBATE_ABI,
+            event_name="FundsDistributed",
+            from_block=last_checked_block,
+            to_block=last_network_block
+        )
+
+    def parse_data_probate_funds_distributed(self, event) -> ProbateFundsDistributed:
+        return ProbateFundsDistributed(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            contract_address=event['address'].lower(),
+            backup_addresses=event['args']['backupAddresses']
+
+        )
+
+    def preload_contracts_probate_funds_distributed(self, network) -> List[str]:
+        contract_addresses = get_probates(dead=True, test_network=network.test)
+        return [contract.address for contract in contract_addresses]

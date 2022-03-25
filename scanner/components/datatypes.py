@@ -1,5 +1,11 @@
 from dataclasses import dataclass
-from scanner.components.base import EventBase, NewContractBase, NewContractWithType, WeddingBase
+from scanner.components.base import (
+    EventBase,
+    NewContractBase,
+    NewContractWithType,
+    WeddingProposalBase,
+    WeddingStatusBase
+)
 
 
 @dataclass
@@ -31,20 +37,34 @@ class NewContractLostKey(NewContractBase):
 
 
 @dataclass
-class WeddingWithdrawalProposed(WeddingBase):
+class TransferOwnership(EventBase):
+    contract_address: str
+    previous_owner: str
+    new_owner: str
+
+
+@dataclass
+class WeddingWithdrawalProposed(WeddingProposalBase):
     receiver: str
     token_amount: int
     token: str
 
 
 @dataclass
-class WeddingDivorceProposed(WeddingBase):
-    pass
+class WeddingWithdrawalStatusChanged(WeddingStatusBase):
+    executed_by: str
 
 
 @dataclass
-class TransferOwnership(EventBase):
-    contract_address: str
-    previous_owner: str
-    new_owner: str
+class WeddingDivorceProposed(WeddingProposalBase):
+    timestamp: int
 
+
+@dataclass
+class WeddingDivorceStatusChanged(WeddingStatusBase):
+    pass
+
+@dataclass
+class ProbateFundsDistributed(EventBase):
+    contract_address: str
+    backup_addresses: list

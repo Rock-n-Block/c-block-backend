@@ -7,7 +7,10 @@ from scanner.components.mixins import (
     NewContractLostkeyMixin,
     TransferOwnershipMixin,
     WeddingWithdrawalProposedMixin,
+    WeddingWithdrawalStatusChangedMixin,
     WeddingDivorceProposedMixin,
+    WeddingDivorceStatusChangeddMixin,
+    ProbateFundsDistributedMixin
 )
 
 
@@ -20,7 +23,10 @@ class Scanner(
     NewContractLostkeyMixin,
     TransferOwnershipMixin,
     WeddingWithdrawalProposedMixin,
-    WeddingDivorceProposedMixin
+    WeddingWithdrawalStatusChangedMixin,
+    WeddingDivorceProposedMixin,
+    WeddingDivorceStatusChangeddMixin,
+    ProbateFundsDistributedMixin
 ):
     def get_last_network_block(self) -> int:
         return self.network.w3.eth.blockNumber

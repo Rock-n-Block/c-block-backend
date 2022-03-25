@@ -1,6 +1,6 @@
 from web3 import Web3
 
-from cblock.contracts.models import CONTRACT_MODELS
+from cblock.contracts.models import CONTRACT_MODELS, LastWillContract, LostKeyContract, WeddingContract
 from cblock.settings import config
 from contract_abi import PROBATE_ABI
 
@@ -34,3 +34,18 @@ def get_contract_addresses(test) -> dict:
         contract_addresses[key] = [Web3.toChecksumAddress(address) for address in addresses]
 
     return contract_addresses
+
+
+def get_probates(dead: bool, test_network: bool):
+
+    lastwills = LastWillContract.objects.filter(dead=dead, test_node=test_network)\
+        .exclude(owner_mail=None, mails=None)
+    lostkeys = LostKeyContract.objects.filter(dead=dead, test_node=test_network)\
+        .exclude(owner_mail=None, mails=None)
+    contracts = list(lastwills) + list(lostkeys)
+
+    return contracts
+
+
+def get_weddings(test_network: bool):
+    return list(WeddingContract.objects.filter(test_node=test_network))

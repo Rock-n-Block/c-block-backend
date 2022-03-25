@@ -58,9 +58,49 @@ class WeddingContract(models.Model):
 
 class WeddingEmail(models.Model):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
-                                       related_name='mails', related_query_name='wedding_contract')
+                                         related_name='mails', related_query_name='wedding_contract')
     email = models.EmailField(blank=True, help_text='Partner email')
     address = models.CharField(max_length=64, unique=False, blank=False, help_text='Partner address')
+
+
+class WeddingActionStatus(models.TextChoices):
+    NOT_PROPOSED_YET = 'Not proposed yet'
+    PROPOSED = 'Proposed'
+    APPROVED = 'Approved'
+    REJECTED = 'Rejected'
+
+
+class WeddingAction(models.Model):
+    proposed_at = models.DateTimeField(blank=True, null=True, default=None)
+    status = models.CharField(
+        max_length=30,
+        choices=WeddingActionStatus.choices,
+        default=WeddingActionStatus.NOT_PROPOSED_YET
+    )
+
+    class Meta:
+        abstract = True
+
+
+class WeddingDivorce(WeddingAction):
+    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='divorce', related_query_name='wedding_contract')
+    proposed_by = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
+                                    related_name='divorce_proposer', related_query_name='wedding_divorce_proposer')
+
+    # def get_other_partner(self):
+    #     parners = self.wedding_contract.owner
+
+
+class WeddingWithdrawal(WeddingAction):
+    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='withdraw', related_query_name='wedding_contract')
+    receiver = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
+    token_address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
+    token_amount = models.DecimalField(max_digits=100, decimal_places=0, null=True, default=None)
+    proposed_by = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
+                                    related_name='withdraw_proposer', related_query_name='wedding_withdraw_proposer')
+    # token_name = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
 
 
 class ProbateContract(models.Model):
