@@ -5,7 +5,7 @@ from typing import Optional, Tuple, Any, List
 from django.utils import timezone
 
 from cblock.mails.services import send_heirs_notification, send_owner_reminder, send_probate_transferred
-from contract_abi import PROBATE_ABI
+from contract_abi import PROBATE_ABI, WEDDING_ABI
 from cblock.contracts.models import LastWillContract, LostKeyContract, WeddingContract
 from cblock.contracts.utils import get_web3
 from cblock import config
@@ -15,16 +15,16 @@ logger = logging.getLogger(__name__)
 
 def get_probates(dead: bool, test_network: bool):
 
-    alive_lastwills = LastWillContract.objects.filter(dead=dead, test_node=test_network)\
+    lastwills = LastWillContract.objects.filter(dead=dead, test_node=test_network)\
         .exclude(owner_mail=None, mails=None)
-    alive_lostkeys = LostKeyContract.objects.filter(dead=dead, test_node=test_network)\
+    lostkeys = LostKeyContract.objects.filter(dead=dead, test_node=test_network)\
         .exclude(owner_mail=None, mails=None)
-    alive_contracts = list(alive_lastwills) + list(alive_lostkeys)
+    contracts = list(lastwills) + list(lostkeys)
 
-    return alive_contracts
+    return contracts
 
 
-def get_active_wedding_contracts(test_network: bool):
+def get_weddings(test_network: bool):
     return list(WeddingContract.objects.filter(test_node=test_network))
 
 
@@ -46,7 +46,7 @@ def check_alive_wallets(rpc_endpoint: str, test_network: bool) -> None:
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
 
         if contract.functions.isLostKey().call() and not contract.functions.terminated().call():
-            logger.info(f'DEAD WALLETS: Send death notification to {alive_contract.owner_mail} '
+            logger.info(f'DEAD WALLETS: Send alive notification to {alive_contract.owner_mail} '
                         f'and {alive_contract.mails} (contract {alive_contract.address})')
             alive_contract.change_dead_status()
             send_heirs_notification(alive_contract)

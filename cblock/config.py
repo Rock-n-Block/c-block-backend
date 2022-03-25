@@ -13,6 +13,7 @@ class Network:
     name: str
     ws_endpoint: str
     rpc_endpoint: str
+    explorer_tx_uri: str
     token_factories: list
     crowdsale_factories: list
     lastwill_factories: list
