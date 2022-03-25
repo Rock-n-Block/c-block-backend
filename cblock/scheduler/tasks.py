@@ -80,7 +80,6 @@ def check_wedding_divorce_timed_out(
     w3 = get_web3(rpc_endpoint)
 
     for pending_wedding in pending_contracts:
-        contract = w3.eth.contract(address=w3.toChecksumAddress(pending_wedding.address), abi=WEDDING_ABI)
         divorce = pending_wedding.divorce.all().order_by('-proposed_at').first()
         deadline = divorce.proposed_at + timezone.timedelta(seconds=pending_wedding.decision_time_divorce)
         current_time = timezone.now()

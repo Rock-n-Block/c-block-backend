@@ -46,11 +46,9 @@ class Command(BaseCommand):
                     network.rpc_endpoint,
                     network.test,
                     network.day_seconds,
-                    network.confirmation_checkpoints
                 ],
                 seconds=network.day_seconds,
             )
-
 
         self.stdout.write(self.style.NOTICE('Start scheduler'))
         scheduler.start()
