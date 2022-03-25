@@ -18,8 +18,8 @@ EMAIL_TEXTS = {
             'body': """
           Hello! 
 
-          In accordance with the Will contract created on С-block platform by {user_address}, 
-          Funds will be transferred to your address.
+          In accordance with the Will contract created on С-block platform by {owner_address}, 
+          Funds will be transferred to your address {receiver_address}.
           To speed up the process, visit the app.c-block.io/earn and press Transfer button next to the your address. 
           Otherwise, you have to wait until other user performs this action.
           If you have any questions, please contact c-support@bitflex.app
@@ -32,7 +32,7 @@ EMAIL_TEXTS = {
           'body': """Hello! 
           
           In accordance with the contract created on С-block platform, 
-          Funds were transferred to backup address: {link_tx}
+          Funds were transferred to backup addresses: {backup_addresses} : {link_tx}
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team"""
@@ -42,8 +42,8 @@ EMAIL_TEXTS = {
           'body': """
           Hello! 
           
-          In accordance with the Will contract created on С-block platform by {user_address}, 
-          Funds have been transferred to your address: {link_tx}
+          In accordance with the Will contract created on С-block platform by {owner_address}, 
+          Funds have been transferred to your address: {receiver_address} : {link_tx}
           If you have any questions, please contact c-support@bitflex.app
 
           Best wishes, Bitflex Team
@@ -69,8 +69,8 @@ EMAIL_TEXTS = {
             'body': """
           Hello! 
 
-          In accordance with the Lost Key contract created on С-block platform by {user_address}, 
-          Funds will be transferred to your address.:
+          In accordance with the Lost Key contract created on С-block platform by {owner_address}, 
+          Funds will be transferred to your address {receiver_address}.
           To speed up the process, visit the app.c-block.io/earn and press Transfer button next to the your address. 
           Otherwise, you have to wait until other user performs this action.
           If you have any questions, please contact c-support@bitflex.app
@@ -84,7 +84,7 @@ EMAIL_TEXTS = {
           Hello! 
           
           In accordance with the contract created on С-block platform, 
-          Funds have been transferred to backup addresses: {link_tx}
+          Funds have been transferred to backup addresses: {backup_addresses} : {link_tx}
           If you have any questions, please contact c-support@bitflex.app
           
           Best wishes, Bitflex Team
@@ -95,8 +95,8 @@ EMAIL_TEXTS = {
             'body': """
             Hello! 
             
-            In accordance with the Lost Key contract created on С-block platform by {user_address}, 
-            Funds have been transferred to your address: {link_tx} 
+            In accordance with the Lost Key contract created on С-block platform by {owner_address}, 
+            Funds have been transferred to your address: {receiver_address} : {link_tx}
             If you have any questions, please contact c-support@bitflex.app.
             
             Best wishes, Bitflex Team
@@ -109,7 +109,7 @@ EMAIL_TEXTS = {
           'body': """
           Hello! 
           
-          We would like to inform you that you have requested the divorce with the Partner "{user_address}".  
+          We would like to inform you that you have requested the divorce with the Partner {proposer_address}.  
           Please wait until your Partner approves or rejects the divorce.
            Contract will be executed if no confirmation during the next {days} days. 
            If you have any questions please contact c-support@bitflex.app.
@@ -122,7 +122,7 @@ EMAIL_TEXTS = {
             'body': """
           Hello! 
 
-          We would like to inform you that your Partner "{user_address}"  has requested a divorce. 
+          We would like to inform you that your Partner "{proposer_address}"  has requested a divorce. 
           To approve or reject the divorce please visit  app.c-block.io/my-contracts . 
           Contract will be executed if no confirmation during the next {days} days. 
           If you approve the divorce, the funds will be divided equally between you and your partner. 
@@ -137,7 +137,7 @@ EMAIL_TEXTS = {
           'body': """
           Hello! 
           
-          We would like to inform you that your Partner "{user_address} has approved the divorce. 
+          We would like to inform you that your Partner "{nor_proposer_address} has approved the divorce. 
           The funds were divided equally and sent to both addresses. 
           
           If you have any questions please contact c-support@bitflex.app.
@@ -150,7 +150,7 @@ EMAIL_TEXTS = {
           'body': """
           Hello! 
           
-          We would like to inform you that your Partner "{user_address} has rejected the divorce. 
+          We would like to inform you that your Partner "{not_proposer_address} has rejected the divorce. 
           The funds were divided in accordance with initial % settings and sent to both addresses. 
           If you have any questions please contact c-support@bitflex.app.
 
