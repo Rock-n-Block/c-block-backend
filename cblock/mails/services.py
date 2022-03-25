@@ -145,7 +145,6 @@ def send_wedding_mail(
         logger.info(f'No mails found for wedding contract {WeddingContract.__dict__}, skipping for now')
         return
 
-    withdraw_decision_days = int(contract.decision_time_divorce / day_seconds) if contract.decision_time_divorce else 0
     divorce_decision_days = int(contract.decision_time_divorce / day_seconds) if contract.decision_time_divorce else 0
 
     wedding_emails = EMAIL_TEXTS.get('wedding')

@@ -3,9 +3,9 @@ import dramatiq
 
 from django.utils import timezone
 
-from cblock.mails.services import send_heirs_notification, send_owner_reminder, send_probate_transferred
-from contract_abi import PROBATE_ABI
-from cblock.contracts.utils import get_web3, get_probates
+from cblock.mails.services import send_heirs_notification, send_owner_reminder, send_wedding_mail
+from contract_abi import PROBATE_ABI, WEDDING_ABI
+from cblock.contracts.utils import get_web3, get_probates, get_weddings_pending_divorce
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +18,12 @@ def check_alive_wallets(rpc_endpoint: str, test_network: bool) -> None:
     :return: None
     """
     alive_contracts = get_probates(dead=False, test_network=test_network)
-    w3 = get_web3(rpc_endpoint)
 
     if len(alive_contracts) == 0:
         logger.info('DEAD WALLETS: No alive contracts to process')
         return
+
+    w3 = get_web3(rpc_endpoint)
 
     for alive_contract in alive_contracts:
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
@@ -42,11 +43,12 @@ def check_and_send_notifications(
         confirmation_checkpoints: list
 ) -> None:
     alive_contracts = get_probates(dead=False, test_network=test_network)
-    w3 = get_web3(rpc_endpoint)
 
     if len(alive_contracts) == 0:
         logger.info('NOTIFICATIONS: No alive contracts to process')
         return
+
+    w3 = get_web3(rpc_endpoint)
 
     for alive_contract in alive_contracts:
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
@@ -62,3 +64,31 @@ def check_and_send_notifications(
                         f'(contract {alive_contract.address})')
             send_owner_reminder(alive_contract, time_delta_days)
 
+
+@dramatiq.actor(max_retries=0)
+def check_wedding_divorce_timed_out(
+        rpc_endpoint: str,
+        test_network: bool,
+        day_seconds: int,
+) -> None:
+    pending_contracts = get_weddings_pending_divorce(test_network=test_network)
+
+    if len(pending_contracts) == 0:
+        logger.info('DIVORCE TIMEOUT CHECK: No pending contracts to process')
+        return
+
+    w3 = get_web3(rpc_endpoint)
+
+    for pending_wedding in pending_contracts:
+        contract = w3.eth.contract(address=w3.toChecksumAddress(pending_wedding.address), abi=WEDDING_ABI)
+        divorce = pending_wedding.divorce.all().order_by('-proposed_at').first()
+        deadline = divorce.proposed_at + timezone.timedelta(seconds=pending_wedding.decision_time_divorce)
+        current_time = timezone.now()
+
+        if current_time > deadline:
+            send_wedding_mail(
+                contract=pending_wedding,
+                wedding_action=divorce,
+                email_type='wedding_divorce_approved',
+                day_seconds=day_seconds
+            )

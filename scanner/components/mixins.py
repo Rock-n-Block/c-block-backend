@@ -1,8 +1,8 @@
 from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 from typing import List
-from cblock.contracts.utils import get_contract_addresses, get_probates, get_weddings
-from cblock.contracts.models import WeddingContract, WeddingActionStatus, WeddingWithdrawal, WeddingDivorce
+from cblock.contracts.utils import get_contract_addresses, get_probates
+from cblock.contracts.models import WeddingContract, WeddingActionStatus
 
 from contract_abi import (
     CROWDSALE_FACTORY_ABI,

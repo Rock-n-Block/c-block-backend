@@ -1,9 +1,14 @@
 from web3 import Web3
 
-from cblock.contracts.models import CONTRACT_MODELS, LastWillContract, LostKeyContract, WeddingContract
-from cblock.settings import config
 from contract_abi import PROBATE_ABI
-
+from cblock.settings import config
+from cblock.contracts.models import (
+    CONTRACT_MODELS,
+    LastWillContract,
+    LostKeyContract,
+    WeddingContract,
+    WeddingActionStatus
+)
 
 def get_web3(rpc_endpoint):
     return Web3(Web3.HTTPProvider(rpc_endpoint))
@@ -47,5 +52,6 @@ def get_probates(dead: bool, test_network: bool):
     return contracts
 
 
-def get_weddings(test_network: bool):
-    return list(WeddingContract.objects.filter(test_node=test_network))
+def get_weddings_pending_divorce(test_network: bool):
+    return WeddingContract.objects.filter(test_node=test_network, wedding_divorce__status=WeddingActionStatus.PROPOSED)
+
