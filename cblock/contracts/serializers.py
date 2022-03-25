@@ -28,16 +28,27 @@ class ProbateSerializer(serializers.ModelSerializer):
     class Meta:
         extra_kwargs = {
             'test_node': {'read_only': True},
-            'address': {'read_only': True}
+            'address': {'read_only': True},
+            'mails': {'read_only': True},
         }
             
-        fields = ('address', 'tx_hash', 'name', 'mails', 'owner_mail', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'owner_mail', 'test_node')
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        probate_mails = {}
+        logger.info(instance)
+        for mail_address in instance.mails.all():
+            probate_mails[mail_address.email] = mail_address.address.lower()
+
+        representation['mails'] = probate_mails
+        return representation
 
 
 class LastWillSerializer(ProbateSerializer):

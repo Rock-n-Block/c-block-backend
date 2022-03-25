@@ -14,7 +14,9 @@ from cblock.contracts.models import (
     LostKeyContract,
     CrowdsaleContract,
     WeddingContract,
-    WeddingEmail
+    WeddingEmail,
+    LastWillEmail,
+    LostKeyEmail
 )
 from cblock.contracts.serializers import (
     TokenSerializer,
@@ -125,8 +127,12 @@ Views for create new user contract_abi
         properties={
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
-                                        items=openapi.TYPE_STRING),
+            'mails': openapi.Schema(type=openapi.TYPE_OBJECT,
+                                    properties={
+                                            'email': openapi.Schema(type=openapi.TYPE_STRING,
+                                                                    description='User address'),
+                                            }
+                                    ),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
         },
         required=['tx_hash', 'name', 'mails', 'owner_mail']
@@ -139,13 +145,31 @@ def new_lastwill(request):
     """
     Create new probate contract
     """
+    heirs_emails = request.data.pop('mails')
+
+    if len(heirs_emails) == 0:
+        return Response(data={'Error': 'Requwst does not contain "mails" field'}, status=HTTP_400_BAD_REQUEST)
+
     probate = LastWillContract.objects.filter(tx_hash=request.data['tx_hash'])
     if probate.exists():
         serializer = LastWillSerializer(probate[0], data=request.data)
     else:
         serializer = LastWillSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
+    probate = serializer.save()
+
+    existing_emails = LastWillEmail.objects.filter(probate_contract=probate)
+    if existing_emails:
+        existing_emails.delete()
+
+    emails_objects_list = []
+    for email, address in heirs_emails.items():
+        logging.info(f'{email} - {address}')
+        emails_objects_list.append(
+            LastWillEmail(probate_contract=probate, email=email, address=address.lower())
+        )
+
+    LastWillEmail.objects.bulk_create(emails_objects_list)
 
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 
@@ -158,8 +182,12 @@ def new_lastwill(request):
         properties={
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='Owner wallet address'),
-            'mails': openapi.Schema(type=openapi.TYPE_ARRAY, description='Heirs mail list(max 4)',
-                                        items=openapi.TYPE_STRING),
+            'mails': openapi.Schema(type=openapi.TYPE_OBJECT,
+                                    properties={
+                                            'email': openapi.Schema(type=openapi.TYPE_STRING,
+                                                                    description='User address'),
+                                            }
+                                    ),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
         },
         required=['tx_hash', 'name', 'mails', 'owner_mail']
@@ -172,13 +200,31 @@ def new_lostkey(request):
     """
     Create new probate contract
     """
+    heirs_emails = request.data.pop('mails')
+
+    if len(heirs_emails) == 0:
+        return Response(data={'Error': 'Requwst does not contain "mails" field'}, status=HTTP_400_BAD_REQUEST)
+
     probate = LostKeyContract.objects.filter(tx_hash=request.data['tx_hash'])
     if probate.exists():
         serializer = LostKeySerializer(probate[0], data=request.data)
     else:
         serializer = LostKeySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
+    probate = serializer.save()
+
+    existing_emails = LostKeyEmail.objects.filter(probate_contract=probate)
+    if existing_emails:
+        existing_emails.delete()
+
+    emails_objects_list = []
+    for email, address in heirs_emails.items():
+        logging.info(f'{email} - {address}')
+        emails_objects_list.append(
+            LostKeyEmail(probate_contract=probate, email=email, address=address.lower())
+        )
+
+    LostKeyEmail.objects.bulk_create(emails_objects_list)
 
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
 

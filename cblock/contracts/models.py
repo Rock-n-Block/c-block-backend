@@ -56,13 +56,6 @@ class WeddingContract(models.Model):
     decision_time_divorce = models.IntegerField(null=True, blank=True)
 
 
-class WeddingEmail(models.Model):
-    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
-                                         related_name='mails', related_query_name='wedding_contract')
-    email = models.EmailField(blank=True, help_text='Partner email')
-    address = models.CharField(max_length=64, unique=False, blank=False, help_text='Partner address')
-
-
 class WeddingActionStatus(models.TextChoices):
     NOT_PROPOSED_YET = 'Not proposed yet'
     PROPOSED = 'Proposed'
@@ -84,7 +77,7 @@ class WeddingAction(models.Model):
 
 class WeddingDivorce(WeddingAction):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
-                                         related_name='divorce', related_query_name='wedding_contract')
+                                         related_name='divorce', related_query_name='wedding_divorce')
     proposed_by = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                                     related_name='divorce_proposer', related_query_name='wedding_divorce_proposer')
 
@@ -94,7 +87,7 @@ class WeddingDivorce(WeddingAction):
 
 class WeddingWithdrawal(WeddingAction):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
-                                         related_name='withdraw', related_query_name='wedding_contract')
+                                         related_name='withdraw', related_query_name='wedding_withdrawal')
     receiver = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
     token_address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
     token_amount = models.DecimalField(max_digits=100, decimal_places=0, null=True, default=None)
@@ -109,7 +102,7 @@ class ProbateContract(models.Model):
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
-    mails = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
+    # mails = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
     terminated = models.BooleanField(default=False, help_text='Terminated contract or not')
     owner_mail = models.EmailField(blank=True)
@@ -137,6 +130,29 @@ class LastWillContract(ProbateContract):
 class LostKeyContract(ProbateContract):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
                               related_name='lostkey_owner', related_query_name='lostkeys_owner')
+
+
+class EmailAddressLinkAbstract(models.Model):
+    email = models.EmailField(blank=True, help_text='Email')
+    address = models.CharField(max_length=64, unique=False, blank=False, help_text='address')
+
+    class Meta:
+        abstract = True
+
+
+class LastWillEmail(EmailAddressLinkAbstract):
+    probate_contract = models.ForeignKey(LastWillContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='mails', related_query_name='contracr_mails')
+
+
+class LostKeyEmail(EmailAddressLinkAbstract):
+    probate_contract = models.ForeignKey(LostKeyContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='mails', related_query_name='contracr_mails')
+
+
+class WeddingEmail(EmailAddressLinkAbstract):
+    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='mails', related_query_name='contracr_mails')
 
 
 CONTRACT_MODELS = {
