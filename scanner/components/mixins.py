@@ -238,7 +238,7 @@ class WeddingEventdMixinBase(EventMixinBase):
     def preload_contracts_wedding_pending_withrawal(self, network) -> List[str]:
         pending_contracts = WeddingContract.objects.filter(
             test_node=network.test,
-            withdraw__status=WeddingActionStatus.PROPOSED
+            wedding_withdraw__status=WeddingActionStatus.PROPOSED
         )
 
         return pending_contracts.values_list('address', flat=True)
@@ -246,7 +246,7 @@ class WeddingEventdMixinBase(EventMixinBase):
     def preload_contracts_wedding_pending_divorce(self, network) -> List[str]:
         pending_contracts = WeddingContract.objects.filter(
             test_node=network.test,
-            divorce__status=WeddingActionStatus.PROPOSED
+            wedding_divorce__status=WeddingActionStatus.PROPOSED
         )
 
         return pending_contracts.values_list('address', flat=True)

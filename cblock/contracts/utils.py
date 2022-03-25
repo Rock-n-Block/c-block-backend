@@ -39,9 +39,9 @@ def get_contract_addresses(test) -> dict:
 def get_probates(dead: bool, test_network: bool):
 
     lastwills = LastWillContract.objects.filter(dead=dead, test_node=test_network)\
-        .exclude(owner_mail=None, mails=None)
+        .exclude(owner_mail=None, contract_mails=None)
     lostkeys = LostKeyContract.objects.filter(dead=dead, test_node=test_network)\
-        .exclude(owner_mail=None, mails=None)
+        .exclude(owner_mail=None, contract_mails=None)
     contracts = list(lastwills) + list(lostkeys)
 
     return contracts

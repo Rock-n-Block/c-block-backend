@@ -87,7 +87,7 @@ class WeddingDivorce(WeddingAction):
 
 class WeddingWithdrawal(WeddingAction):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
-                                         related_name='withdraw', related_query_name='wedding_withdrawal')
+                                         related_name='withdraw', related_query_name='wedding_withdraw')
     receiver = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
     token_address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
     token_amount = models.DecimalField(max_digits=100, decimal_places=0, null=True, default=None)
@@ -142,17 +142,17 @@ class EmailAddressLinkAbstract(models.Model):
 
 class LastWillEmail(EmailAddressLinkAbstract):
     probate_contract = models.ForeignKey(LastWillContract, on_delete=models.CASCADE, null=True, default=None,
-                                         related_name='mails', related_query_name='contracr_mails')
+                                         related_name='mails', related_query_name='contract_mails')
 
 
 class LostKeyEmail(EmailAddressLinkAbstract):
     probate_contract = models.ForeignKey(LostKeyContract, on_delete=models.CASCADE, null=True, default=None,
-                                         related_name='mails', related_query_name='contracr_mails')
+                                         related_name='mails', related_query_name='contract_mails')
 
 
 class WeddingEmail(EmailAddressLinkAbstract):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
-                                         related_name='mails', related_query_name='contracr_mails')
+                                         related_name='mails', related_query_name='contract_mails')
 
 
 CONTRACT_MODELS = {

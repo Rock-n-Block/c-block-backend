@@ -204,7 +204,7 @@ class HandlerWeddingWithdrawalStatusChanged(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
-        withdrawal = contract_instance.withdraw.filter(
+        withdrawal = contract_instance.wedding_withdraw.filter(
             status=WeddingActionStatus.PROPOSED
         ).order_by('-proposed_at').first()
 
@@ -276,7 +276,7 @@ class HandlerWeddingDivorceStatusChanged(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address.lower()}')
             return
 
-        divorce = contract_instance.divorce.filter(
+        divorce = contract_instance.wedding_divorce.filter(
             status=WeddingActionStatus.PROPOSED
         ).order_by('-proposed_at').first()
 
