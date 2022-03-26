@@ -237,6 +237,7 @@ class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
         )
 
     def parse_data_wedding_withdrawal_proposed(self, event) -> WeddingWithdrawalProposed:
+        block_timestamp = self.network.w3.eth.get_block(event['blockNumber'])['timestamp']
         return WeddingWithdrawalProposed(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
@@ -245,7 +246,7 @@ class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
             receiver=event['args']['receiver'].lower(),
             token_amount=event['args']['amount'],
             proposed_by=event['args']['proposedBy'].lower(),
-            proposed_at=int(event['timestamp'])
+            proposed_at=int(block_timestamp)
         )
 
     def preload_contracts_wedding_withdrawal_proposed(self, network) -> List[str]:
