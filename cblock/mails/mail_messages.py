@@ -138,7 +138,7 @@ Best wishes, Bitflex Team
           'body': """
 Hello! 
 
-We would like to inform you that your Partner "{nor_proposer_address}" has approved the divorce. 
+We would like to inform you that your Partner "{not_proposer_address}" has approved the divorce. 
 The funds were divided equally and sent to both addresses. 
 
 If you have any questions please contact c-support@bitflex.app.
