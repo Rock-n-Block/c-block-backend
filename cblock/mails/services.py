@@ -197,7 +197,7 @@ def send_wedding_mail(
 
         elif message_subtype in [
             'withdrawal_proposed',
-            'withrawal_rejected',
+            'withrdawal_rejected',
             'withdrawal_approved'
         ]:
             message_kwargs = {
