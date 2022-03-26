@@ -215,6 +215,10 @@ class HandlerWeddingWithdrawalStatusChanged(HandlerABC):
             self.logger.info(f'No withdrawal found on contract address {data.contract_address.lower()}')
             return
 
+        if withdrawal.status_change_tx_hash:
+            self.logger.info(f'Already processed tx {withdrawal.status_change_tx_hash}')
+            return
+
         if data.agreed:
             new_status = WeddingActionStatus.APPROVED
             email_type = 'wedding_withdrawal_approved'
@@ -223,6 +227,7 @@ class HandlerWeddingWithdrawalStatusChanged(HandlerABC):
             email_type = 'wedding_withdrawal_rejected'
 
         withdrawal.status = new_status
+        withdrawal.status_change_tx_hash = data.tx_hash
         withdrawal.save()
 
         send_wedding_mail(
@@ -285,6 +290,14 @@ class HandlerWeddingDivorceStatusChanged(HandlerABC):
             status=WeddingActionStatus.PROPOSED
         ).order_by('-proposed_at').first()
 
+        if not divorce:
+            self.logger.info(f'No divorce model found {contract_instance.address}')
+            return
+
+        if divorce.status_change_tx_hash:
+            self.logger.info(f'Already processed tx {divorce.status_change_tx_hash}')
+            return
+
         if data.agreed:
             new_status = WeddingActionStatus.APPROVED
             email_type = 'wedding_divorce_approved'
@@ -293,6 +306,7 @@ class HandlerWeddingDivorceStatusChanged(HandlerABC):
             email_type = 'wedding_divorce_rejected'
 
         divorce.status = new_status
+        divorce.status_change_tx_hash = data.tx_hash
         divorce.save()
 
         send_wedding_mail(
@@ -321,7 +335,13 @@ class HandlerProbateFundsDistributed(HandlerABC):
             self.logger.info(f'No contract found with address {data.contract_address}')
             return
 
+        if contract_instance.distribution_tx_hash:
+            self.logger.info(f'Already processed funds distribution {contract_instance.distribution_tx_hash}')
+            return
+
         self.logger.info(f'Funds are distributed on contract {data.contract_address}) to {data.backup_addresses}')
 
         contract_instance.change_terminated()
+        contract_instance.distribution_tx_hash = data.tx_hash
+        contract_instance.save()
         send_probate_transferred(self.network.explorer_tx_uri, contract_instance, data)
