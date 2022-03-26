@@ -71,7 +71,7 @@ class WeddingAction(models.Model):
         choices=WeddingActionStatus.choices,
         default=WeddingActionStatus.NOT_PROPOSED_YET
     )
-    status_change_tx_hash = models.CharField(max_length=128, unique=True, default=None, blank=True,
+    status_change_tx_hash = models.CharField(max_length=128, unique=True, default=None, blank=True, null=True,
                                              help_text='Status change transaction hash')
 
     class Meta:
@@ -113,7 +113,7 @@ class ProbateContract(models.Model):
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
     confirmation_period = models.IntegerField(null=True, blank=True)
 
-    distribution_tx_hash = models.CharField(max_length=128, unique=True, default=None, blank=True,
+    distribution_tx_hash = models.CharField(max_length=128, unique=True, default=None, blank=True, null=True,
                                             help_text='Distribution transaction hash')
 
     class Meta:
