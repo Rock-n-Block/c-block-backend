@@ -145,6 +145,7 @@ def send_wedding_mail(
         logger.info(f'No mails found for wedding contract {WeddingContract.__dict__}, skipping for now')
         return
 
+    withdrawal_decision_days = int(contract.decision_time_withdrawal / day_seconds) if contract.decision_time_withdrawal else 0
     divorce_decision_days = int(contract.decision_time_divorce / day_seconds) if contract.decision_time_divorce else 0
 
     wedding_emails = EMAIL_TEXTS.get('wedding')
@@ -199,11 +200,16 @@ def send_wedding_mail(
             'withrawal_rejected',
             'withdrawal_approved'
         ]:
-            message_body = message_text.get('body').format(
-                user_address=wedding_action.receiver.owner_address,
-                amount=wedding_action.token_amount,
-                token_address=wedding_action.token_address,
-            )
+            message_kwargs = {
+                'user_address': wedding_action.receiver.owner_address,
+                'amount': wedding_action.token_amount,
+                'token_address': wedding_action.token_address,
+            }
+
+            if message_subtype == 'withdrawal_proposed':
+                message_kwargs['days'] = withdrawal_decision_days
+
+            message_body = message_text.get('body').format(**message_kwargs)
         else:
             logger.error(f'SEND WEDDING_MAIL: Cannot find specified message subtype: {message_subtype}')
             return
