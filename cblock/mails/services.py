@@ -202,7 +202,7 @@ def send_wedding_mail(
             message_body = message_text.get('body').format(
                 user_address=wedding_action.receiver.owner_address,
                 amount=wedding_action.token_amount,
-                token_address=wedding_action.token,
+                token_address=wedding_action.token_address,
             )
         else:
             logger.error(f'SEND WEDDING_MAIL: Cannot find specified message subtype: {message_subtype}')
