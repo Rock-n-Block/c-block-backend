@@ -51,3 +51,9 @@ pull_docker:
 	$(compose) pull
 
 pull: pull_git pull_docker
+
+update: down
+	pull
+	make_all_migrations
+	migrate_all
+	up

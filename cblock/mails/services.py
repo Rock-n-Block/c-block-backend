@@ -168,7 +168,7 @@ def send_wedding_mail(
             else:
                 message_title = to_partner_message.get('title')
                 message_body = to_partner_message.get('body').format(
-                    user_address=other_partner.address,
+                    proposer_address=other_partner.address,
                     days=divorce_decision_days
                 )
 
