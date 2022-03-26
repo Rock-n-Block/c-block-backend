@@ -32,13 +32,20 @@ def check_terminated_contract(probates):
     return probates.filter(terminated=False)
 
 
+def rewrap_addresses_to_checksum(addresses):
+    return [Web3.toChecksumAddress(address) for address in addresses]
+
+
 def get_contract_addresses(test) -> dict:
     contract_addresses = {}
     for key, model in CONTRACT_MODELS.items():
         addresses = model.objects.filter(test_node=test).values_list('address', flat=True)
-        contract_addresses[key] = [Web3.toChecksumAddress(address) for address in addresses]
+        contract_addresses[key] = rewrap_addresses_to_checksum(addresses)
 
     return contract_addresses
+
+
+
 
 
 def get_probates(dead: bool, test_network: bool):

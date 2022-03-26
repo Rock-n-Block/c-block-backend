@@ -1,7 +1,7 @@
 from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 from typing import List
-from cblock.contracts.utils import get_contract_addresses, get_probates
+from cblock.contracts.utils import get_contract_addresses, get_probates, rewrap_addresses_to_checksum
 from cblock.contracts.models import WeddingContract, WeddingActionStatus
 
 from contract_abi import (
@@ -241,7 +241,8 @@ class WeddingEventdMixinBase(EventMixinBase):
             wedding_withdraw__status=WeddingActionStatus.PROPOSED
         )
 
-        return pending_contracts.values_list('address', flat=True)
+        addresses = pending_contracts.values_list('address', flat=True)
+        return rewrap_addresses_to_checksum(addresses)
 
     def preload_contracts_wedding_pending_divorce(self, network) -> List[str]:
         pending_contracts = WeddingContract.objects.filter(
@@ -249,7 +250,8 @@ class WeddingEventdMixinBase(EventMixinBase):
             wedding_divorce__status=WeddingActionStatus.PROPOSED
         )
 
-        return pending_contracts.values_list('address', flat=True)
+        addresses = pending_contracts.values_list('address', flat=True)
+        return rewrap_addresses_to_checksum(addresses)
 
 
 class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
@@ -358,4 +360,4 @@ class ProbateFundsDistributedMixin(EventMixinBase):
 
     def preload_contracts_probate_funds_distributed(self, network) -> List[str]:
         contract_addresses = get_probates(dead=True, test_network=network.test)
-        return [contract.address for contract in contract_addresses]
+        return rewrap_addresses_to_checksum([contract.address for contract in contract_addresses])
