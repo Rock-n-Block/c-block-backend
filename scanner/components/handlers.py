@@ -179,7 +179,7 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
                 'proposed_at': timezone.datetime.utcfromtimestamp(data.proposed_at),
                 'proposed_by': proposer,
                 'receiver': self.get_owner(data.receiver),
-                'token_address': data.token_address.lower(),
+                'token_address': data.token.lower(),
                 'token_amount': int(data.token_amount)
 
             })
