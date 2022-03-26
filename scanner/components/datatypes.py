@@ -57,7 +57,7 @@ class WeddingWithdrawalStatusChanged(WeddingStatusBase):
 
 @dataclass
 class WeddingDivorceProposed(WeddingProposalBase):
-    timestamp: int
+    pass
 
 
 @dataclass

@@ -311,7 +311,7 @@ class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
             sender=self._parse_data_get_sender(event),
             contract_address=event['address'].lower(),
             proposed_by=event['args']['proposedBy'].lower(),
-            timestamp=event['args']['timestamp']
+            proposed_at=int(event['args']['timestamp'])
         )
 
     def preload_contracts_wedding_divorce_proposed(self, network) -> List[str]:

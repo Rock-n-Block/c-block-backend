@@ -42,7 +42,7 @@ ps:
 	$(compose) ps -a $(service)
 
 logs:
-	$(compose) logs --timestamps -f $(service)
+	$(compose) logs --timestamps --tail $(tail) -f $(service)
 
 pull_git:
 	git pull origin ${git branch --show-current}
