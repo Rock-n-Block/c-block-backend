@@ -1,7 +1,7 @@
 include .env
 compose_file := docker-compose.yaml
 compose := docker-compose -f $(compose_file)
-tail: = 1000
+tail := 1000
 
 build:
 	$(compose) build --parallel
