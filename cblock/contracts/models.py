@@ -91,7 +91,8 @@ class WeddingDivorce(WeddingAction):
 class WeddingWithdrawal(WeddingAction):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
                                          related_name='withdraw', related_query_name='wedding_withdraw')
-    receiver = models.CharField(max_length=64, unique=False, blank=False, help_text='Receiver address')
+    receiver = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
+                                    related_name='withdraw_receiver', related_query_name='wedding_withdraw_receiver')
     token_address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
     token_amount = models.DecimalField(max_digits=100, decimal_places=0, null=True, default=None)
     proposed_by = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
