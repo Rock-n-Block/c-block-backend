@@ -64,6 +64,7 @@ class WeddingActionStatus(models.TextChoices):
 
 
 class WeddingAction(models.Model):
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
     proposed_at = models.DateTimeField(blank=True, null=True, default=None)
     status = models.CharField(
         max_length=30,

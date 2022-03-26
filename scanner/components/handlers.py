@@ -171,15 +171,18 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
 
         proposer = self.get_owner(data.proposed_by)
 
-        withdrawal = WeddingWithdrawal.objects.create(
+        withdrawal, _ = WeddingWithdrawal.objects.update_or_create(
             wedding_contract=contract_instance,
-            status=WeddingActionStatus.PROPOSED,
-            proposed_at=timezone.datetime.utcfromtimestamp(data.proposed_at),
-            proposed_by=proposer,
-            receiver=self.get_owner(data.receiver),
-            token_address=data.token_address.lower(),
-            token_amount=int(data.token_amount)
-        )
+            tx_hash=data.tx_hash,
+            defaults={
+                'status': WeddingActionStatus.PROPOSED,
+                'proposed_at': timezone.datetime.utcfromtimestamp(data.proposed_at),
+                'proposed_by': proposer,
+                'receiver': self.get_owner(data.receiver),
+                'token_address': data.token_address.lower(),
+                'token_amount': int(data.token_amount)
+
+            })
         withdrawal.save()
 
         send_wedding_mail(
@@ -246,12 +249,14 @@ class HandlerWeddingDivorceProposed(HandlerABC):
 
         proposer = self.get_owner(data.proposed_by)
 
-        divorce = WeddingDivorce.objects.create(
+        divorce, _ = WeddingDivorce.objects.update_or_create(
             wedding_contract=contract_instance,
-            status=WeddingActionStatus.PROPOSED,
-            proposed_at=timezone.datetime.utcfromtimestamp(data.proposed_at),
-            proposed_by=proposer,
-        )
+            tx_hash=data.tx_hash,
+            defaults={
+                'status': WeddingActionStatus.PROPOSED,
+                'proposed_at': timezone.datetime.utcfromtimestamp(data.proposed_at),
+                'proposed_by': proposer,
+            })
         divorce.save()
 
         send_wedding_mail(
