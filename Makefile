@@ -52,8 +52,12 @@ pull_docker:
 
 pull: pull_git pull_docker
 
-update: down
+update_migrate: down
 	pull
 	make_all_migrations
 	migrate_all
+	up
+
+update: down
+	pull
 	up
