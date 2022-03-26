@@ -176,7 +176,7 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
             tx_hash=data.tx_hash,
             defaults={
                 'status': WeddingActionStatus.PROPOSED,
-                'proposed_at': timezone.datetime.utcfromtimestamp(data.proposed_at),
+                'proposed_at': timezone.datetime.fromtimestamp(data.proposed_at, tz=timezone.get_default_timezone()),
                 'proposed_by': proposer,
                 'receiver': self.get_owner(data.receiver),
                 'token_address': data.token.lower(),
@@ -259,7 +259,7 @@ class HandlerWeddingDivorceProposed(HandlerABC):
             tx_hash=data.tx_hash,
             defaults={
                 'status': WeddingActionStatus.PROPOSED,
-                'proposed_at': timezone.datetime.utcfromtimestamp(data.proposed_at),
+                'proposed_at': timezone.datetime.fromtimestamp(data.proposed_at, tz=timezone.get_default_timezone()),
                 'proposed_by': proposer,
             })
         divorce.save()
