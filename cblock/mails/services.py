@@ -157,18 +157,18 @@ def send_wedding_mail(
         for partners_mail in contract.mails.all():
             other_partner = contract.mails.exclude(pk=partners_mail.pk).get()
 
-            from_partner_message = wedding_emails.get('divorce_proposed_from_partner')
-            to_partner_message = wedding_emails.get('divorce_proposed_to_partner')
+            proposer_message = wedding_emails.get('divorce_proposed_from_partner')
+            executor_message = wedding_emails.get('divorce_proposed_to_partner')
 
             if wedding_action.proposed_by.owner_address == partners_mail.address.lower():
-                message_title = from_partner_message.get('title')
-                message_body = from_partner_message.get('body').format(
+                message_title = proposer_message.get('title')
+                message_body = proposer_message.get('body').format(
                     proposer_address=other_partner.address,
                     days=divorce_decision_days
                 )
             else:
-                message_title = to_partner_message.get('title')
-                message_body = to_partner_message.get('body').format(
+                message_title = executor_message.get('title')
+                message_body = executor_message.get('body').format(
                     proposer_address=other_partner.address,
                     days=divorce_decision_days
                 )
@@ -184,30 +184,35 @@ def send_wedding_mail(
             )
 
     else:
-        to_partner_mail = contract.mails.exclude(address=wedding_action.proposed_by.owner_address).get()
-        recipients = [to_partner_mail.email]
+        proposer_mail = contract.mails.get(address=wedding_action.proposed_by.owner_address)
+        executor_mail = contract.mails.exclude(address=wedding_action.proposed_by.owner_address).get()
 
         message_text = wedding_emails.get(message_subtype)
         message_title = message_text.get('title')
 
         if message_subtype in ['divorce_approved', 'divorce_rejected']:
             message_body = message_text.get('body').format(
-                not_proposer_address=to_partner_mail.address,
+                executor_address=executor_mail.address,
             )
+            recipients = [proposer_mail.email]
 
         elif message_subtype in [
             'withdrawal_proposed',
-            'withrdawal_rejected',
+            'withdrawal_rejected',
             'withdrawal_approved'
         ]:
             message_kwargs = {
-                'user_address': wedding_action.receiver.owner_address,
                 'amount': wedding_action.token_amount,
                 'token_address': wedding_action.token_address,
             }
 
             if message_subtype == 'withdrawal_proposed':
+                message_kwargs['proposer_address'] = wedding_action.proposed_by.owner_address
                 message_kwargs['days'] = withdrawal_decision_days
+                recipients = [executor_mail.email]
+            else:
+                message_kwargs['executor_address'] = executor_mail.address,
+                recipients = [proposer_mail.email]
 
             message_body = message_text.get('body').format(**message_kwargs)
         else:

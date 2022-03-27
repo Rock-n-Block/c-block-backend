@@ -138,7 +138,7 @@ Best wishes, Bitflex Team
           'body': """
 Hello! 
 
-We would like to inform you that your Partner "{not_proposer_address}" has approved the divorce. 
+We would like to inform you that your Partner "{executor_address}" has approved the divorce.
 The funds were divided equally and sent to both addresses. 
 
 If you have any questions please contact c-support@bitflex.app.
@@ -151,7 +151,7 @@ Best wishes, Bitflex Team
           'body': """
 Hello! 
 
-We would like to inform you that your Partner "{not_proposer_address}" has rejected the divorce. 
+We would like to inform you that your Partner "{executor_address}" has rejected the divorce.
 The funds were divided in accordance with initial % settings and sent to both addresses. 
 If you have any questions please contact c-support@bitflex.app.
 
@@ -163,7 +163,7 @@ Best wishes, Bitflex Team
           'body': """
 Hello! 
 
-We would like to inform you that your Partner "{user_address}" has requested a withdrawal of {amount} {token_address}. 
+We would like to inform you that your Partner "{proposer_address}" has requested a withdrawal of {amount} {token_address}.
 To approve or reject the withdrwal please visit  app.c-block.io/my-contracts . 
 Contract will be executed if no confirmation during the next {days} days. 
 If you have any questions please contact c-support@bitflex.app.
@@ -176,7 +176,7 @@ Best wishes, Bitflex Team
           'body': """
 Hello! 
 
-We would like to inform you that your Partner "{user_address}" has approved the withdrawal of {amount} {token_address}.  
+We would like to inform you that your Partner "{executor_address}" has approved the withdrawal of {amount} {token_address}.
 The funds were transferred to your address. 
 If you have any questions please contact c-support@bitflex.app.
 
@@ -188,7 +188,7 @@ Best wishes, Bitflex Team
           'body': """
 Hello! 
 
-We would like to inform you that your Partner "{user_address}" has rejected the withdrawal of {amount} {token_address}. 
+We would like to inform you that your Partner "{executor_address}" has rejected the withdrawal of {amount} {token_address}.
 If you have any questions please contact c-support@bitflex.app.
 
 Best wishes, Bitflex Team
