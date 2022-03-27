@@ -77,6 +77,14 @@ class WeddingAction(models.Model):
     class Meta:
         abstract = True
 
+    def change_status_approved(self):
+        self.status = WeddingActionStatus.APPROVED
+        self.save()
+
+    def change_status_rejected(self):
+        self.status = WeddingActionStatus.REJECTED
+        self.save()
+
 
 class WeddingDivorce(WeddingAction):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,

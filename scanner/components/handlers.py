@@ -171,7 +171,7 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
 
         proposer = self.get_owner(data.proposed_by)
 
-        withdrawal, _ = WeddingWithdrawal.objects.update_or_create(
+        withdrawal, created = WeddingWithdrawal.objects.update_or_create(
             wedding_contract=contract_instance,
             tx_hash=data.tx_hash,
             defaults={
@@ -183,14 +183,13 @@ class HandlerWeddingWithdrawalProposed(HandlerABC):
                 'token_amount': int(data.token_amount)
 
             })
-        withdrawal.save()
-
-        send_wedding_mail(
-            contract=contract_instance,
-            wedding_action=withdrawal,
-            email_type=self.TYPE,
-            day_seconds=self.network.day_seconds
-        )
+        if created:
+            send_wedding_mail(
+                contract=contract_instance,
+                wedding_action=withdrawal,
+                email_type=self.TYPE,
+                day_seconds=self.network.day_seconds
+            )
 
 
 class HandlerWeddingWithdrawalStatusChanged(HandlerABC):
@@ -215,18 +214,20 @@ class HandlerWeddingWithdrawalStatusChanged(HandlerABC):
             self.logger.info(f'No withdrawal found on contract address {data.contract_address.lower()}')
             return
 
-        if withdrawal.status_change_tx_hash:
+        if withdrawal.status_change_tx_hash or withdrawal.status in [
+            WeddingActionStatus.APPROVED,
+            WeddingActionStatus.REJECTED
+        ]:
             self.logger.info(f'Already processed tx {withdrawal.status_change_tx_hash}')
             return
 
         if data.agreed:
-            new_status = WeddingActionStatus.APPROVED
+            withdrawal.change_status_approved()
             email_type = 'wedding_withdrawal_approved'
         else:
-            new_status = WeddingActionStatus.REJECTED
+            withdrawal.change_status_rejected()
             email_type = 'wedding_withdrawal_rejected'
 
-        withdrawal.status = new_status
         withdrawal.status_change_tx_hash = data.tx_hash
         withdrawal.save()
 
@@ -254,7 +255,7 @@ class HandlerWeddingDivorceProposed(HandlerABC):
 
         proposer = self.get_owner(data.proposed_by)
 
-        divorce, _ = WeddingDivorce.objects.update_or_create(
+        divorce, created = WeddingDivorce.objects.update_or_create(
             wedding_contract=contract_instance,
             tx_hash=data.tx_hash,
             defaults={
@@ -262,14 +263,14 @@ class HandlerWeddingDivorceProposed(HandlerABC):
                 'proposed_at': timezone.datetime.fromtimestamp(data.proposed_at, tz=timezone.get_default_timezone()),
                 'proposed_by': proposer,
             })
-        divorce.save()
 
-        send_wedding_mail(
-            contract=contract_instance,
-            wedding_action=divorce,
-            email_type=self.TYPE,
-            day_seconds=self.network.day_seconds,
-        )
+        if created:
+            send_wedding_mail(
+                contract=contract_instance,
+                wedding_action=divorce,
+                email_type=self.TYPE,
+                day_seconds=self.network.day_seconds,
+            )
 
 
 class HandlerWeddingDivorceStatusChanged(HandlerABC):
@@ -294,18 +295,20 @@ class HandlerWeddingDivorceStatusChanged(HandlerABC):
             self.logger.info(f'No divorce model found {contract_instance.address}')
             return
 
-        if divorce.status_change_tx_hash:
+        if divorce.status_change_tx_hash or divorce.status in [
+            WeddingActionStatus.APPROVED,
+            WeddingActionStatus.REJECTED
+        ]:
             self.logger.info(f'Already processed tx {divorce.status_change_tx_hash}')
             return
 
         if data.agreed:
-            new_status = WeddingActionStatus.APPROVED
+            divorce.change_status_approved()
             email_type = 'wedding_divorce_approved'
         else:
-            new_status = WeddingActionStatus.REJECTED
+            divorce.change_status_rejected()
             email_type = 'wedding_divorce_rejected'
 
-        divorce.status = new_status
         divorce.status_change_tx_hash = data.tx_hash
         divorce.save()
 

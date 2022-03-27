@@ -91,3 +91,4 @@ def check_wedding_divorce_timed_out(
                 email_type='wedding_divorce_approved',
                 day_seconds=day_seconds
             )
+            divorce.change_status_approved()
