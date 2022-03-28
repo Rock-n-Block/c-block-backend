@@ -1,6 +1,7 @@
 include .env
 compose_file := docker-compose.yaml
 compose := docker-compose -f $(compose_file)
+tail := 1000
 
 build:
 	$(compose) build --parallel
@@ -42,7 +43,7 @@ ps:
 	$(compose) ps -a $(service)
 
 logs:
-	$(compose) logs --timestamps -f $(service)
+	$(compose) logs --timestamps --tail $(tail) -f $(service)
 
 pull_git:
 	git pull origin ${git branch --show-current}
@@ -51,3 +52,13 @@ pull_docker:
 	$(compose) pull
 
 pull: pull_git pull_docker
+
+update_migrate: down
+	pull
+	make_all_migrations
+	migrate_all
+	up
+
+update: down
+	pull
+	up

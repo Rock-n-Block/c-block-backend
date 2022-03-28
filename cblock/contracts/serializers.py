@@ -28,16 +28,27 @@ class ProbateSerializer(serializers.ModelSerializer):
     class Meta:
         extra_kwargs = {
             'test_node': {'read_only': True},
-            'address': {'read_only': True}
+            'address': {'read_only': True},
+            'mails': {'read_only': True},
         }
             
-        fields = ('address', 'tx_hash', 'name', 'mails', 'owner_mail', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'owner_mail', 'test_node')
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        probate_mails = {}
+        logger.info(instance)
+        for mail_address in instance.mails.all():
+            probate_mails[mail_address.email] = mail_address.address.lower()
+
+        representation['mails'] = probate_mails
+        return representation
 
 
 class LastWillSerializer(ProbateSerializer):
@@ -83,8 +94,9 @@ class WeddingSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'test_node': {'read_only': True},
             'address': {'read_only': True},
+            'mails':  {'read_only': True},
         }
-        fields = ('address', 'tx_hash', 'name', 'mails', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'test_node')
 
     def create(self, validated_data):
         return WeddingContract.objects.create(**validated_data)
@@ -94,6 +106,16 @@ class WeddingSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        wedding_mails = {}
+        logger.info(instance)
+        for mail_address in instance.mails.all():
+            wedding_mails[mail_address.email] = mail_address.address.lower()
+
+        representation['mails'] = wedding_mails
+        return representation
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -122,7 +144,7 @@ class TokenSerializer(serializers.ModelSerializer):
         token_holders = {}
         logger.info(instance)
         for token_holder in instance.addresses.all():
-            token_holders[token_holder.name] = token_holder.address
+            token_holders[token_holder.name] = token_holder.address.lower()
 
         representation['addresses'] = token_holders
         return representation

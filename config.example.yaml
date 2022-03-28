@@ -16,6 +16,7 @@ test_network:
   name: 'test'
   ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
   rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'
+  explorer_tx_uri: 'https://alfajores-blockscout.celo-testnet.org/tx/{tx_hash}/token-transfers'
   token_factories:
     - '0x0000000000000000000000000000000000000000'
     - '0x0000000000000000000000000000000000000000'

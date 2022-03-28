@@ -1,7 +1,8 @@
 from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 from typing import List
-from cblock.contracts.utils import get_contract_addresses
+from cblock.contracts.utils import get_contract_addresses, get_probates, rewrap_addresses_to_checksum
+from cblock.contracts.models import WeddingContract, WeddingActionStatus
 
 from contract_abi import (
     CROWDSALE_FACTORY_ABI,
@@ -19,8 +20,11 @@ from scanner.components.datatypes import (
     NewContractLastWill,
     NewContractLostKey,
     WeddingWithdrawalProposed,
+    WeddingWithdrawalStatusChanged,
     WeddingDivorceProposed,
-    TransferOwnership
+    WeddingDivorceStatusChanged,
+    TransferOwnership,
+    ProbateFundsDistributed
 )
 
 
@@ -114,17 +118,43 @@ class NewContractWeddingMixin(NewContractMixinBase):
             to_block=last_network_block
         )
 
+    def _parse_data_get_decision_times(self, event):
+        contract_address = event['args']['contractAddress'].lower()
+        contract = self.network.w3.eth.contract(
+            address=self.network.w3.toChecksumAddress(contract_address),
+            abi=WEDDING_ABI
+        )
+
+        return {
+            'withdrawal': int(contract.functions.decisionTimeWithdrawal().call()),
+            'divorce': int(contract.functions.decisionTimeDivorce().call()),
+        }
+
     def parse_data_new_contract_wedding(self, event) -> NewContractWedding:
+        decision_times = self._parse_data_get_decision_times(event)
         return NewContractWedding(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['args']['contractAddress'].lower(),
             owner_first=event['args']['firstPartner'].lower(),
-            owner_second=event['args']['secondPartner'].lower()
+            owner_second=event['args']['secondPartner'].lower(),
+            decision_time_withdrawal=decision_times.get('withdrawal'),
+            decision_time_divorce=decision_times.get('divorce')
         )
 
 
-class NewContractLastwillMixin(NewContractMixinBase):
+class NewContractProbateMixinBasae(NewContractMixinBase):
+    def _parse_data_get_confirmation_period(self, event):
+        contract_address = event['args']['contractAddress'].lower()
+        contract = self.network.w3.eth.contract(
+            address=self.network.w3.toChecksumAddress(contract_address),
+            abi=PROBATE_ABI
+        )
+
+        return int(contract.functions.CONFIRMATION_PERIOD().call())
+
+
+class NewContractLastwillMixin(NewContractProbateMixinBasae):
     def get_events_new_contract_lastwill(self, last_checked_block, last_network_block):
         return self._get_events_new_contract(
             contract_abi=PROBATE_FACTORY_ABI,
@@ -136,11 +166,12 @@ class NewContractLastwillMixin(NewContractMixinBase):
         return NewContractLastWill(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
-            contract_address=event['args']['contractAddress'].lower()
+            contract_address=event['args']['contractAddress'].lower(),
+            confirmation_period=self._parse_data_get_confirmation_period(event)
         )
 
 
-class NewContractLostkeyMixin(NewContractMixinBase):
+class NewContractLostkeyMixin(NewContractProbateMixinBasae):
     def get_events_new_contract_lostkey(self, last_checked_block, last_network_block):
         return self._get_events_new_contract(
             contract_abi=PROBATE_FACTORY_ABI,
@@ -152,14 +183,15 @@ class NewContractLostkeyMixin(NewContractMixinBase):
         return NewContractLostKey(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
-            contract_address=event['args']['contractAddress'].lower()
+            contract_address=event['args']['contractAddress'].lower(),
+            confirmation_period=self._parse_data_get_confirmation_period(event)
         )
 
 
 class TransferOwnershipMixin(EventMixinBase):
     def get_events_transfer_ownership(self, last_checked_block, last_network_block):
         return self._get_events_base(
-            contract_abi=PROBATE_ABI,
+            contract_abi=OWNABLE_ABI,
             event_name="OwnershipTransferred",
             from_block=last_checked_block,
             to_block=last_network_block
@@ -195,14 +227,6 @@ class WeddingEventdMixinBase(EventMixinBase):
             to_block=last_network_block
         )
 
-    def preload_contracts_wedding(self, network) -> List[str]:
-        contract_addresses = get_contract_addresses(network.test)
-        wedding_addresses = []
-        if 'wedding' in contract_addresses.keys():
-            wedding_addresses = contract_addresses.pop('wedding')
-
-        return wedding_addresses
-
 
 class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
     def get_events_wedding_withdrawal_proposed(self, last_checked_block, last_network_block):
@@ -213,6 +237,7 @@ class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
         )
 
     def parse_data_wedding_withdrawal_proposed(self, event) -> WeddingWithdrawalProposed:
+        block_timestamp = self.network.w3.eth.get_block(event['blockNumber'])['timestamp']
         return WeddingWithdrawalProposed(
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
@@ -220,11 +245,47 @@ class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
             token=event['args']['token'].lower(),
             receiver=event['args']['receiver'].lower(),
             token_amount=event['args']['amount'],
-            proposed_by=event['args']['proposedBy'].lower()
+            proposed_by=event['args']['proposedBy'].lower(),
+            proposed_at=int(block_timestamp)
         )
 
     def preload_contracts_wedding_withdrawal_proposed(self, network) -> List[str]:
-        return self.preload_contracts_wedding(network=network)
+        contracts = WeddingContract.objects.filter(
+            test_node=network.test
+        ).exclude(wedding_divorce__status__in=[
+            WeddingActionStatus.PROPOSED,
+            WeddingActionStatus.APPROVED,
+            WeddingActionStatus.REJECTED
+        ])
+        addresses = contracts.values_list('address', flat=True)
+        return rewrap_addresses_to_checksum(addresses)
+
+
+class WeddingWithdrawalStatusChangedMixin(WeddingEventdMixinBase):
+    def get_events_wedding_withdrawal_status_changed(self, last_checked_block, last_network_block):
+        return self._get_events_wedding(
+            event_name="WithdrawalStatus",
+            last_checked_block=last_checked_block,
+            last_network_block=last_network_block
+        )
+
+    def parse_data_wedding_withdrawal_status_changed(self, event) -> WeddingWithdrawalStatusChanged:
+        return WeddingWithdrawalStatusChanged(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            contract_address=event['address'].lower(),
+            executed_by=event['args']['executedBy'].lower(),
+            agreed=event['args']['agreed']
+        )
+
+    def preload_contracts_wedding_withdrawal_status_changed(self, network) -> List[str]:
+        pending_contracts = WeddingContract.objects.filter(
+            test_node=network.test,
+            wedding_withdraw__status=WeddingActionStatus.PROPOSED
+        )
+
+        addresses = pending_contracts.values_list('address', flat=True)
+        return rewrap_addresses_to_checksum(addresses)
 
 
 class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
@@ -240,10 +301,66 @@ class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['address'].lower(),
-            proposed_by=event['args']['proposedBy'].lower()
+            proposed_by=event['args']['proposedBy'].lower(),
+            proposed_at=int(event['args']['timestamp'])
         )
 
     def preload_contracts_wedding_divorce_proposed(self, network) -> List[str]:
-        return self.preload_contracts_wedding(network=network)
+        contracts = WeddingContract.objects.filter(
+            test_node=network.test,
+        ).exclude(wedding_divorce__status__in=[
+            WeddingActionStatus.PROPOSED,
+            WeddingActionStatus.APPROVED,
+            WeddingActionStatus.REJECTED
+        ])
+        addresses = contracts.values_list('address', flat=True)
+        return rewrap_addresses_to_checksum(addresses)
 
 
+class WeddingDivorceStatusChangeddMixin(WeddingEventdMixinBase):
+    def get_events_wedding_divorce_status_changed(self, last_checked_block, last_network_block):
+        return self._get_events_wedding(
+            event_name="DivorceStatus",
+            last_checked_block=last_checked_block,
+            last_network_block=last_network_block
+        )
+
+    def parse_data_wedding_divorce_status_changed(self, event) -> WeddingDivorceStatusChanged:
+        return WeddingDivorceStatusChanged(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            contract_address=event['address'].lower(),
+            agreed=event['args']['agreed']
+        )
+
+    def preload_contracts_wedding_divorce_status_changed(self, network) -> List[str]:
+        pending_contracts = WeddingContract.objects.filter(
+            test_node=network.test,
+            wedding_divorce__status=WeddingActionStatus.PROPOSED
+        )
+
+        addresses = pending_contracts.values_list('address', flat=True)
+        return rewrap_addresses_to_checksum(addresses)
+
+
+class ProbateFundsDistributedMixin(EventMixinBase):
+    def get_events_probate_funds_distributed(self, last_checked_block, last_network_block):
+        return self._get_events_base(
+            contract_abi=PROBATE_ABI,
+            event_name="FundsDistributed",
+            from_block=last_checked_block,
+            to_block=last_network_block
+        )
+
+    def parse_data_probate_funds_distributed(self, event) -> ProbateFundsDistributed:
+        return ProbateFundsDistributed(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            contract_address=event['address'].lower(),
+            backup_addresses=event['args']['backupAddresses']
+
+        )
+
+    def preload_contracts_probate_funds_distributed(self, network) -> List[str]:
+        contract_addresses = get_probates(dead=True, test_network=network.test)
+        return rewrap_addresses_to_checksum([contract.address for contract in contract_addresses])

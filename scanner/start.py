@@ -21,7 +21,10 @@ from scanner.components.handlers import (
     HandlerNewContractLostkey,
     HandlerTransferOwnership,
     HandlerWeddingWithdrawalProposed,
-    HandlerWeddingDivorceProposed
+    HandlerWeddingWithdrawalStatusChanged,
+    HandlerWeddingDivorceProposed,
+    HandlerWeddingDivorceStatusChanged,
+    HandlerProbateFundsDistributed
 )
 
 from cblock.settings import config
@@ -85,10 +88,31 @@ if __name__ == "__main__":
             preload_contracts=True
         ).start()
 
+        # Wedding withdrawal status scanner
+        ScannerAbsolute(
+            network=network,
+            handler=HandlerWeddingWithdrawalStatusChanged,
+            preload_contracts=True
+        ).start()
+
         # Wedding divorce scanner
         ScannerAbsolute(
             network=network,
             handler=HandlerWeddingDivorceProposed,
+            preload_contracts=True
+        ).start()
+
+        # Wedding divorce status scanner
+        ScannerAbsolute(
+            network=network,
+            handler=HandlerWeddingDivorceStatusChanged,
+            preload_contracts=True
+        ).start()
+
+        # Lastwill/Lostkey funds distribution scanner
+        ScannerAbsolute(
+            network=network,
+            handler=HandlerProbateFundsDistributed,
             preload_contracts=True
         ).start()
 

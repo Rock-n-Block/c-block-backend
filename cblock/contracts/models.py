@@ -48,10 +48,64 @@ class WeddingContract(models.Model):
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=128, help_text='Contract name', blank=True)
-    mails = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
+    # mails = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
     owner = models.ManyToManyField(Profile)  # wedding contract have 2 owner
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+    decision_time_withdrawal = models.IntegerField(null=True, blank=True)
+    decision_time_divorce = models.IntegerField(null=True, blank=True)
+
+
+class WeddingActionStatus(models.TextChoices):
+    NOT_PROPOSED_YET = 'Not proposed yet'
+    PROPOSED = 'Proposed'
+    APPROVED = 'Approved'
+    REJECTED = 'Rejected'
+
+
+class WeddingAction(models.Model):
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+    proposed_at = models.DateTimeField(blank=True, null=True, default=None)
+    status = models.CharField(
+        max_length=30,
+        choices=WeddingActionStatus.choices,
+        default=WeddingActionStatus.NOT_PROPOSED_YET
+    )
+    status_change_tx_hash = models.CharField(max_length=128, unique=True, default=None, blank=True, null=True,
+                                             help_text='Status change transaction hash')
+
+    class Meta:
+        abstract = True
+
+    def change_status_approved(self):
+        self.status = WeddingActionStatus.APPROVED
+        self.save()
+
+    def change_status_rejected(self):
+        self.status = WeddingActionStatus.REJECTED
+        self.save()
+
+
+class WeddingDivorce(WeddingAction):
+    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='divorce', related_query_name='wedding_divorce')
+    proposed_by = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
+                                    related_name='divorce_proposer', related_query_name='wedding_divorce_proposer')
+
+    # def get_other_partner(self):
+    #     parners = self.wedding_contract.owner
+
+
+class WeddingWithdrawal(WeddingAction):
+    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='withdraw', related_query_name='wedding_withdraw')
+    receiver = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
+                                    related_name='withdraw_receiver', related_query_name='wedding_withdraw_receiver')
+    token_address = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
+    token_amount = models.DecimalField(max_digits=100, decimal_places=0, null=True, default=None)
+    proposed_by = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
+                                    related_name='withdraw_proposer', related_query_name='wedding_withdraw_proposer')
+    # token_name = models.CharField(max_length=64, unique=False, blank=False, help_text='Token address')
 
 
 class ProbateContract(models.Model):
@@ -60,13 +114,16 @@ class ProbateContract(models.Model):
     """
     address = models.CharField(max_length=64, unique=False, blank=True, null=True, help_text='Contract address')
     name = models.CharField(max_length=64, blank=True, help_text='Contract name')
-    mails = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
+    # mails = ArrayField(models.EmailField(blank=True), null=True, blank=True, size=4, help_text='List heirs mails')
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
     terminated = models.BooleanField(default=False, help_text='Terminated contract or not')
     owner_mail = models.EmailField(blank=True)
     test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
     confirmation_period = models.IntegerField(null=True, blank=True)
+
+    distribution_tx_hash = models.CharField(max_length=128, unique=True, default=None, blank=True, null=True,
+                                            help_text='Distribution transaction hash')
 
     class Meta:
         abstract = True
@@ -88,6 +145,29 @@ class LastWillContract(ProbateContract):
 class LostKeyContract(ProbateContract):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True,
                               related_name='lostkey_owner', related_query_name='lostkeys_owner')
+
+
+class EmailAddressLinkAbstract(models.Model):
+    email = models.EmailField(blank=True, help_text='Email')
+    address = models.CharField(max_length=64, unique=False, blank=False, help_text='address')
+
+    class Meta:
+        abstract = True
+
+
+class LastWillEmail(EmailAddressLinkAbstract):
+    probate_contract = models.ForeignKey(LastWillContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='mails', related_query_name='contract_mails')
+
+
+class LostKeyEmail(EmailAddressLinkAbstract):
+    probate_contract = models.ForeignKey(LostKeyContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='mails', related_query_name='contract_mails')
+
+
+class WeddingEmail(EmailAddressLinkAbstract):
+    wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
+                                         related_name='mails', related_query_name='contract_mails')
 
 
 CONTRACT_MODELS = {
