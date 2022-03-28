@@ -45,14 +45,11 @@ def get_contract_addresses(test) -> dict:
     return contract_addresses
 
 
-
-
-
 def get_probates(dead: bool, test_network: bool):
 
-    lastwills = LastWillContract.objects.filter(dead=dead, test_node=test_network)\
+    lastwills = LastWillContract.objects.filter(dead=dead, test_node=test_network, distribution_tx_hash=None)\
         .exclude(owner_mail=None, contract_mails=None)
-    lostkeys = LostKeyContract.objects.filter(dead=dead, test_node=test_network)\
+    lostkeys = LostKeyContract.objects.filter(dead=dead, test_node=test_network, distribution_tx_hash=None)\
         .exclude(owner_mail=None, contract_mails=None)
     contracts = list(lastwills) + list(lostkeys)
 

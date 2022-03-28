@@ -133,7 +133,7 @@ def send_probate_transferred(explorer_uri, contract, event_data) -> None:
             recipient_list=mail.recipients,
             fail_silently=True,
         )
-    logger.info(f'Heirs notification ({text_type}) mail swnt (contract: {contract})')
+    logger.info(f'Funds distribution ({text_type}) mail sent (contract: {contract.address})')
 
 
 def send_wedding_mail(
