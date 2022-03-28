@@ -10,7 +10,17 @@ logger = logging.getLogger(__name__)
 
 class ProbateListSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('address', 'mails', 'owner_mail')
+        fields = ('address', 'owner_mail')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        probate_mails = {}
+        logger.info(instance)
+        for mail_address in instance.mails.all():
+            probate_mails[mail_address.email] = mail_address.address.lower()
+
+        representation['mails'] = probate_mails
+        return representation
 
 
 class LastWillListSerializer(ProbateListSerializer):
