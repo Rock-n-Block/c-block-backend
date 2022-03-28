@@ -29,8 +29,9 @@ def check_alive_wallets(rpc_endpoint: str, test_network: bool) -> None:
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
 
         if contract.functions.isLostKey().call() and not contract.functions.terminated().call():
+            mail_list = list(alive_contract.mails.values_list("email", flat=True))
             logger.info(f'DEAD WALLETS: Send alive notification to {alive_contract.owner_mail} '
-                        f'and {alive_contract.mails} (contract {alive_contract.address})')
+                        f'and {mail_list} (contract {alive_contract.address})')
             alive_contract.change_dead_status()
             send_heirs_notification(alive_contract)
 

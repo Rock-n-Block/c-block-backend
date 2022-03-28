@@ -98,7 +98,7 @@ def send_probate_transferred(explorer_uri, contract, event_data) -> None:
     to_owner_title = to_owner_message.get('title')
     to_owner_body = to_owner_message.get('body').format(
         backup_addresses=event_data.backup_addresses,
-        link_tx=explorer_uri.format(link_tx=contract.distribution_tx_hash)
+        link_tx=explorer_uri.format(tx_hash=contract.distribution_tx_hash)
     )
 
     mails_to_send.append(
