@@ -29,11 +29,13 @@ class NewContractWedding(NewContractBase):
 @dataclass
 class NewContractLastWill(NewContractBase):
     confirmation_period: int
+    last_recorded_time: int
 
 
 @dataclass
 class NewContractLostKey(NewContractBase):
     confirmation_period: int
+    last_recorded_time: int
 
 
 @dataclass

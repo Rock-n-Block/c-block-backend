@@ -100,7 +100,10 @@ class HandlerNewContractLastwill(HandlerABC):
                 'address': data.contract_address,
                 'owner': owner_profile,
                 'test_node': self.network.test,
-                'confirmation_period': data.confirmation_period
+                'confirmation_period': data.confirmation_period,
+                'last_recorded_time': timezone.datetime.fromtimestamp(data.last_recorded_time,
+                                                                      tz=timezone.get_default_timezone()
+                                                                      )
             })
 
 
@@ -121,7 +124,10 @@ class HandlerNewContractLostkey(HandlerABC):
                 'address': data.contract_address,
                 'owner': owner_profile,
                 'test_node': self.network.test,
-                'confirmation_period': data.confirmation_period
+                'confirmation_period': data.confirmation_period,
+                'last_recorded_time': timezone.datetime.fromtimestamp(data.last_recorded_time,
+                                                                      tz=timezone.get_default_timezone()
+                                                                      )
             })
 
 

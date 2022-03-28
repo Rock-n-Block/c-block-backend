@@ -56,6 +56,10 @@ def check_and_send_notifications(
         contract_last_recorded_time = timezone.datetime.fromtimestamp(last_recorded_timestamp,
                                                                       tz=timezone.get_default_timezone()
                                                                       )
+        if not alive_contract.last_recorded_time:
+            alive_contract.last_recorded_time = contract_last_recorded_time
+            alive_contract.save()
+
         if contract_last_recorded_time > alive_contract.last_recorded_time:
             alive_contract.sent_notification_mails = 0
             alive_contract.last_recorded_time = contract_last_recorded_time

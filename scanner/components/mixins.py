@@ -153,6 +153,15 @@ class NewContractProbateMixinBasae(NewContractMixinBase):
 
         return int(contract.functions.CONFIRMATION_PERIOD().call())
 
+    def _parse_data_get_last_recorded_time(self, event):
+        contract_address = event['args']['contractAddress'].lower()
+        contract = self.network.w3.eth.contract(
+            address=self.network.w3.toChecksumAddress(contract_address),
+            abi=PROBATE_ABI
+        )
+
+        return int(contract.functions.lastRecordedTime().call())
+
 
 class NewContractLastwillMixin(NewContractProbateMixinBasae):
     def get_events_new_contract_lastwill(self, last_checked_block, last_network_block):
@@ -167,7 +176,8 @@ class NewContractLastwillMixin(NewContractProbateMixinBasae):
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['args']['contractAddress'].lower(),
-            confirmation_period=self._parse_data_get_confirmation_period(event)
+            confirmation_period=self._parse_data_get_confirmation_period(event),
+            last_recorded_time=self._parse_data_get_last_recorded_time(event)
         )
 
 
@@ -184,7 +194,8 @@ class NewContractLostkeyMixin(NewContractProbateMixinBasae):
             tx_hash=event["transactionHash"].hex(),
             sender=self._parse_data_get_sender(event),
             contract_address=event['args']['contractAddress'].lower(),
-            confirmation_period=self._parse_data_get_confirmation_period(event)
+            confirmation_period=self._parse_data_get_confirmation_period(event),
+            last_recorded_time=self._parse_data_get_last_recorded_time(event)
         )
 
 
