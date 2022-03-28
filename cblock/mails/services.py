@@ -48,7 +48,7 @@ def send_owner_reminder(contract, days: int) -> None:
         recipient_list=[contract.owner_mail],
         fail_silently=True,
     )
-    logger.info(f'Owner reminder ({text_type}) mail swnt (contract: {contract.address}, mail to: {contract.owner_mail}')
+    logger.info(f'Owner reminder ({text_type}) mail sent (contract: {contract.address}, mail to: {contract.owner_mail}')
 
 
 def send_heirs_notification(contract) -> None:
@@ -81,7 +81,7 @@ def send_heirs_notification(contract) -> None:
             recipient_list=mail.recipients,
             fail_silently=True,
         )
-    logger.info(f'Heirs notification ({text_type}) mail swnt (contract: {contract})')
+    logger.info(f'Heirs notification ({text_type}) mail sent (contract: {contract.address})')
 
 
 def send_probate_transferred(explorer_uri, contract, event_data) -> None:
@@ -119,7 +119,7 @@ def send_probate_transferred(explorer_uri, contract, event_data) -> None:
             body=to_heirs_body.format(
                 owner_address=contract.owner.owner_address,
                 receiver_address=mail_address.address,
-                link_tx=explorer_uri.format(link_tx=event_data.tx_hash)
+                link_tx=explorer_uri.format(tx_hash=event_data.tx_hash)
             ),
             recipients=[mail_address.email]
         )
