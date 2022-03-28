@@ -4,7 +4,7 @@ import dramatiq
 from django.utils import timezone
 
 from cblock.mails.services import send_heirs_notification, send_owner_reminder, send_wedding_mail
-from contract_abi import PROBATE_ABI, WEDDING_ABI
+from contract_abi import PROBATE_ABI
 from cblock.contracts.utils import get_web3, get_probates, get_weddings_pending_divorce
 
 logger = logging.getLogger(__name__)
@@ -50,19 +50,30 @@ def check_and_send_notifications(
         return
 
     w3 = get_web3(rpc_endpoint)
-
     for alive_contract in alive_contracts:
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
-        last_recorded_time = int(contract.functions.lastRecordedTime().call())
+        last_recorded_timestamp = int(contract.functions.lastRecordedTime().call())
+        contract_last_recorded_time = timezone.datetime.fromtimestamp(last_recorded_timestamp,
+                                                                      tz=timezone.get_default_timezone()
+                                                                      )
+        if contract_last_recorded_time > alive_contract.last_recorded_time:
+            alive_contract.sent_notification_mails = 0
+            alive_contract.last_recorded_time = contract_last_recorded_time
+            alive_contract.save()
+            logger.info('NOTIFICATIONS: Alive status was previously confirmed')
 
-        deadline = last_recorded_time + alive_contract.confirmation_period
+        deadline = int(alive_contract.last_recorded_time.timestamp()) + alive_contract.confirmation_period
         current_time = timezone.now().timestamp()
 
         time_delta_days = int((deadline - current_time) / day_seconds)
 
-        if time_delta_days in confirmation_checkpoints:
+        if time_delta_days in confirmation_checkpoints and \
+                alive_contract.sent_notification_mails <= len(confirmation_checkpoints):
+
             logger.info(f'NOTIFICATIONS: Send {time_delta_days}-day reminder to {alive_contract.owner_mail} '
                         f'(contract {alive_contract.address})')
+            alive_contract.sent_notification_mails += 1
+            alive_contract.save()
             send_owner_reminder(alive_contract, time_delta_days)
 
 

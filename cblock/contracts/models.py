@@ -124,6 +124,8 @@ class ProbateContract(models.Model):
 
     distribution_tx_hash = models.CharField(max_length=128, unique=True, default=None, blank=True, null=True,
                                             help_text='Distribution transaction hash')
+    last_recorded_time = models.DateTimeField(blank=True, null=True, default=None)
+    sent_notification_mails = models.IntegerField(default=0)
 
     class Meta:
         abstract = True
