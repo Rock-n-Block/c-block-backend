@@ -13,7 +13,7 @@ email_port:
 scanner_sleep: 60
 sentry_dsn: ''
 test_network:
-  name: 'test'
+  name: 'testnet'
   ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
   rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'
   explorer_tx_uri: 'https://alfajores-blockscout.celo-testnet.org/tx/{tx_hash}/token-transfers'
