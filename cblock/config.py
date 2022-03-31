@@ -24,6 +24,7 @@ class Network:
     day_seconds: int
     confirmation_checkpoints: list
     dead_wallets_check_interval: int
+    tracking_disabled: bool
 
     def __post_init__(self):
         self.w3 = Web3(Web3.HTTPProvider(self.rpc_endpoint))

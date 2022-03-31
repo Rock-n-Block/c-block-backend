@@ -13,7 +13,8 @@ class Command(BaseCommand):
         scheduler = BlockingScheduler()
 
         for network in config.networks:
-
+            if network.tracking_disabled:
+                continue
             # Alive wallets job
             scheduler.add_job(
                 func=check_alive_wallets.send,
