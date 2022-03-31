@@ -19,11 +19,12 @@ class Network:
     lastwill_factories: list
     lostkey_factories: list
     wedding_factories: list
-    test: bool
+    is_testnet: bool
     w3: Web3 = field(init=False, default=None)
     day_seconds: int
     confirmation_checkpoints: list
     dead_wallets_check_interval: int
+    tracking_disabled: bool
 
     def __post_init__(self):
         self.w3 = Web3(Web3.HTTPProvider(self.rpc_endpoint))

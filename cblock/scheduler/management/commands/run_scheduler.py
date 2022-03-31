@@ -13,14 +13,15 @@ class Command(BaseCommand):
         scheduler = BlockingScheduler()
 
         for network in config.networks:
-
+            if network.tracking_disabled:
+                continue
             # Alive wallets job
             scheduler.add_job(
                 func=check_alive_wallets.send,
                 trigger='interval',
                 args=[
                     network.rpc_endpoint,
-                    network.test
+                    network.is_testnet
                 ],
                 seconds=network.dead_wallets_check_interval,
             )
@@ -31,7 +32,7 @@ class Command(BaseCommand):
                 trigger='interval',
                 args=[
                     network.rpc_endpoint,
-                    network.test,
+                    network.is_testnet,
                     network.day_seconds,
                     network.confirmation_checkpoints
                 ],
@@ -44,7 +45,7 @@ class Command(BaseCommand):
                 trigger='interval',
                 args=[
                     network.rpc_endpoint,
-                    network.test,
+                    network.is_testnet,
                     network.day_seconds,
                 ],
                 seconds=network.day_seconds,

@@ -31,7 +31,7 @@ class HandlerNewContractCrowdsale(HandlerABC):
             defaults={
                 'address': data.contract_address,
                 'owner': owner_profile,
-                'test_node': self.network.test
+                'is_testnet': self.network.is_testnet
             })
 
 
@@ -50,7 +50,7 @@ class HandlerNewContractToken(HandlerABC):
             defaults={
                 'address': data.contract_address,
                 'owner': owner_profile,
-                'test_node': self.network.test
+                'is_testnet': self.network.is_testnet
             })
 
 
@@ -74,7 +74,7 @@ class HandlerNewContractWedding(HandlerABC):
             tx_hash=data.tx_hash,
             defaults={
                 'address': data.contract_address,
-                'test_node': self.network.test,
+                'is_testnet': self.network.is_testnet,
                 'decision_time_withdrawal': data.decision_time_withdrawal,
                 'decision_time_divorce': data.decision_time_divorce
             })
@@ -99,7 +99,7 @@ class HandlerNewContractLastwill(HandlerABC):
             defaults={
                 'address': data.contract_address,
                 'owner': owner_profile,
-                'test_node': self.network.test,
+                'is_testnet': self.network.is_testnet,
                 'confirmation_period': data.confirmation_period
             })
 
@@ -120,7 +120,7 @@ class HandlerNewContractLostkey(HandlerABC):
             defaults={
                 'address': data.contract_address,
                 'owner': owner_profile,
-                'test_node': self.network.test,
+                'is_testnet': self.network.is_testnet,
                 'confirmation_period': data.confirmation_period
             })
 

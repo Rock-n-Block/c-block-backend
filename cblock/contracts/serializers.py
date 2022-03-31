@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class ProbateListSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('address', 'owner_mail')
+        fields = ('address', 'owner_mail', 'is_testnet')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -37,12 +37,12 @@ class ProbateSerializer(serializers.ModelSerializer):
 
     class Meta:
         extra_kwargs = {
-            'test_node': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
             'mails': {'read_only': True},
         }
             
-        fields = ('address', 'tx_hash', 'name', 'owner_mail', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'owner_mail', 'is_testnet')
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
@@ -82,10 +82,10 @@ class CrowdsaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrowdsaleContract
         extra_kwargs = {
-            'test_node': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
         }
-        fields = ('address', 'tx_hash', 'name', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'is_testnet')
 
     def create(self, validated_data):
         return CrowdsaleContract.objects.create(**validated_data)
@@ -102,11 +102,11 @@ class WeddingSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeddingContract
         extra_kwargs = {
-            'test_node': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
             'mails':  {'read_only': True},
         }
-        fields = ('address', 'tx_hash', 'name', 'test_node')
+        fields = ('address', 'tx_hash', 'name', 'is_testnet')
 
     def create(self, validated_data):
         return WeddingContract.objects.create(**validated_data)
@@ -134,11 +134,11 @@ class TokenSerializer(serializers.ModelSerializer):
         model = TokenContract
         extra_kwargs = {
             'contract_type': {'read_only': True},
-            'test_node': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
             'addresses': {'read_only': False},
         }
-        fields = ('address', 'tx_hash', 'name',  'contract_type', 'test_node')
+        fields = ('address', 'tx_hash', 'name',  'contract_type', 'is_testnet')
 
     def create(self, validated_data):
         return TokenContract.objects.create(**validated_data)

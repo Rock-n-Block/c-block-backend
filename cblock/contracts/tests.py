@@ -18,12 +18,12 @@ class ProbateStatusTestCase(TestCase):
         ProbateContract.objects.create(address=Web3.toChecksumAddress('0x0a970179dd1aAa0eEaC71787C4Bdf5a362F0877d'),
                                        mails=['test@gmail.com', 'tt@mail.ru'],
                                        dead=False, owner=cls.user_profile,
-                                       owner_mail='owner@gmail.com', test_node=True)
+                                       owner_mail='owner@gmail.com', is_testnet=True)
 
         ProbateContract.objects.create(address=Web3.toChecksumAddress('0x0a980169dd1aAa0eEaC71787C4Bdf5a362F0877d'),
                                        mails=['tt@mail.ru'],
                                        dead=False, owner=cls.user_profile2,
-                                       owner_mail='owner@gmail.com', test_node=True)
+                                       owner_mail='owner@gmail.com', is_testnet=True)
 
     def test_check_dead_wallets(self):
         first_probate = ProbateContract.objects.first()

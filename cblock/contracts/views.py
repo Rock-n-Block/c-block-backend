@@ -30,6 +30,7 @@ from cblock.contracts.serializers import (
 )
 
 from cblock.contracts.utils import check_terminated_contract
+from cblock.settings import config
 
 import logging
 
@@ -53,17 +54,23 @@ def history(request, address: str):
         profile = Profile.objects.get(owner_address__iexact=address.lower())
     except Profile.DoesNotExist:
         return Response(data={'Error': 'No such user address in the DB'}, status=HTTP_404_NOT_FOUND)
-    token_contracts = TokenContract.objects.filter(owner=profile)
-    crowdsale_contracts = CrowdsaleContract.objects.filter(owner=profile)
-    lastwill_contracts = LastWillContract.objects.filter(owner=profile)
-    lostkey_contracts = LostKeyContract.objects.filter(owner=profile)
-    wedding_contracts = WeddingContract.objects.filter(owner=profile)
+
     profile_history = dict()
-    profile_history['tokens'] = TokenSerializer(token_contracts, many=True).data
-    profile_history['crowdsales'] = CrowdsaleSerializer(crowdsale_contracts, many=True).data
-    profile_history['lastwills'] = LastWillSerializer(lastwill_contracts, many=True).data
-    profile_history['lostkeys'] = LostKeySerializer(lostkey_contracts, many=True).data
-    profile_history['weddings'] = WeddingSerializer(wedding_contracts, many=True).data
+    for network in config.networks:
+        token_contracts = TokenContract.objects.filter(owner=profile, is_testnet=network.is_testnet)
+        crowdsale_contracts = CrowdsaleContract.objects.filter(owner=profile, is_testnet=network.is_testnet)
+        lastwill_contracts = LastWillContract.objects.filter(owner=profile, is_testnet=network.is_testnet)
+        lostkey_contracts = LostKeyContract.objects.filter(owner=profile, is_testnet=network.is_testnet)
+        wedding_contracts = WeddingContract.objects.filter(owner=profile, is_testnet=network.is_testnet)
+
+        network_history = {
+            "tokens": TokenSerializer(token_contracts, many=True).data,
+            "crowdsales": CrowdsaleSerializer(crowdsale_contracts, many=True).data,
+            "lastwills": LastWillSerializer(lastwill_contracts, many=True).data,
+            "lostkeys": LostKeySerializer(lostkey_contracts, many=True).data,
+            "weddings": WeddingSerializer(wedding_contracts, many=True).data
+        }
+        profile_history[network.name] = network_history
     return Response(data=profile_history, status=HTTP_200_OK)
 
 
@@ -84,8 +91,13 @@ def lastwill_dead_list(request):
     if not lastwills:
         return Response(status=HTTP_404_NOT_FOUND)
 
+    contracts = dict()
+    for network in config.networks:
+        network_contracts = lastwills.filter(is_testnet=network.is_testnet)
+        contracts[network.name] = LastWillListSerializer(network_contracts, many=True).data
+
     res = {
-        'lastwills': LastWillListSerializer(lastwills, many=True).data
+        'lastwills': contracts
     }
     return Response(data=res, status=HTTP_200_OK)
 
@@ -104,11 +116,17 @@ def lostkey_dead_list(request):
     """
     lostkeys = LostKeyContract.objects.filter(dead=True, terminated=False)
     lostkeys = check_terminated_contract(lostkeys)
+
+    contracts = dict()
+    for network in config.networks:
+        network_contracts = lostkeys.filter(is_testnet=network.is_testnet)
+        contracts[network.name] = LastWillListSerializer(network_contracts, many=True).data
+
     if not lostkeys:
         return Response(status=HTTP_404_NOT_FOUND)
 
     res = {
-        'lostkeys': LostKeyListSerializer(lostkeys, many=True).data
+        'lostkeys': contracts
     }
     return Response(data=res, status=HTTP_200_OK)
 
@@ -134,8 +152,9 @@ Views for create new user contract_abi
                                             }
                                     ),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'mails', 'owner_mail']
+        required=['tx_hash', 'name', 'mails', 'owner_mail', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -189,8 +208,9 @@ def new_lastwill(request):
                                             }
                                     ),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'mails', 'owner_mail']
+        required=['tx_hash', 'name', 'mails', 'owner_mail', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -237,8 +257,9 @@ def new_lostkey(request):
         properties={
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['name', 'tx_hash']
+        required=['name', 'tx_hash', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -267,13 +288,14 @@ def new_crowdsale(request):
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
             'mails': openapi.Schema(type=openapi.TYPE_OBJECT,
-                                        properties={
-                                            'email': openapi.Schema(type=openapi.TYPE_STRING,
-                                                                         description='Holder address'),
-                                            }
-                                        )
+                                    properties={
+                                        'email': openapi.Schema(type=openapi.TYPE_STRING,
+                                                                description='Holder address'),
+                                        }
+                                    ),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'mails']
+        required=['tx_hash', 'name', 'mails', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -325,9 +347,10 @@ def new_wedding(request):
                                             'owner_name': openapi.Schema(type=openapi.TYPE_STRING,
                                                                          description='Holder address'),
                                             }
-                                        )
+                                        ),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'addresses']
+        required=['tx_hash', 'name', 'addresses', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )

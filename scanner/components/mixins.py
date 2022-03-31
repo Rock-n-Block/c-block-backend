@@ -207,7 +207,7 @@ class TransferOwnershipMixin(EventMixinBase):
         )
 
     def preload_contracts_transfer_ownership(self, network) -> List[str]:
-        contract_addresses = get_contract_addresses(network.test)
+        contract_addresses = get_contract_addresses(network.is_testnet)
         if 'wedding' in contract_addresses.keys():
             contract_addresses.pop('wedding')
 
@@ -251,7 +251,7 @@ class WeddingWithdrawalProposedMixin(WeddingEventdMixinBase):
 
     def preload_contracts_wedding_withdrawal_proposed(self, network) -> List[str]:
         contracts = WeddingContract.objects.filter(
-            test_node=network.test
+            is_testnet=network.is_testnet
         ).exclude(wedding_divorce__status__in=[
             WeddingActionStatus.PROPOSED,
             WeddingActionStatus.APPROVED,
@@ -280,9 +280,9 @@ class WeddingWithdrawalStatusChangedMixin(WeddingEventdMixinBase):
 
     def preload_contracts_wedding_withdrawal_status_changed(self, network) -> List[str]:
         pending_contracts = WeddingContract.objects.filter(
-            test_node=network.test,
+            is_testnet=network.is_testnet,
             wedding_withdraw__status=WeddingActionStatus.PROPOSED
-        )
+        ).exclude(address__in=[None, ''])
 
         addresses = pending_contracts.values_list('address', flat=True)
         return rewrap_addresses_to_checksum(addresses)
@@ -307,12 +307,12 @@ class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
 
     def preload_contracts_wedding_divorce_proposed(self, network) -> List[str]:
         contracts = WeddingContract.objects.filter(
-            test_node=network.test,
+            is_testnet=network.is_testnet,
         ).exclude(wedding_divorce__status__in=[
             WeddingActionStatus.PROPOSED,
             WeddingActionStatus.APPROVED,
             WeddingActionStatus.REJECTED
-        ])
+        ]).exclude(address__in=[None, ''])
         addresses = contracts.values_list('address', flat=True)
         return rewrap_addresses_to_checksum(addresses)
 
@@ -335,9 +335,9 @@ class WeddingDivorceStatusChangeddMixin(WeddingEventdMixinBase):
 
     def preload_contracts_wedding_divorce_status_changed(self, network) -> List[str]:
         pending_contracts = WeddingContract.objects.filter(
-            test_node=network.test,
+            is_testnet=network.is_testnet,
             wedding_divorce__status=WeddingActionStatus.PROPOSED
-        )
+        ).exclude(address__in=[None, ''])
 
         addresses = pending_contracts.values_list('address', flat=True)
         return rewrap_addresses_to_checksum(addresses)
@@ -362,5 +362,5 @@ class ProbateFundsDistributedMixin(EventMixinBase):
         )
 
     def preload_contracts_probate_funds_distributed(self, network) -> List[str]:
-        contract_addresses = get_probates(dead=True, test_network=network.test)
+        contract_addresses = get_probates(dead=True, test_network=network.is_testnet)
         return rewrap_addresses_to_checksum([contract.address for contract in contract_addresses])

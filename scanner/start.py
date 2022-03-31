@@ -32,6 +32,9 @@ from cblock.settings import config
 if __name__ == "__main__":
     for network in config.networks:
 
+        if network.tracking_disabled:
+            continue
+
         provider = Web3.HTTPProvider(network.rpc_endpoint)
         provider.middlewares.clear()
         network.w3 = Web3(provider)
