@@ -30,6 +30,7 @@ from cblock.contracts.serializers import (
 )
 
 from cblock.contracts.utils import check_terminated_contract
+from cblock.settings import config
 
 import logging
 

@@ -19,7 +19,7 @@ def check_terminated_contract(probates):
     Check that contract is not terminated and change status if terminated
     """
     for network in config.networks:
-        network_contracts = probates.filter(is_testnet=network.test)
+        network_contracts = probates.filter(is_testnet=network.is_testnet)
 
         for probate in network_contracts:
             contract = network.w3.eth.contract(

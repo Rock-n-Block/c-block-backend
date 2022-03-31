@@ -20,7 +20,7 @@ class Command(BaseCommand):
                 trigger='interval',
                 args=[
                     network.rpc_endpoint,
-                    network.test
+                    network.is_testnet
                 ],
                 seconds=network.dead_wallets_check_interval,
             )
@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 trigger='interval',
                 args=[
                     network.rpc_endpoint,
-                    network.test,
+                    network.is_testnet,
                     network.day_seconds,
                     network.confirmation_checkpoints
                 ],
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 trigger='interval',
                 args=[
                     network.rpc_endpoint,
-                    network.test,
+                    network.is_testnet,
                     network.day_seconds,
                 ],
                 seconds=network.day_seconds,
