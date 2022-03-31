@@ -1,61 +1,63 @@
-allowed_hosts: []
-secret_key: ''
-debug: True
-static_url: ''
-static_root: ''
-redis_expiration_time: 
-redis_host: 
-redis_port: 
-email_host: ''
-email_host_user: ''
-email_password: ''
-email_port:
-scanner_sleep: 60
-sentry_dsn: ''
-test_network:
-  name: 'testnet'
-  ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
-  rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'
-  explorer_tx_uri: 'https://alfajores-blockscout.celo-testnet.org/tx/{tx_hash}/token-transfers'
-  token_factories:
-    - '0x0000000000000000000000000000000000000000'
-    - '0x0000000000000000000000000000000000000000'
-    - '0x0000000000000000000000000000000000000000'
-    - '0x0000000000000000000000000000000000000000'
-  crowdsale_factories:
-    - '0x0000000000000000000000000000000000000000'
-  lastwill_factories:
-    - '0x0000000000000000000000000000000000000000'
-  lostkey_factories:
-    - '0x0000000000000000000000000000000000000000'
-    - '0x0000000000000000000000000000000000000000'
-  wedding_factories:
-    - '0x0000000000000000000000000000000000000000'
-  is_testnet: True
-  day_seconds: 60
-  confirmation_checkpoints: [ 5, 10, 15 ]
-  dead_wallets_check_interval: 60
-  tracking_disabled: False
-
-network:
-  name: 'mainnet'
-  ws_endpoint: 'wss://forno.celo.org/ws'
-  rpc_endpoint: 'https://forno.celo.org'
-  token_factories:
-    - '0x0000000000000000000000000000000000000000'
-    - '0x0000000000000000000000000000000000000000'
-    - '0x0000000000000000000000000000000000000000'
-    - '0x0000000000000000000000000000000000000000'
-  crowdsale_factories:
-    - '0x0000000000000000000000000000000000000000'
-  lastwill_factories:
-    - '0x0000000000000000000000000000000000000000'
-  lostkey_factories:
-    - '0x0000000000000000000000000000000000000000'
-  wedding_factories:
-    - '0x0000000000000000000000000000000000000000'
-  is_testnet: False
-  day_seconds: 86400
-  confirmation_checkpoints: [ 1, 3, 7 ]
-  dead_wallets_check_interval: 3600
-  tracking_disabled: False
+allowed_hosts: []                      # Django allowed hosts
+secret_key: ''                         # Django secret key
+debug: True                            # Debug mode (true/ffalse)
+static_url: '/django-static/'          # URL for static
+static_root: 'static'                  # Directory for static
+redis_expiration_time: 1               # Redis expiration time
+redis_host:                            # Redis host (use 'redis' if running in same docker-compose)
+redis_port:                            # Redis port (use same as in .env if running in same docker-compose)
+email_host: ''                         # Email host for notifications (SMTP)
+email_host_user: ''                    # Username for email
+email_password: ''                     # Password for email
+email_port:                            # Email host port (SMTP)
+scanner_sleep: 60                      # Timeout between scans
+sentry_dsn: ''                         # URL for Sentry endpoint (set as '' if there is not Sentry)
+networks:
+  - name: 'testnet'       # Required, use testnet/mainnet for each network
+    ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
+    rpc_endpoint: 'https://alfajores-forno.celo-testnet.org'
+    explorer_tx_uri: 'https://alfajores-blockscout.celo-testnet.org/tx/{tx_hash}/token-transfers'
+    token_factories:      # Addresses of Token factories
+      - '0x568EE75009950B15e9e91a9A99DedF749f3AcBBf'
+      - '0x9D61A75467BF17ea3947cc52fCdF5285e8A202f3'
+      - '0x9B8797085E0c916E25a860Ad3015F6A8a5ff5f37'
+      - '0x5A3A9c31151A5A125F6baBaDc1e997017cAC1eeC'
+    crowdsale_factories:  # Addresses of Crowdsale factories
+      - '0x8129A40EA8fA34C342b04BE1a9Ba379148F99D7F'
+      - '0x4f96423a3aB01F821c98E9a6D72ca6fB6c9ED49D'
+      - '0x9d1D9c4E4F622708210Ce4C7de7b76d6fC087733'
+      - '0x7C5d7986259354a80bB83c101754587Bfc3bBCAc'
+    lastwill_factories:   # Addresses of LastWill factories
+      - '0x13C99A0F97935Fb6eb24bF846E03074aB7cee702'
+    lostkey_factories:    # Addresses of LostKey factories
+      - '0x62f89dE5B145f2A8f0b08Ecea7ae8A41C52efBe3'
+    wedding_factories:    # Addresses of Wedding factories
+      - '0x6584C8feB93c8d7B79C0403E042822f81538557b'
+    is_testnet: True      # Set to True if this is test network
+    day_seconds: 86400    # Seconds in day
+    confirmation_checkpoints: [1, 3, 7]    # Days between reminders
+    dead_wallets_check_interval: 30        # Timeout between checks of dead wallets
+    tracking_disabled: False               # Set to True if don't want to run scheduler and scanner on this network
+  - name: 'mainnet'
+    ws_endpoint: 'wss://forno.celo.org/ws'
+    rpc_endpoint: 'https://forno.celo.org'
+    token_factories:
+      - '0x0000000000000000000000000000000000000000'
+      - '0x0000000000000000000000000000000000000000'
+      - '0x0000000000000000000000000000000000000000'
+      - '0x0000000000000000000000000000000000000000'
+    crowdsale_factories:
+      - '0x0000000000000000000000000000000000000000'
+    lastwill_factories:
+      - '0x0000000000000000000000000000000000000000'
+    lostkey_factories:
+      - '0x0000000000000000000000000000000000000000'
+  #  probate_factories:
+  #    - '0x0a980179dd1aAa0eEaC71787C4Bdf5a362F0877d'
+    wedding_factories:
+      - '0x0000000000000000000000000000000000000000'
+    test: False
+    day_seconds: 86400
+    confirmation_checkpoints: [1, 3, 7]
+    dead_wallets_check_interval: 86400
+    tracking_disabled: True
