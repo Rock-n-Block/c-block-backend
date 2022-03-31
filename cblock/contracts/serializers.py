@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class ProbateListSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('address', 'owner_mail')
+        fields = ('address', 'owner_mail', 'is_testnet')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -37,7 +37,7 @@ class ProbateSerializer(serializers.ModelSerializer):
 
     class Meta:
         extra_kwargs = {
-            'is_testnet': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
             'mails': {'read_only': True},
         }
@@ -82,7 +82,7 @@ class CrowdsaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrowdsaleContract
         extra_kwargs = {
-            'is_testnet': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
         }
         fields = ('address', 'tx_hash', 'name', 'is_testnet')
@@ -102,7 +102,7 @@ class WeddingSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeddingContract
         extra_kwargs = {
-            'is_testnet': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
             'mails':  {'read_only': True},
         }
@@ -134,7 +134,7 @@ class TokenSerializer(serializers.ModelSerializer):
         model = TokenContract
         extra_kwargs = {
             'contract_type': {'read_only': True},
-            'is_testnet': {'read_only': True},
+            # 'is_testnet': {'read_only': True},
             'address': {'read_only': True},
             'addresses': {'read_only': False},
         }

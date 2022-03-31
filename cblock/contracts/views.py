@@ -152,8 +152,9 @@ Views for create new user contract_abi
                                             }
                                     ),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'mails', 'owner_mail']
+        required=['tx_hash', 'name', 'mails', 'owner_mail', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -207,8 +208,9 @@ def new_lastwill(request):
                                             }
                                     ),
             'owner_mail': openapi.Schema(type=openapi.TYPE_STRING, description='Email of the contract creator'),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'mails', 'owner_mail']
+        required=['tx_hash', 'name', 'mails', 'owner_mail', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -255,8 +257,9 @@ def new_lostkey(request):
         properties={
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['name', 'tx_hash']
+        required=['name', 'tx_hash', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -285,13 +288,14 @@ def new_crowdsale(request):
             'tx_hash': openapi.Schema(type=openapi.TYPE_STRING, description='Contract deploy hash'),
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User contract name'),
             'mails': openapi.Schema(type=openapi.TYPE_OBJECT,
-                                        properties={
-                                            'email': openapi.Schema(type=openapi.TYPE_STRING,
-                                                                         description='Holder address'),
-                                            }
-                                        )
+                                    properties={
+                                        'email': openapi.Schema(type=openapi.TYPE_STRING,
+                                                                description='Holder address'),
+                                        }
+                                    ),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'mails']
+        required=['tx_hash', 'name', 'mails', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
@@ -343,9 +347,10 @@ def new_wedding(request):
                                             'owner_name': openapi.Schema(type=openapi.TYPE_STRING,
                                                                          description='Holder address'),
                                             }
-                                        )
+                                        ),
+            'is_testnet': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Testnet or mainnet contract')
         },
-        required=['tx_hash', 'name', 'addresses']
+        required=['tx_hash', 'name', 'addresses', 'is_testnet']
     ),
     responses={'200': 'Success'}
 )
