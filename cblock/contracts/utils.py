@@ -19,7 +19,7 @@ def check_terminated_contract(probates):
     Check that contract is not terminated and change status if terminated
     """
     for network in config.networks:
-        network_contracts = probates.filter(test_node=network.test)
+        network_contracts = probates.filter(is_testnet=network.test)
 
         for probate in network_contracts:
             contract = network.w3.eth.contract(
@@ -39,7 +39,7 @@ def rewrap_addresses_to_checksum(addresses):
 def get_contract_addresses(test) -> dict:
     contract_addresses = {}
     for key, model in CONTRACT_MODELS.items():
-        addresses = model.objects.filter(test_node=test).values_list('address', flat=True)
+        addresses = model.objects.filter(is_testnet=test).values_list('address', flat=True)
         contract_addresses[key] = rewrap_addresses_to_checksum(addresses)
 
     return contract_addresses
@@ -47,9 +47,9 @@ def get_contract_addresses(test) -> dict:
 
 def get_probates(dead: bool, test_network: bool):
 
-    lastwills = LastWillContract.objects.filter(dead=dead, test_node=test_network, distribution_tx_hash=None)\
+    lastwills = LastWillContract.objects.filter(dead=dead, is_testnet=test_network, distribution_tx_hash=None)\
         .exclude(owner_mail=None, contract_mails=None)
-    lostkeys = LostKeyContract.objects.filter(dead=dead, test_node=test_network, distribution_tx_hash=None)\
+    lostkeys = LostKeyContract.objects.filter(dead=dead, is_testnet=test_network, distribution_tx_hash=None)\
         .exclude(owner_mail=None, contract_mails=None)
     contracts = list(lastwills) + list(lostkeys)
 
@@ -57,5 +57,5 @@ def get_probates(dead: bool, test_network: bool):
 
 
 def get_weddings_pending_divorce(test_network: bool):
-    return WeddingContract.objects.filter(test_node=test_network, wedding_divorce__status=WeddingActionStatus.PROPOSED)
+    return WeddingContract.objects.filter(is_testnet=test_network, wedding_divorce__status=WeddingActionStatus.PROPOSED)
 

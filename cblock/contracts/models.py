@@ -19,7 +19,7 @@ class TokenContract(models.Model):
     contract_type = models.CharField(max_length=1, blank=False, help_text='0 or 1')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                               related_name='token_owner', related_query_name='tokens_owner')
-    test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    is_testnet = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
 
 
@@ -38,7 +38,7 @@ class CrowdsaleContract(models.Model):
     name = models.CharField(max_length=128, help_text='Contract name')
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=False,
                               related_name='crowdsale_owner', related_query_name='crowdsales_owner')
-    test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    is_testnet = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
 
 
@@ -50,7 +50,7 @@ class WeddingContract(models.Model):
     name = models.CharField(max_length=128, help_text='Contract name', blank=True)
     # mails = ArrayField(models.EmailField(blank=True), size=2, blank=True, null=True)
     owner = models.ManyToManyField(Profile)  # wedding contract have 2 owner
-    test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    is_testnet = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
     decision_time_withdrawal = models.IntegerField(null=True, blank=True)
     decision_time_divorce = models.IntegerField(null=True, blank=True)
@@ -118,7 +118,7 @@ class ProbateContract(models.Model):
     dead = models.BooleanField(blank=False, default=False, help_text='Wallet status dead or alive')
     terminated = models.BooleanField(default=False, help_text='Terminated contract or not')
     owner_mail = models.EmailField(blank=True)
-    test_node = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
+    is_testnet = models.BooleanField(null=True, help_text='Testnet or mainnet', blank=True)
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
     confirmation_period = models.IntegerField(null=True, blank=True)
 

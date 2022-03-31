@@ -4,7 +4,7 @@ from cblock.contracts.views import history, lastwill_dead_list, lostkey_dead_lis
 
 
 urlpatterns = [
-    path('history/<str:address>/', history, name='history_read'),
+    path('history/<str:address>/<str:network>/', history, name='history_read'),
     path('lastwill_finished/', lastwill_dead_list, name='lastwill_finished'),
     path('lostkey_finished/', lostkey_dead_list, name='lostkey_finished'),
     path('new_lastwill/', new_lastwill, name='new_lastwill'),
