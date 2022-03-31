@@ -39,7 +39,8 @@ def rewrap_addresses_to_checksum(addresses):
 def get_contract_addresses(test) -> dict:
     contract_addresses = {}
     for key, model in CONTRACT_MODELS.items():
-        addresses = model.objects.filter(is_testnet=test).values_list('address', flat=True)
+        addresses = model.objects.filter(is_testnet=test).exclude(address__in=[None, ''])\
+            .values_list('address', flat=True)
         contract_addresses[key] = rewrap_addresses_to_checksum(addresses)
 
     return contract_addresses
@@ -48,9 +49,9 @@ def get_contract_addresses(test) -> dict:
 def get_probates(dead: bool, test_network: bool):
 
     lastwills = LastWillContract.objects.filter(dead=dead, is_testnet=test_network, distribution_tx_hash=None)\
-        .exclude(owner_mail=None, contract_mails=None)
+        .exclude(owner_mail=None, contract_mails=None, address__in=[None, ''])
     lostkeys = LostKeyContract.objects.filter(dead=dead, is_testnet=test_network, distribution_tx_hash=None)\
-        .exclude(owner_mail=None, contract_mails=None)
+        .exclude(owner_mail=None, contract_mails=None, address__in=[None, ''])
     contracts = list(lastwills) + list(lostkeys)
 
     return contracts

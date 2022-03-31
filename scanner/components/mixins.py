@@ -282,7 +282,7 @@ class WeddingWithdrawalStatusChangedMixin(WeddingEventdMixinBase):
         pending_contracts = WeddingContract.objects.filter(
             is_testnet=network.is_testnet,
             wedding_withdraw__status=WeddingActionStatus.PROPOSED
-        )
+        ).exclude(address__in=[None, ''])
 
         addresses = pending_contracts.values_list('address', flat=True)
         return rewrap_addresses_to_checksum(addresses)
@@ -312,7 +312,7 @@ class WeddingDivorceProposedMixin(WeddingEventdMixinBase):
             WeddingActionStatus.PROPOSED,
             WeddingActionStatus.APPROVED,
             WeddingActionStatus.REJECTED
-        ])
+        ]).exclude(address__in=[None, ''])
         addresses = contracts.values_list('address', flat=True)
         return rewrap_addresses_to_checksum(addresses)
 
@@ -337,7 +337,7 @@ class WeddingDivorceStatusChangeddMixin(WeddingEventdMixinBase):
         pending_contracts = WeddingContract.objects.filter(
             is_testnet=network.is_testnet,
             wedding_divorce__status=WeddingActionStatus.PROPOSED
-        )
+        ).exclude(address__in=[None, ''])
 
         addresses = pending_contracts.values_list('address', flat=True)
         return rewrap_addresses_to_checksum(addresses)

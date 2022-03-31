@@ -26,6 +26,9 @@ def check_alive_wallets(rpc_endpoint: str, test_network: bool) -> None:
     w3 = get_web3(rpc_endpoint)
 
     for alive_contract in alive_contracts:
+        if not alive_contract.address:
+            continue
+
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
 
         if contract.functions.isLostKey().call() and not contract.functions.terminated().call():
@@ -52,6 +55,8 @@ def check_and_send_notifications(
     w3 = get_web3(rpc_endpoint)
 
     for alive_contract in alive_contracts:
+        if not alive_contract.address:
+            continue
         contract = w3.eth.contract(address=w3.toChecksumAddress(alive_contract.address), abi=PROBATE_ABI)
         last_recorded_time = int(contract.functions.lastRecordedTime().call())
 

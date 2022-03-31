@@ -34,7 +34,6 @@ def never_fall(func):
                 logging.error(error)
                 if str(e) != "{'code': -32000, 'message': 'filter not found'}":
                     message = f"Scanner error in {args[0].network}: {error}"
-                    # send_message(message, ["dev"])
                     logging.error(message)
                     time.sleep(60)
 
