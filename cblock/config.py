@@ -46,6 +46,7 @@ class Config:
     email_password: str
     email_port: int
     scanner_sleep: int
+    rates_checker_interval: int
     sentry_dsn: str
     networks: List[Network]
 

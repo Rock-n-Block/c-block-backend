@@ -1,11 +1,10 @@
-import logging
 import dramatiq
-
+import logging
 from django.utils import timezone
 
+from cblock.contracts.utils import get_probates, get_web3, get_weddings_pending_divorce
 from cblock.mails.services import send_heirs_notification, send_owner_reminder, send_wedding_mail
-from contract_abi import PROBATE_ABI, WEDDING_ABI
-from cblock.contracts.utils import get_web3, get_probates, get_weddings_pending_divorce
+from contract_abi import PROBATE_ABI
 
 logger = logging.getLogger(__name__)
 

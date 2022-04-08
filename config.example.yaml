@@ -11,6 +11,7 @@ email_host_user: ''                    # Username for email
 email_password: ''                     # Password for email
 email_port:                            # Email host port (SMTP)
 scanner_sleep: 60                      # Timeout between scans
+rates_checker_interval: 3600           # Timeout between rates fetching
 sentry_dsn: ''                         # URL for Sentry endpoint (set as '' if there is not Sentry)
 networks:
   - name: 'testnet'       # Required, use testnet/mainnet for each network

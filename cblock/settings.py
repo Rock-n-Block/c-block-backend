@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django_dramatiq',
     'cblock.contracts',
     'cblock.scheduler',
+    'cblock.rates',
     'scanner',
 ]
 
