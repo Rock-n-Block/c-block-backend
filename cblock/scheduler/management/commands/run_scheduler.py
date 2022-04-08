@@ -2,7 +2,8 @@ from apscheduler.schedulers.background import BlockingScheduler
 from django.core.management.base import BaseCommand
 
 from cblock.settings import config
-from cblock.scheduler.tasks import check_alive_wallets, check_and_send_notifications, check_wedding_divorce_timed_out
+from cblock.contracts.tasks import check_alive_wallets, check_and_send_notifications, check_wedding_divorce_timed_out
+from cblock.rates.tasks import update_usd_rates_task
 
 
 class Command(BaseCommand):
@@ -11,6 +12,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE('Preparing scheduler'))
         scheduler = BlockingScheduler()
+
+        # Rates fetcher
+        scheduler.add_job(
+            func=update_usd_rates_task.send,
+            trigger='interval',
+            seconds=config.rates_checker_interval
+        )
 
         for network in config.networks:
             if network.tracking_disabled:

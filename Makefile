@@ -2,6 +2,7 @@ include .env
 compose_file := docker-compose.yaml
 compose := docker-compose -f $(compose_file)
 tail := 1000
+service := web     # defaul service is web
 
 build:
 	$(compose) build --parallel
@@ -31,7 +32,7 @@ down:
 # 	$(compose_kibana) down
 
 make_all_migrations:
-	$(compose) exec web python manage.py makemigrations contracts
+	$(compose) exec web python manage.py makemigrations contracts rates
 
 migrate_all:
 	$(compose) exec web python manage.py migrate
