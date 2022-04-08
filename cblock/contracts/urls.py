@@ -1,7 +1,15 @@
 from django.urls import path
-from cblock.contracts.views import history, lastwill_dead_list, lostkey_dead_list, new_lastwill, new_lostkey, \
-    new_token, new_wedding, new_crowdsale
-
+from cblock.contracts.views import (
+    history,
+    lastwill_dead_list,
+    lostkey_dead_list,
+    new_lastwill,
+    new_lostkey,
+    new_token,
+    new_wedding,
+    new_crowdsale,
+    platform_statistics
+)
 
 urlpatterns = [
     path('history/<str:address>/', history, name='history_read'),
@@ -12,4 +20,5 @@ urlpatterns = [
     path('new_wedding/', new_wedding, name='new_wedding'),
     path('new_crowdsale/', new_crowdsale, name='new_crowdsale'),
     path('new_token/', new_token, name='new_token'),
+    path('platform_statistics', platform_statistics, name='platform_statistics')
 ]

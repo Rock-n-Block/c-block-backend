@@ -16,7 +16,8 @@ from cblock.contracts.models import (
     WeddingContract,
     WeddingEmail,
     LastWillEmail,
-    LostKeyEmail
+    LostKeyEmail,
+    CONTRACT_MODELS
 )
 from cblock.contracts.serializers import (
     TokenSerializer,
@@ -384,3 +385,32 @@ def new_token(request):
     TokenHolder.objects.bulk_create(holders_object_list)
 
     return Response(data={'Success': 'True'}, status=HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Retrieve platform statistics",
+    responses={'200': openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'users': openapi.Schema(type=openapi.TYPE_INTEGER, description='Active users'),
+            'contracts': openapi.Schema(type=openapi.TYPE_INTEGER, description='Created contracts'),
+        }
+    )}
+)
+@api_view(http_method_names=['GET'])
+def platform_statistics(request):
+    """
+    Returns platform statistics (users with deployed contracts and number of deployed contacts)
+    """
+    contracts_count = 0
+    for key, model in CONTRACT_MODELS.items():
+        contract_type_count = model.objects.count()
+        contracts_count += contract_type_count
+
+    profiles_count = Profile.objects.count()
+
+    return Response(
+        data={'users': profiles_count, 'contracts': contracts_count},
+        status=HTTP_200_OK
+    )
