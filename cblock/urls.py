@@ -38,5 +38,6 @@ urlpatterns = [
 
     path('django-admin/', admin.site.urls),
     path('api/v1/', include('cblock.contracts.urls')),
-    path('api/v1/', include('cblock.rates.urls')),
+    path('api/v1/rates/', include('cblock.rates.urls')),
+    path("api/v1/accounts/", include("cblock.accounts.urls")),
 ]

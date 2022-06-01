@@ -1,12 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-
-class Profile(models.Model):
-    """
-    User profile
-    """
-    owner_address = models.CharField(max_length=64, unique=True, blank=False)
+from cblock.accounts.models import Profile
 
 
 class TokenContract(models.Model):

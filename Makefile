@@ -32,7 +32,7 @@ down:
 # 	$(compose_kibana) down
 
 make_all_migrations:
-	$(compose) exec web python manage.py makemigrations contracts rates
+	$(compose) exec web python manage.py makemigrations contracts rates accounts
 
 migrate_all:
 	$(compose) exec web python manage.py migrate
