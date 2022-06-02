@@ -59,19 +59,3 @@ def generate_metamask_message(request):
 
     return Response(generated_message)
 
-
-# class VerifyEmailView(APIView, ConfirmEmailView):
-#     permission_classes = (AllowAny,)
-#     allowed_methods = ('POST', 'OPTIONS', 'HEAD')
-#
-#     def get_serializer(self, *args, **kwargs):
-#         return VerifyEmailSerializer(*args, **kwargs)
-#
-#     def post(self, request, key):
-#         data = key
-#         serializer = self.get_serializer(data=data)
-#         serializer.is_valid(raise_exception=True)
-#         self.kwargs['key'] = serializer.validated_data['key']
-#         confirmation = self.get_object()
-#         confirmation.confirm(self.request)
-#         return Response({'detail': _('ok')}, status=status.HTTP_200_OK)

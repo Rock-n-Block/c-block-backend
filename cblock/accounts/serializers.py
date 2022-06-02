@@ -71,3 +71,9 @@ class MetamaskRegisterSerializer(RegisterSerializer):
             'owner_address': self.validated_data.get('owner_address', '')
         }
 
+    def save(self, request):
+        user = super().save(request)
+        user.owner_address = self.get_cleaned_data().get('owner_address')
+        user.save()
+        return user
+
