@@ -1,5 +1,7 @@
 import logging
 
+from django.utils.translation import ugettext_lazy as _
+
 from rest_auth.registration.serializers import SocialLoginSerializer, RegisterSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -49,6 +51,23 @@ class MetamaskUserSerializer(serializers.ModelSerializer):
         fields = ['email', 'owner_address']
         read_only_fields = fields
 
+def email_address_exists(email, exclude_user=None):
+    from .account import app_settings as account_settings
+    from .account.models import EmailAddress
+
+    emailaddresses = EmailAddress.objects
+    if exclude_user:
+        emailaddresses = emailaddresses.exclude(user=exclude_user)
+    ret = emailaddresses.filter(email__iexact=email).exists()
+    if not ret:
+        email_field = account_settings.USER_MODEL_EMAIL_FIELD
+        if email_field:
+            users = get_user_model().objects
+            if exclude_user:
+                users = users.exclude(pk=exclude_user.pk)
+            ret = users.filter(**{email_field + "__iexact": email}).exists()
+    return
+
 
 class MetamaskRegisterSerializer(RegisterSerializer):
     username = None
@@ -56,10 +75,29 @@ class MetamaskRegisterSerializer(RegisterSerializer):
     message = serializers.CharField(required=True, allow_blank=False)
     signature = serializers.CharField(required=True, allow_blank=False)
 
+    @staticmethod
+    def get_owner_address_exists(owner_address):
+        return Profile.objects.filter(owner_address__iexact=owner_address).exists()
+
+    @staticmethod
+    def get_email_and_address_exists(email, owner_address):
+        return Profile.objects.filter(email__iexact=email, owner_address__iexact=owner_address).exists()
+
+
     def validate(self, data):
         super(MetamaskRegisterSerializer, self).validate(data)
+
+        data['owner_address'] = data['owner_address'].lower()
+
         if not valid_metamask_message(data.get('owner_address'), data.get('message'), data.get('signature')):
-            raise serializers.ValidationError("Provided signature is not correct")
+            raise serializers.ValidationError(_("Provided signature is not correct"))
+
+        if data.get('owner_address') and self.get_owner_address_exists(data.get('owner_address')):
+            raise serializers.ValidationError(_("A user is already registered with this metamask address."))
+
+        if self.get_email_and_address_exists(data.get('email'), data.get('owner_address')):
+            raise serializers.ValidationError(_("Pair of this user address and email already exists"))
+
         return data
 
 

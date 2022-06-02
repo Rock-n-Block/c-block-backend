@@ -152,6 +152,10 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 AUTH_USER_MODEL = 'accounts.Profile'
 SITE_ID = 1
 
+
+LOGIN_URL = '/'
+LOGIN_REDIRECT_URL = LOGIN_URL
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
