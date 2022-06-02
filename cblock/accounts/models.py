@@ -9,6 +9,7 @@ class Profile(AbstractUser):
     """
     User profile
     """
+    username = None
     email = models.EmailField(_('email address'), unique=True)
 
     USERNAME_FIELD = 'email'

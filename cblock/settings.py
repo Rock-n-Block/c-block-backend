@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'django_dramatiq',
     'cblock.accounts',
     'cblock.contracts',
@@ -147,6 +148,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 AUTH_USER_MODEL = 'accounts.Profile'
 SITE_ID = 1
 
@@ -186,6 +188,7 @@ EMAIL_HOST_USER = config.email_host_user
 EMAIL_HOST_PASSWORD = config.email_password
 EMAIL_PORT = config.email_port
 
+DEFAULT_FROM_EMAIL = config.email_host_user
 
 # dramatiq
 DRAMATIQ_BROKER = {

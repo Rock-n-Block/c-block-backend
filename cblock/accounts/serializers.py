@@ -47,6 +47,7 @@ class MetamaskUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['email', 'owner_address']
+        read_only_fields = fields
 
 
 class MetamaskRegisterSerializer(RegisterSerializer):
