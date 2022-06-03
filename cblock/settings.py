@@ -155,6 +155,8 @@ SITE_ID = 1
 
 LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = LOGIN_URL
+OLD_PASSWORD_FIELD_ENABLED = True
+LOGOUT_ON_PASSWORD_CHANGE = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
