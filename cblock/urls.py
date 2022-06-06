@@ -15,9 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.views.generic import TemplateView
+
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+
+
 
 
 schema_view = get_schema_view(
@@ -40,4 +44,6 @@ urlpatterns = [
     path('api/v1/', include('cblock.contracts.urls')),
     path('api/v1/rates/', include('cblock.rates.urls')),
     path("api/v1/accounts/", include("cblock.accounts.urls")),
+    path('password/reset/<str:uidb64>/<str:token>/', TemplateView.as_view(),
+       name='password_reset_confirm'),
 ]
