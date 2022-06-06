@@ -37,6 +37,9 @@ make_all_migrations:
 migrate_all:
 	$(compose) exec web python manage.py migrate
 
+createsuperuser:
+	$(compose) exec web python manage.py createsuperuser
+
 shell:
 	$(compose) exec web python manage.py shell_plus
 

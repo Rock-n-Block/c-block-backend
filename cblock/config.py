@@ -48,6 +48,7 @@ class Config:
     scanner_sleep: int
     rates_checker_interval: int
     sentry_dsn: str
+    host_domain: str
     networks: List[Network]
 
 

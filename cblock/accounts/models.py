@@ -25,3 +25,6 @@ class Profile(AbstractUser):
     def __str__(self):
         return f'{self.email} - {self.owner_address}'
 
+    def set_owner_adress(self, owner_address):
+        self.owner_address = owner_address
+        self.save()
