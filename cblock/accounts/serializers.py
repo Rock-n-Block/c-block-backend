@@ -1,14 +1,16 @@
 import logging
 
+from web3 import Web3
+from django.contrib.auth.forms import PasswordResetForm
 from django.utils.translation import ugettext_lazy as _
 
 from rest_auth.registration.serializers import SocialLoginSerializer, RegisterSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
+from cblock.settings import DEFAULT_FROM_EMAIL
 from cblock.accounts.models import Profile
 from cblock.accounts.utils import valid_metamask_message
-from web3 import Web3
 
 
 class MetamaskLoginSerializer(SocialLoginSerializer):
@@ -115,3 +117,37 @@ class MetamaskRegisterSerializer(RegisterSerializer):
         user.save()
         return user
 
+
+class RequestDomainPasswordResetSerializer(serializers.Serializer):
+    """
+    Serializer for requesting a password reset e-mail.
+    """
+    email = serializers.EmailField()
+
+    password_reset_form_class = PasswordResetForm
+
+    def get_email_options(self):
+        """Override this method to change default e-mail options"""
+        return {}
+
+    def validate_email(self, value):
+        # Create PasswordResetForm with the serializer
+        self.reset_form = self.password_reset_form_class(data=self.initial_data)
+        if not self.reset_form.is_valid():
+            raise serializers.ValidationError(self.reset_form.errors)
+
+        return value
+
+    def save(self):
+        request = self.context.get('request')
+        # Set some values to trigger the send_email method.
+        logging.info(request.__dict__)
+        opts = {
+            'domain_override': request.META.get('HTTP_HOST'),
+            'use_https': request.is_secure(),
+            'from_email': DEFAULT_FROM_EMAIL,
+            'request': request,
+        }
+
+        opts.update(self.get_email_options())
+        self.reset_form.save(**opts)

@@ -107,6 +107,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'cblock.accounts.serializers.MetamaskUserSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'cblock.accounts.serializers.RequestDomainPasswordResetSerializer'
 }
 
 # Database
@@ -155,8 +156,12 @@ SITE_ID = 1
 
 LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = LOGIN_URL
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/confirm-email'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL
+
 OLD_PASSWORD_FIELD_ENABLED = True
 LOGOUT_ON_PASSWORD_CHANGE = False
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
