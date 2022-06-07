@@ -14,9 +14,10 @@ class CustomDomainAdapter(DefaultAccountAdapter):
     def get_email_confirmation_url(self, request, emailconfirmation):
         url = reverse("account_confirm_email", args=[emailconfirmation.key])
         ret = build_absolute_uri(request, url)
-        ret_bits = urlsplit(ret)
-        custom_domain = get_domain_for_emails(request)
-        return f"{ret_bits.scheme}://{custom_domain}{ret_bits.path}"
+        # ret_bits = urlsplit(ret)
+        # custom_domain = get_domain_for_emails(request)
+        # return f"{ret_bits.scheme}://{custom_domain}{ret_bits.path}"
+        return ret
 
 
     def send_confirmation_mail(self, request, emailconfirmation, signup):
