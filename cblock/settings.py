@@ -107,7 +107,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'cblock.accounts.serializers.MetamaskUserSerializer',
-    'PASSWORD_RESET_SERIALIZER': 'cblock.accounts.serializers.RequestDomainPasswordResetSerializer'
+    'PASSWORD_RESET_SERIALIZER': 'cblock.accounts.serializers.CustomDomainPasswordResetSerializer'
 }
 
 # Database
@@ -151,6 +151,7 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 AUTH_USER_MODEL = 'accounts.Profile'
+ACCOUNT_ADAPTER = 'cblock.accounts.adapters.CustomDomainAdapter'
 SITE_ID = 1
 
 

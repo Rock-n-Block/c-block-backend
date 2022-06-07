@@ -5,12 +5,13 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.utils.translation import ugettext_lazy as _
 
 from rest_auth.registration.serializers import SocialLoginSerializer, RegisterSerializer
+from rest_auth.serializers import PasswordResetSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from cblock.settings import DEFAULT_FROM_EMAIL
 from cblock.accounts.models import Profile
-from cblock.accounts.utils import valid_metamask_message
+from cblock.accounts.utils import valid_metamask_message, get_domain_for_emails
 
 
 class MetamaskLoginSerializer(SocialLoginSerializer):
@@ -29,7 +30,7 @@ class MetamaskLoginSerializer(SocialLoginSerializer):
 
         print('metamask login, address', address, 'message', message, 'signature', signature, flush=True)
         if valid_metamask_message(address, message, signature):
-            metamask_user = User.objects.filter(username__iexact=address).first()
+            metamask_user = Profile.objects.filter(username__iexact=address).first()
 
             if metamask_user is None:
                 self.user = Profile.objects.create(username=address)
@@ -52,23 +53,6 @@ class MetamaskUserSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['email', 'owner_address']
         read_only_fields = fields
-
-def email_address_exists(email, exclude_user=None):
-    from .account import app_settings as account_settings
-    from .account.models import EmailAddress
-
-    emailaddresses = EmailAddress.objects
-    if exclude_user:
-        emailaddresses = emailaddresses.exclude(user=exclude_user)
-    ret = emailaddresses.filter(email__iexact=email).exists()
-    if not ret:
-        email_field = account_settings.USER_MODEL_EMAIL_FIELD
-        if email_field:
-            users = get_user_model().objects
-            if exclude_user:
-                users = users.exclude(pk=exclude_user.pk)
-            ret = users.filter(**{email_field + "__iexact": email}).exists()
-    return
 
 
 class MetamaskRegisterSerializer(RegisterSerializer):
@@ -118,32 +102,12 @@ class MetamaskRegisterSerializer(RegisterSerializer):
         return user
 
 
-class RequestDomainPasswordResetSerializer(serializers.Serializer):
-    """
-    Serializer for requesting a password reset e-mail.
-    """
-    email = serializers.EmailField()
-
-    password_reset_form_class = PasswordResetForm
-
-    def get_email_options(self):
-        """Override this method to change default e-mail options"""
-        return {}
-
-    def validate_email(self, value):
-        # Create PasswordResetForm with the serializer
-        self.reset_form = self.password_reset_form_class(data=self.initial_data)
-        if not self.reset_form.is_valid():
-            raise serializers.ValidationError(self.reset_form.errors)
-
-        return value
-
+class CustomDomainPasswordResetSerializer(PasswordResetSerializer):
     def save(self):
         request = self.context.get('request')
         # Set some values to trigger the send_email method.
-        logging.info(request.__dict__)
         opts = {
-            'domain_override': request.META.get('HTTP_HOST'),
+            'domain_override': get_domain_for_emails(request),
             'use_https': request.is_secure(),
             'from_email': DEFAULT_FROM_EMAIL,
             'request': request,
