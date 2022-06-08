@@ -155,12 +155,13 @@ ACCOUNT_ADAPTER = 'cblock.accounts.adapters.CustomDomainAdapter'
 SITE_ID = 1
 
 
-SESSION_COOKIE_HTTPONLY = False
+# SESSION_COOKIE_HTTPONLY = False
 if config.debug:
     SESSION_COOKIE_SAMESITE = 'None'
 
 if config.frontend_host_domain:
     SESSION_COOKIE_DOMAIN = config.frontend_host_domain
+    CSRF_COOKIE_DOMAIN = config.frontend_host_domain
 
 
 LOGIN_URL = '/'
