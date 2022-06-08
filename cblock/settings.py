@@ -156,8 +156,8 @@ SITE_ID = 1
 
 
 if config.frontend_host_domain:
-    SESSION_COOKIE_DOMAIN = config.frontend_host_domain
-    CSRF_COOKIE_DOMAIN = config.frontend_host_domain
+    # SESSION_COOKIE_DOMAIN = config.frontend_host_domain
+    # CSRF_COOKIE_DOMAIN = config.frontend_host_domain
     SESSION_COOKIE_SAMESITE = 'None'
     CSRF_COOKIE_SAMESITE = 'None'
     CSRF_COOKIE_SECURE = True
