@@ -61,16 +61,24 @@ INSTALLED_APPS = [
     'cblock.rates',
     'scanner',
 ]
-
-MIDDLEWARE = [
+PRE_MIDDLEWARES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+]
+
+CSRF_MIDDLEWARE = 'django.middleware.csrf.CsrfViewMiddleware'
+
+POST_MIDDLEWARES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if not config.debug:
+    PRE_MIDDLEWARES.append(CSRF_MIDDLEWARE)
+
+MIDDLEWARE = PRE_MIDDLEWARES + POST_MIDDLEWARES
 
 ROOT_URLCONF = 'cblock.urls'
 
@@ -154,9 +162,9 @@ AUTH_USER_MODEL = 'accounts.Profile'
 ACCOUNT_ADAPTER = 'cblock.accounts.adapters.CustomDomainAdapter'
 SITE_ID = 1
 
-if config.debug:
-    SESSION_COOKIE_HTTPONLY = False
-    CSRF_COOKIE_HTTPONLY = False
+# if config.debug:
+#     SESSION_COOKIE_HTTPONLY = False
+#     CSRF_COOKIE_HTTPONLY = False
 
 if config.frontend_host_domain:
     # SESSION_COOKIE_DOMAIN = config.frontend_host_domain
