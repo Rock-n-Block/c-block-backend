@@ -163,13 +163,8 @@ AUTH_USER_MODEL = 'accounts.Profile'
 ACCOUNT_ADAPTER = 'cblock.accounts.adapters.CustomDomainAdapter'
 SITE_ID = 1
 
-# if config.debug:
-#     SESSION_COOKIE_HTTPONLY = False
-#     CSRF_COOKIE_HTTPONLY = False
 
 if config.frontend_host_domain:
-    # SESSION_COOKIE_DOMAIN = config.frontend_host_domain
-    # CSRF_COOKIE_DOMAIN = config.frontend_host_domain
     SESSION_COOKIE_SAMESITE = 'None'
     CSRF_COOKIE_SAMESITE = 'None'
     CSRF_COOKIE_SECURE = True
