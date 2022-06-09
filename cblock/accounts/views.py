@@ -18,28 +18,6 @@ from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSer
 from web3 import Web3
 
 
-class MetamaskLoginView(SocialLoginView):
-    serializer_class = MetamaskLoginSerializer
-
-    def login(self):
-
-        self.user = self.serializer.validated_data["user"]
-        metamask_address = Web3.toChecksumAddress(
-                self.serializer.validated_data["address"]
-            )
-
-        try:
-            user = Profile.objects.get(username__iexact=metamask_address)
-        except ObjectDoesNotExist:
-            print("try create user", flush=True)
-            self.user = Profile(
-                username=metamask_address, password=set_unusable_password()
-            )
-            self.user.save()
-            print("user_created", flush=True)
-
-        return super().login()
-
 class MetamaskUserDetailsView(RetrieveAPIView):
     serializer_class = MetamaskUserSerializer
     permission_classes = (IsAuthenticated,)

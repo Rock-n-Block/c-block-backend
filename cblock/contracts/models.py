@@ -165,6 +165,11 @@ class WeddingEmail(EmailAddressLinkAbstract):
                                          related_name='mails', related_query_name='contract_mails')
 
 
+class NetworkMode(models.Model):
+    name = models.CharField(blank=False, default='celo', unique=True, max_length=20)
+    mainnet_enabled = models.BooleanField(blank=False, default=False, help_text='Enabled mainnet for users or not')
+
+
 CONTRACT_MODELS = {
     'token': TokenContract,
     'crowdsale': CrowdsaleContract,
