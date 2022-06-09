@@ -68,6 +68,7 @@ PRE_MIDDLEWARES = [
 ]
 
 CSRF_MIDDLEWARE = 'django.middleware.csrf.CsrfViewMiddleware'
+TEST_CSRF_MIDDLEWARE = 'cblock.utils.DisableCsrfCheck'
 
 POST_MIDDLEWARES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -75,10 +76,10 @@ POST_MIDDLEWARES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if not config.debug:
-    PRE_MIDDLEWARES.append(CSRF_MIDDLEWARE)
 
-MIDDLEWARE = PRE_MIDDLEWARES + POST_MIDDLEWARES
+SET_CSRF_MIDDLEWARE = [TEST_CSRF_MIDDLEWARE if config.debug else CSRF_MIDDLEWARE]
+
+MIDDLEWARE = PRE_MIDDLEWARES + SET_CSRF_MIDDLEWARE + POST_MIDDLEWARES
 
 ROOT_URLCONF = 'cblock.urls'
 
