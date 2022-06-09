@@ -68,7 +68,7 @@ PRE_MIDDLEWARES = [
 ]
 
 CSRF_MIDDLEWARE = 'django.middleware.csrf.CsrfViewMiddleware'
-TEST_CSRF_MIDDLEWARE = 'cblock.utils.DisableCsrfCheck'
+TEST_CSRF_MIDDLEWARE = 'cblock.utils.DisableCSRF'
 
 POST_MIDDLEWARES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
