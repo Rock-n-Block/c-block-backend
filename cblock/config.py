@@ -19,6 +19,7 @@ class Network:
     lastwill_factories: list
     lostkey_factories: list
     wedding_factories: list
+    controller_contract: str
     is_testnet: bool
     w3: Web3 = field(init=False, default=None)
     day_seconds: int
