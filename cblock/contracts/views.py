@@ -454,7 +454,9 @@ def update_network_mode(request):
     if not isinstance(new_status, bool):
         return Response(data={'Error': 'Only boolean values are acceptes'}, status=HTTP_400_BAD_REQUEST)
 
-    network_mode, _ = NetworkMode.objects.update(mainnet_enabled=new_status, defaults={'name': 'celo'})
+    network_mode, _ = NetworkMode.objects.get_or_create(name='celo')
+    network_mode.mainnet_enabled = new_status
+    network_mode.save()
 
     serialized_data = NetworkModeSerializer(instance=network_mode).data
 
