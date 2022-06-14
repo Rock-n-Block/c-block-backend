@@ -44,7 +44,7 @@ shell:
 	$(compose) exec web python manage.py shell_plus
 
 ps:
-	$(compose) ps -a $(service)
+	$(compose) ps
 
 logs:
 	$(compose) logs --timestamps --tail $(tail) -f $(service)
