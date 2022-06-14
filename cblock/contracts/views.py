@@ -437,7 +437,7 @@ def show_current_network_mode(request):
 @swagger_auto_schema(
     method='post',
     operation_description="Retrieve current network mode",
-request_body=NetworkModeSerializer,
+    request_body=NetworkModeSerializer,
     responses={'200':NetworkModeSerializer()}
 )
 @api_view(http_method_names=['POST'])
@@ -454,7 +454,7 @@ def update_network_mode(request):
     if not isinstance(new_status, bool):
         return Response(data={'Error': 'Only boolean values are acceptes'}, status=HTTP_400_BAD_REQUEST)
 
-    network_mode, _ = NetworkMode.objects.update_or_create(mainnet_enabled=new_status, defaults={'name': 'celo'})
+    network_mode, _ = NetworkMode.objects.update(mainnet_enabled=new_status, defaults={'name': 'celo'})
 
     serialized_data = NetworkModeSerializer(instance=network_mode).data
 
