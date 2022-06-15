@@ -8,7 +8,9 @@ from cblock.contracts.views import (
     new_token,
     new_wedding,
     new_crowdsale,
-    platform_statistics
+    platform_statistics,
+    show_current_network_mode,
+    update_network_mode
 )
 
 urlpatterns = [
@@ -20,5 +22,7 @@ urlpatterns = [
     path('new_wedding/', new_wedding, name='new_wedding'),
     path('new_crowdsale/', new_crowdsale, name='new_crowdsale'),
     path('new_token/', new_token, name='new_token'),
-    path('platform_statistics', platform_statistics, name='platform_statistics')
+    path('platform_statistics', platform_statistics, name='platform_statistics'),
+    path('network_mode/', show_current_network_mode, name='get_network_mode'),
+    path('network_mode/update', update_network_mode, name='get_network_mode'),
 ]

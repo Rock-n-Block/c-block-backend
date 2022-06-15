@@ -45,6 +45,19 @@ make migrate_all
 
 See `config.example.yaml` for all info
 
+
+### Setup site name
+
+```bash
+docker compose exec web python manage.py setup_site app.cblock.io 'C-Block Platform'
+```
+
+### Create super user
+
+```bash
+make createsuperuser
+```
+
 ### Tests
 ```
 docker-compose exec web python manage.py test

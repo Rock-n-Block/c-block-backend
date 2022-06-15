@@ -35,7 +35,6 @@ DEBUG = config.debug
 
 ALLOWED_HOSTS = config.allowed_hosts
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,32 +44,49 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'django_extensions',
     'drf_yasg',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
+    'rest_auth.registration',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     'django_dramatiq',
+    'cblock.accounts',
     'cblock.contracts',
     'cblock.scheduler',
     'cblock.rates',
     'scanner',
 ]
-
-MIDDLEWARE = [
+PRE_MIDDLEWARES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+]
+
+CSRF_MIDDLEWARE = 'django.middleware.csrf.CsrfViewMiddleware'
+TEST_CSRF_MIDDLEWARE = 'cblock.utils.DisableCSRF'
+
+POST_MIDDLEWARES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+SET_CSRF_MIDDLEWARE = [TEST_CSRF_MIDDLEWARE if config.debug else CSRF_MIDDLEWARE]
+
+MIDDLEWARE = PRE_MIDDLEWARES + SET_CSRF_MIDDLEWARE + POST_MIDDLEWARES
 
 ROOT_URLCONF = 'cblock.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -92,6 +108,15 @@ REST_FRAMEWORK = {
 #    'DEFAULT_PERMISSION_CLASSES': (
  #       'rest_framework.permissions.IsAuthenticated',
   #  ),
+}
+
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'cblock.accounts.serializers.MetamaskRegisterSerializer',
+}
+
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'cblock.accounts.serializers.MetamaskUserSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'cblock.accounts.serializers.CustomDomainPasswordResetSerializer'
 }
 
 # Database
@@ -126,6 +151,35 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+AUTH_USER_MODEL = 'accounts.Profile'
+ACCOUNT_ADAPTER = 'cblock.accounts.adapters.CustomDomainAdapter'
+SITE_ID = 1
+
+
+if config.frontend_host_domain:
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+
+CSRF_TRUSTED_ORIGINS =  config.allowed_hosts
+
+LOGIN_URL = '/'
+LOGIN_REDIRECT_URL = LOGIN_URL
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/confirm-email'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL
+
+OLD_PASSWORD_FIELD_ENABLED = True
+LOGOUT_ON_PASSWORD_CHANGE = False
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -163,6 +217,7 @@ EMAIL_HOST_USER = config.email_host_user
 EMAIL_HOST_PASSWORD = config.email_password
 EMAIL_PORT = config.email_port
 
+DEFAULT_FROM_EMAIL = config.email_host_user
 
 # dramatiq
 DRAMATIQ_BROKER = {

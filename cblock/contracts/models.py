@@ -1,12 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-
-class Profile(models.Model):
-    """
-    User profile
-    """
-    owner_address = models.CharField(max_length=64, unique=True, blank=False)
+from cblock.accounts.models import Profile
 
 
 class TokenContract(models.Model):
@@ -168,6 +163,11 @@ class LostKeyEmail(EmailAddressLinkAbstract):
 class WeddingEmail(EmailAddressLinkAbstract):
     wedding_contract = models.ForeignKey(WeddingContract, on_delete=models.CASCADE, null=True, default=None,
                                          related_name='mails', related_query_name='contract_mails')
+
+
+class NetworkMode(models.Model):
+    name = models.CharField(blank=False, default='celo', unique=True, max_length=20)
+    mainnet_enabled = models.BooleanField(blank=False, default=False, help_text='Enabled mainnet for users or not')
 
 
 CONTRACT_MODELS = {

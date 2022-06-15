@@ -1,13 +1,14 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
+from cblock.accounts.models import Profile
+from cblock.accounts.permissions import IsAuthenticatedAndContractAdmin
 from cblock.contracts.models import (
-    Profile,
     TokenContract,
     TokenHolder,
     LastWillContract,
@@ -17,7 +18,8 @@ from cblock.contracts.models import (
     WeddingEmail,
     LastWillEmail,
     LostKeyEmail,
-    CONTRACT_MODELS
+    CONTRACT_MODELS,
+    NetworkMode
 )
 from cblock.contracts.serializers import (
     TokenSerializer,
@@ -27,7 +29,8 @@ from cblock.contracts.serializers import (
     WeddingSerializer,
     HistoryResponseSerializer,
     LastWillListSerializer,
-    LostKeyListSerializer
+    LostKeyListSerializer,
+    NetworkModeSerializer
 )
 
 from cblock.contracts.utils import check_terminated_contract
@@ -414,3 +417,47 @@ def platform_statistics(request):
         data={'users': profiles_count, 'contracts': contracts_count},
         status=HTTP_200_OK
     )
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Retrieve current network mode",
+    responses={'200':NetworkModeSerializer()}
+)
+@api_view(http_method_names=['GET'])
+def show_current_network_mode(request):
+    """
+    Returns current permission for deployments
+    """
+    network_mode, _ = NetworkMode.objects.get_or_create(name='celo')
+    serialized_data = NetworkModeSerializer(instance=network_mode).data
+
+    return Response(serialized_data)
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Retrieve current network mode",
+    request_body=NetworkModeSerializer,
+    responses={'200':NetworkModeSerializer()}
+)
+@api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticatedAndContractAdmin])
+def update_network_mode(request):
+    """
+    Returns current permission for deployments
+    """
+    if 'mainnet_enabled' not in request.data:
+        return Response(data={'Error': 'Requwst does not contain "mainnet_enabled" field'}, status=HTTP_400_BAD_REQUEST)
+
+    new_status = request.data.get('mainnet_enabled')
+
+    if not isinstance(new_status, bool):
+        return Response(data={'Error': 'Only boolean values are acceptes'}, status=HTTP_400_BAD_REQUEST)
+
+    network_mode, _ = NetworkMode.objects.get_or_create(name='celo')
+    network_mode.mainnet_enabled = new_status
+    network_mode.save()
+
+    serialized_data = NetworkModeSerializer(instance=network_mode).data
+
+    return Response(serialized_data)

@@ -1,7 +1,14 @@
 from rest_framework import serializers
 
 
-from cblock.contracts.models import TokenContract, LastWillContract, LostKeyContract, WeddingContract, CrowdsaleContract
+from cblock.contracts.models import (
+    TokenContract,
+    LastWillContract,
+    LostKeyContract,
+    WeddingContract,
+    CrowdsaleContract,
+    NetworkMode
+)
 
 import logging
 
@@ -166,3 +173,8 @@ class HistoryResponseSerializer(serializers.Serializer):
     lostkeys = LostKeySerializer()
     crowdsales = CrowdsaleSerializer()
     weddings = WeddingSerializer()
+
+class NetworkModeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NetworkMode
+        fields = ('mainnet_enabled',)

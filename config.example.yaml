@@ -13,6 +13,7 @@ email_port:                            # Email host port (SMTP)
 scanner_sleep: 60                      # Timeout between scans
 rates_checker_interval: 3600           # Timeout between rates fetching
 sentry_dsn: ''                         # URL for Sentry endpoint (set as '' if there is not Sentry)
+frontend_host_domain: ''               # URL for frontend host, if frontend is deployed on separate domain
 networks:
   - name: 'testnet'       # Required, use testnet/mainnet for each network
     ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'

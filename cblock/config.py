@@ -19,6 +19,7 @@ class Network:
     lastwill_factories: list
     lostkey_factories: list
     wedding_factories: list
+    controller_contract: str
     is_testnet: bool
     w3: Web3 = field(init=False, default=None)
     day_seconds: int
@@ -48,6 +49,7 @@ class Config:
     scanner_sleep: int
     rates_checker_interval: int
     sentry_dsn: str
+    frontend_host_domain: str
     networks: List[Network]
 
 
