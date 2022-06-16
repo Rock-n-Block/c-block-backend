@@ -35,6 +35,7 @@ networks:
       - '0x62f89dE5B145f2A8f0b08Ecea7ae8A41C52efBe3'
     wedding_factories:    # Addresses of Wedding factories
       - '0x6584C8feB93c8d7B79C0403E042822f81538557b'
+    controller_contract: '0x6450A6a3800b09da0e195aAc71FA061277CFcfCd'    # Address of controller contract
     is_testnet: True      # Set to True if this is test network
     day_seconds: 86400    # Seconds in day
     confirmation_checkpoints: [1, 3, 7]    # Days between reminders
@@ -58,8 +59,9 @@ networks:
   #    - '0x0a980179dd1aAa0eEaC71787C4Bdf5a362F0877d'
     wedding_factories:
       - '0x0000000000000000000000000000000000000000'
-    test: False
+    controller_contract: '0x0000000000000000000000000000000000000000'    # Address of controller contract
+    is_testnet: False
     day_seconds: 86400
     confirmation_checkpoints: [1, 3, 7]
     dead_wallets_check_interval: 86400
-    tracking_disabled: True
+    tracking_disabled: False
