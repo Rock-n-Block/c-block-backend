@@ -29,7 +29,7 @@ class CustomDomainAdapter(DefaultAccountAdapter):
         ctx = {
             "user": emailconfirmation.email_address.user,
             "activate_url": activate_url,
-            "current_site": current_site,
+            "current_site": get_domain_for_emails(request),
             "key": emailconfirmation.key,
         }
         if signup:
