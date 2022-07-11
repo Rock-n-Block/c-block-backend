@@ -4,8 +4,7 @@ on:
   push:
     branches:
      - master
-     - feature*
-     - CB-*
+
 #  pull_request:
 #    branches: [ master ]
 

@@ -8,10 +8,9 @@ WORKDIR /code
 RUN apt-get update && apt-get install -y netcat
 RUN pip install --upgrade pip
 
-RUN pip install "poetry==1.1.12"
-COPY pyproject.toml /code/
-RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi
+RUN pip install --upgrade pip
+COPY requirements.txt /code/requirements.txt
+RUN pip install -r requirements.txt
 
 EXPOSE 8000
 
