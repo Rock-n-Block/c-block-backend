@@ -22,14 +22,14 @@ class Profile(AbstractUser):
 
     owner_address = models.CharField(max_length=64, unique=True, blank=False)
 
-    name = models.CharField(max_length=128, blank=True, default=None)
-    company = models.CharField(max_length=129, blank=True, default=None)
-    phone_number = PhoneField(blank=True, default=None)
-    country = CountryField(blank=True, default=None)
-    city = models.CharField(max_length=128, blank=True, default=None)
-    street = models.CharField(max_length=128, blank=True, default=None)
-    office = models.CharField(max_length=32, blank=True, default=None)
-    zipcode = models.IntegerField(blank=True, default=None)
+    name = models.CharField(max_length=128, blank=True, null=True, default=None)
+    company = models.CharField(max_length=129, blank=True, null=True, default=None)
+    phone_number = PhoneField(blank=True, null=True, default=None)
+    country = CountryField(blank=True, null=True, default=None)
+    city = models.CharField(max_length=128, blank=True, null=True, default=None)
+    street = models.CharField(max_length=128, blank=True, null=True, default=None)
+    office = models.CharField(max_length=32, blank=True, null=True, default=None)
+    zipcode = models.IntegerField(blank=True, null=True, default=None)
 
 
     class Meta:

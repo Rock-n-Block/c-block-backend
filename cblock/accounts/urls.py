@@ -2,13 +2,16 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 
 from rest_auth.views import (
-    LoginView, LogoutView, UserDetailsView, PasswordChangeView,
+    LoginView, LogoutView, PasswordChangeView,
     PasswordResetView, PasswordResetConfirmView
 )
 from rest_auth.registration.views import RegisterView, VerifyEmailView
 from allauth.account.views import ConfirmEmailView
 
-from cblock.accounts.views import MetamaskUserDetailsView, generate_metamask_message
+from cblock.accounts.views import (
+    MetamaskUserDetailsView,
+    generate_metamask_message
+)
 
 
 
