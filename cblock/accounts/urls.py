@@ -10,13 +10,13 @@ from allauth.account.views import ConfirmEmailView
 
 from cblock.accounts.views import (
     MetamaskUserDetailsView,
-    generate_metamask_message
+    GenerateMetamaskMessageView
 )
 
 
 
 urlpatterns = [
-    path('get_metamask_message/', generate_metamask_message),
+    path('get_metamask_message/', GenerateMetamaskMessageView.as_view()),
 
     path('registration/', RegisterView.as_view(), name='account_signup'),
     path('registration/account-confirm-email/<str:key>/', ConfirmEmailView.as_view(), name='account_confirm_email'),
