@@ -10,7 +10,8 @@ from allauth.account.views import ConfirmEmailView
 
 from cblock.accounts.views import (
     MetamaskUserDetailsView,
-    GenerateMetamaskMessageView
+    GenerateMetamaskMessageView,
+    RetrieveCountryInfoView
 )
 
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='account_login'),
     path('logout/', LogoutView.as_view(), name='account_logout'),
     path('user/', MetamaskUserDetailsView.as_view(), name='account_user_details'),
+    path('country_codes/', RetrieveCountryInfoView.as_view(), name='retrieve_country_codes'),
 
     path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),

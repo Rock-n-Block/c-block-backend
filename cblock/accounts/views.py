@@ -57,8 +57,8 @@ class RetrieveCountryInfoView(APIView):
         countries_with_phone_code = []
         for code, country_name in countries_list:
             country_info = {
-                'code': code,
-                'full_name': country_name,
+                'country_code': code,
+                'country_name': country_name,
                 'phone_code': get_phone_code(code)
             }
             countries_with_phone_code.append(country_info)
