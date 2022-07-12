@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser
 
 from django_countries import countries
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
@@ -29,13 +29,6 @@ class MetamaskUserDetailsView(RetrieveUpdateAPIView):
     def get_queryset(self):
         return get_user_model().objects.none()
 
-    # @swagger_auto_schema(
-    #     operation_description="Update current user info",
-    #     # parser_classes=(MultiPartParser,),
-    #     # request_body=MetamaskUserSerializer,
-    #     manual_parameters=[openapi.Parameter('avatar', openapi.IN, type=openapi.TYPE_BOOLEAN)],
-    #     responses={200: MetamaskUserSerializer, 400: "attr: this attr is occupied"},
-    # )
     def get(self, request, *args, **kwargs):
         ret = super().get(request, *args, **kwargs)
         data = ret.data
@@ -44,25 +37,6 @@ class MetamaskUserDetailsView(RetrieveUpdateAPIView):
         data.update(extra_data)
         return Response(data)
 
-    @swagger_auto_schema(
-        operation_description="Update current user info",
-        parser_classes=(MultiPartParser,),
-        request_body=MetamaskUserSerializer,
-        manual_parameters=[openapi.Parameter('avatar', openapi.IN_FORM, type=openapi.TYPE_BOOLEAN)],
-        responses={200: MetamaskUserSerializer, 400: "attr: this attr is occupied"},
-    )
-    def put(self, request, *args, **kwargs):
-        super().put(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        operation_description="Partial update current user info",
-        parser_classes=(MultiPartParser,),
-        request_body=MetamaskUserSerializer,
-        manual_parameters=[openapi.Parameter('avatar', openapi.IN_FORM, type=openapi.TYPE_BOOLEAN)],
-        responses={200: MetamaskUserSerializer, 400: "attr: this attr is occupied"},
-    )
-    def patch(self, request, *args, **kwargs):
-        super().patch(request, *args, **kwargs)
 
 class GenerateMetamaskMessageView(APIView):
     @staticmethod
