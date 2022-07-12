@@ -31,6 +31,8 @@ class Profile(AbstractUser):
     office = models.CharField(max_length=32, blank=True, null=True, default=None)
     zipcode = models.IntegerField(blank=True, null=True, default=None)
 
+    avatar = models.ImageField(null=True, upload_to='avatars/')
+
 
     class Meta:
         unique_together = (("email", "owner_address"),)

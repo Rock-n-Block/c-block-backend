@@ -54,9 +54,10 @@ class MetamaskUserSerializer(CountryFieldMixin, serializers.ModelSerializer):
         model = Profile
         fields = [
             'email', 'owner_address', 'name', 'company', 'phone_number',
-            'country', 'city', 'street', 'office', 'zipcode'
+            'country', 'city', 'street', 'office', 'zipcode', 'avatar'
         ]
         read_only_fields = ['email', 'owner_address']
+        extra_kwargs = {'is_completed_profile': {'read_only': True}}
 
 
 class MetamaskRegisterSerializer(RegisterSerializer):
