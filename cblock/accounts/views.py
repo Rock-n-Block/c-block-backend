@@ -18,6 +18,11 @@ from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 from cblock.accounts.models import Profile
 from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer
 
+def add_profile_completion_to_response(response: Response, profile: Profile):
+    data = response.data
+    extra_data = {'is_completed_profile': profile.is_completed_profile()}
+    data.update(extra_data)
+    return data
 
 class MetamaskUserDetailsView(RetrieveUpdateAPIView):
     serializer_class = MetamaskUserSerializer
@@ -31,11 +36,18 @@ class MetamaskUserDetailsView(RetrieveUpdateAPIView):
 
     def get(self, request, *args, **kwargs):
         ret = super().get(request, *args, **kwargs)
-        data = ret.data
-        instance: Profile = self.get_object()
-        extra_data = {'is_completed_profile': instance.is_completed_profile()}
-        data.update(extra_data)
-        return Response(data)
+        response_data = add_profile_completion_to_response(ret, self.get_object())
+        return Response(response_data)
+
+    def put(self, request, *args, **kwargs):
+        ret = super().put(request, *args, **kwargs)
+        response_data = add_profile_completion_to_response(ret, self.get_object())
+        return Response(response_data)
+
+    def patch(self, request, *args, **kwargs):
+        ret = super().patch(request, *args, **kwargs)
+        response_data = add_profile_completion_to_response(ret, self.get_object())
+        return Response(response_data)
 
 
 class GenerateMetamaskMessageView(APIView):
