@@ -42,6 +42,7 @@ class MetamaskUserDetailsView(APIView):
 
     @swagger_auto_schema(
         operation_description="Update user info",
+        request_body=MetamaskUserSerializer,
         responses={200: MetamaskUserSerializer},
     )
     def patch(self, request):
