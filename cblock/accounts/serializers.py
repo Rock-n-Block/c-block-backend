@@ -8,6 +8,7 @@ from rest_auth.registration.serializers import SocialLoginSerializer, RegisterSe
 from rest_auth.serializers import PasswordResetSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
+from django_countries.serializers import CountryFieldMixin
 
 from cblock.settings import DEFAULT_FROM_EMAIL
 from cblock.accounts.models import Profile
@@ -47,12 +48,15 @@ class MetamaskLoginSerializer(SocialLoginSerializer):
 
         return attrs
 
-class MetamaskUserSerializer(serializers.ModelSerializer):
+class MetamaskUserSerializer(CountryFieldMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['email', 'owner_address']
-        read_only_fields = fields
+        fields = [
+            'email', 'owner_address', 'name', 'company', 'phone_number',
+            'country', 'city', 'street', 'office', 'building', 'zipcode', 'avatar'
+        ]
+        read_only_fields = ['email', 'owner_address']
 
 
 class MetamaskRegisterSerializer(RegisterSerializer):
