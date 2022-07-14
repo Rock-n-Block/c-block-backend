@@ -3,6 +3,7 @@ from string import ascii_letters
 
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -10,7 +11,7 @@ from rest_auth.registration.views import SocialLoginView
 from rest_auth.registration.serializers import VerifyEmailSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from cblock.accounts.models import Profile
@@ -37,3 +38,10 @@ def generate_metamask_message(request):
 
     return Response(generated_message)
 
+class MetamaskUserListView(ListAPIView):
+    serializer_class = MetamaskUserSerializer
+    permission_classes = (IsAuthenticated,)
+
+    @permission_required('profile.can_view')
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
