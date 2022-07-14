@@ -2,7 +2,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 
 from rest_auth.views import (
-    LoginView, LogoutView, UserDetailsView, PasswordChangeView,
+    LoginView, LogoutView, PasswordChangeView,
     PasswordResetView, PasswordResetConfirmView
 )
 from rest_auth.registration.views import RegisterView, VerifyEmailView
@@ -10,14 +10,15 @@ from allauth.account.views import ConfirmEmailView
 
 from cblock.accounts.views import (
     MetamaskUserDetailsView,
-    generate_metamask_message,
-    MetamaskUserListView
+    GenerateMetamaskMessageView,
+    RetrieveCountryInfoView,
+    UserListView
 )
 
 
 
 urlpatterns = [
-    path('get_metamask_message/', generate_metamask_message),
+    path('get_metamask_message/', GenerateMetamaskMessageView.as_view()),
 
     path('registration/', RegisterView.as_view(), name='account_signup'),
     path('registration/account-confirm-email/<str:key>/', ConfirmEmailView.as_view(), name='account_confirm_email'),
@@ -27,7 +28,9 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='account_login'),
     path('logout/', LogoutView.as_view(), name='account_logout'),
     path('user/', MetamaskUserDetailsView.as_view(), name='account_user_details'),
-    path('users_list/', MetamaskUserListView.as_view(), name='account_user_list'),
+    path('country_codes/', RetrieveCountryInfoView.as_view(), name='retrieve_country_codes'),
+
+    path('users_list/', UserListView.as_view(), name='account_user_list'),
 
     path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
