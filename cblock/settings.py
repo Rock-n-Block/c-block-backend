@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'django_dramatiq',
+    'guardian',
     'cblock.accounts',
     'cblock.contracts',
     'cblock.scheduler',

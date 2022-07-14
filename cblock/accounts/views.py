@@ -4,6 +4,7 @@ from string import ascii_letters
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -38,10 +39,13 @@ def generate_metamask_message(request):
 
     return Response(generated_message)
 
-class MetamaskUserListView(ListAPIView):
+class UserListView(PermissionRequiredMixin, ListAPIView):
+    queryset =  Profile.objects.all()
     serializer_class = MetamaskUserSerializer
     permission_classes = (IsAuthenticated,)
+    permission_required = 'accounts.view_profile'
+    def get(self, request, *args, **kwargs):
+        user: Profile = request.user
+        return super().get(request, *args, **kwargs)
 
-    @permission_required('profile.can_view')
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+# class UpdatePermissionsView(APIView)

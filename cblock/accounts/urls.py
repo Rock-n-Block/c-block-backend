@@ -27,9 +27,9 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='account_login'),
     path('logout/', LogoutView.as_view(), name='account_logout'),
     path('user/', MetamaskUserDetailsView.as_view(), name='account_user_details'),
+    path('users_list/', MetamaskUserListView.as_view(), name='account_user_list'),
 
     path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
-    path('password/change/', PasswordChangeView.as_view(), name='account_password_change'),
-    path('list_users/', MetamaskUserListView.as_view(), name='')
+    path('password/change/', PasswordChangeView.as_view(), name='account_password_change')
 ]
