@@ -12,7 +12,8 @@ from cblock.accounts.views import (
     MetamaskUserDetailsView,
     GenerateMetamaskMessageView,
     RetrieveCountryInfoView,
-    UserListView
+    UserListView,
+    AdminPermissionUpdateView
 )
 
 
@@ -34,5 +35,7 @@ urlpatterns = [
 
     path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
-    path('password/change/', PasswordChangeView.as_view(), name='account_password_change')
+    path('password/change/', PasswordChangeView.as_view(), name='account_password_change'),
+
+    path('permissions/update/', AdminPermissionUpdateView.as_view(), name='account_permissions_update')
 ]

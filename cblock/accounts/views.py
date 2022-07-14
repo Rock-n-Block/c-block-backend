@@ -19,23 +19,16 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, JSONParser
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework import status
 
 from django_countries import countries
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
 from cblock.accounts.models import Profile
 from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer
+from cblock.accounts.permissions import IsAuthenticatedAndContractSuperAdmin, update_permission_value
 
-def add_profile_completion_to_response(response_data, profile: Profile):
-    extra_data = {'is_completed_profile': profile.is_completed_profile()}
-    response_data.update(extra_data)
-    return response_data
-
-def add_profile_permissions_to_response(response_data, profile: Profile):
-    extra_data = {'permissions': profile.get_role_system_permissions()}
-    response_data.update(extra_data)
-    return response_data
+USER_NOT_FOUND_RESPONSE = "user not found"
 
 class MetamaskUserDetailsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -46,9 +39,7 @@ class MetamaskUserDetailsView(APIView):
     )
     def get(self, request):
         response_data = MetamaskUserSerializer(request.user).data
-        response_data = add_profile_completion_to_response(response_data, request.user)
-        response_data = add_profile_permissions_to_response(response_data, request.user)
-        return Response(response_data, status=HTTP_200_OK)
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_description="Update user info",
@@ -73,10 +64,9 @@ class MetamaskUserDetailsView(APIView):
         if serializer.is_valid():
             res = serializer.save()
         if serializer.errors:
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         response_data = MetamaskUserSerializer(user).data
-        response_data = add_profile_completion_to_response(response_data, user)
         return Response(response_data)
 
 class GenerateMetamaskMessageView(APIView):
@@ -114,12 +104,48 @@ class RetrieveCountryInfoView(APIView):
 
 
 class UserListView(PermissionRequiredMixin, ListAPIView):
-    queryset =  Profile.objects.all()
+    queryset =  Profile.objects.exclude(owner_address="")
     serializer_class = MetamaskUserSerializer
     permission_classes = (IsAuthenticated,)
     permission_required = 'accounts.view_profile'
-    def get(self, request, *args, **kwargs):
-        user: Profile = request.user
-        return super().get(request, *args, **kwargs)
 
-# class UpdatePermissionsView(APIView)
+    def get_object(self):
+        user_data = super().get_object()
+
+class AdminPermissionUpdateView(APIView):
+    permission_classes = [IsAuthenticatedAndContractSuperAdmin,]
+
+    def post(self, request):
+        user_id = request.data.get('id')
+
+        try:
+            user = Profile.objects.get(id=request.data.get('id'))
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": USER_NOT_FOUND_RESPONSE}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        can_view_users = request.data.get('can_view_users')
+        if can_view_users is not None:
+            update_permission_value(
+                can_view_users,
+                'accounts.view_profile',
+                user
+            )
+
+        can_change_network_mode = request.data.get('can_change_network_mode')
+        if can_change_network_mode is not None:
+            from cblock.contracts.models import NetworkMode
+            network_mode_obj = NetworkMode.objects.get_or_create(name='celo')
+
+            update_permission_value(
+                can_change_network_mode,
+                'contracts.edit_networkmode',
+                user,
+                network_mode_obj
+            )
+
+        response_data = MetamaskUserSerializer(user).data
+        return Response(response_data)
+
+

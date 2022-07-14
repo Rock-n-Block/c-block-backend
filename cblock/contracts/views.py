@@ -7,7 +7,7 @@ from drf_yasg import openapi
 
 
 from cblock.accounts.models import Profile
-from cblock.accounts.permissions import IsAuthenticatedAndContractAdmin
+from cblock.accounts.permissions import IsAuthenticatedAndContractSuperAdmin
 from cblock.contracts.models import (
     TokenContract,
     TokenHolder,
@@ -39,7 +39,6 @@ from cblock.settings import config
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 @swagger_auto_schema(
     method='get',
@@ -436,12 +435,12 @@ def show_current_network_mode(request):
 
 @swagger_auto_schema(
     method='post',
-    operation_description="Retrieve current network mode",
+    operation_description="Update current network mode",
     request_body=NetworkModeSerializer,
     responses={'200':NetworkModeSerializer()}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticatedAndContractAdmin])
+@permission_classes([IsAuthenticatedAndContractSuperAdmin])
 def update_network_mode(request):
     """
     Returns current permission for deployments

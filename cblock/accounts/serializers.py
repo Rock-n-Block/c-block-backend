@@ -53,10 +53,17 @@ class MetamaskUserSerializer(CountryFieldMixin, serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            'email', 'owner_address', 'name', 'company', 'phone_number',
-            'country', 'city', 'street', 'office', 'building', 'zipcode', 'avatar'
+            'id', 'email', 'owner_address', 'name', 'company', 'phone_number',
+            'country', 'city', 'street', 'office', 'building', 'zipcode',
+            'avatar', 'freezed'
         ]
-        read_only_fields = ['email', 'owner_address']
+        read_only_fields = ['id', 'email', 'owner_address']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['is_completed_profile'] = instance.is_completed_profile()
+        rep['permissions'] = instance.get_role_system_permissions()
+        return rep
 
 
 class MetamaskRegisterSerializer(RegisterSerializer):
