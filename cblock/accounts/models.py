@@ -29,8 +29,8 @@ class Profile(AbstractUser):
     city = models.CharField(max_length=128, blank=True, null=True, default=None)
     street = models.CharField(max_length=128, blank=True, null=True, default=None)
     office = models.CharField(max_length=32, blank=True, null=True, default=None)
-    zipcode = models.IntegerField(blank=True, null=True, default=None)
-
+    building = models.CharField(max_length=32, blank=True, null=True, default=None)
+    zipcode = models.CharField(max_length=32, blank=True, null=True, default=None)
     avatar = models.ImageField(null=True, upload_to='avatars/')
 
 

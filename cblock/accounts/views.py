@@ -1,3 +1,6 @@
+import logging
+import json
+
 from random import choice
 from string import ascii_letters
 
@@ -8,47 +11,58 @@ from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.serializers import ModelSerializer
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from django_countries import countries
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
 from cblock.accounts.models import Profile
-from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer
+from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer, MetamaskUserPatchSerializer
 
-def add_profile_completion_to_response(response: Response, profile: Profile):
-    data = response.data
+def add_profile_completion_to_response(response_data, profile: Profile):
     extra_data = {'is_completed_profile': profile.is_completed_profile()}
-    data.update(extra_data)
-    return data
+    response_data.update(extra_data)
+    return response_data
 
-class MetamaskUserDetailsView(RetrieveUpdateAPIView):
-    serializer_class = MetamaskUserSerializer
-    permission_classes = (IsAuthenticated,)
+class MetamaskUserDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
+    @swagger_auto_schema(
+        operation_description="Get user info",
+        responses={200: MetamaskUserSerializer},
+    )
+    def get(self, request):
+        response_data = MetamaskUserSerializer(request.user).data
+        response_data = add_profile_completion_to_response(response_data, request.user)
+        return Response(response_data, status=HTTP_200_OK)
 
-    def get_queryset(self):
-        return get_user_model().objects.none()
+    def patch(self, request):
+        user = request.user
+        request_data = request.data
 
-    def get(self, request, *args, **kwargs):
-        ret = super().get(request, *args, **kwargs)
-        response_data = add_profile_completion_to_response(ret, self.get_object())
+        # handling multipart form data
+        if list(request_data.keys()) == ['data', 'avatar']:
+             multipart_data = request_data.get('data')
+             request_data = json.loads(multipart_data)
+
+        avatar = request.FILES.get('avatar')
+        if avatar:
+            request_data.pop('avatar', None)
+            request_data['avatar'] = avatar
+
+        serializer = MetamaskUserSerializer(user, data=request_data, partial=True)
+        if serializer.is_valid():
+            res = serializer.save()
+        if serializer.errors:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        response_data = MetamaskUserSerializer(user).data
+        response_data = add_profile_completion_to_response(response_data, user)
         return Response(response_data)
-
-    def put(self, request, *args, **kwargs):
-        ret = super().put(request, *args, **kwargs)
-        response_data = add_profile_completion_to_response(ret, self.get_object())
-        return Response(response_data)
-
-    def patch(self, request, *args, **kwargs):
-        ret = super().patch(request, *args, **kwargs)
-        response_data = add_profile_completion_to_response(ret, self.get_object())
-        return Response(response_data)
-
 
 class GenerateMetamaskMessageView(APIView):
     @staticmethod
