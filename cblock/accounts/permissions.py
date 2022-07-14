@@ -2,10 +2,6 @@ import logging
 
 from rest_framework.permissions import BasePermission
 
-from contract_abi import CONTROLLER_ABI
-from cblock.settings import config
-
-
 class IsAuthenticatedAndContractAdmin(BasePermission):
     """
     Permission to check Super Admin on contract

@@ -32,6 +32,11 @@ def add_profile_completion_to_response(response_data, profile: Profile):
     response_data.update(extra_data)
     return response_data
 
+def add_profile_permissions_to_response(response_data, profile: Profile):
+    extra_data = {'permissions': profile.get_role_system_permissions()}
+    response_data.update(extra_data)
+    return response_data
+
 class MetamaskUserDetailsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -42,6 +47,7 @@ class MetamaskUserDetailsView(APIView):
     def get(self, request):
         response_data = MetamaskUserSerializer(request.user).data
         response_data = add_profile_completion_to_response(response_data, request.user)
+        response_data = add_profile_permissions_to_response(response_data, request.user)
         return Response(response_data, status=HTTP_200_OK)
 
     @swagger_auto_schema(

@@ -84,3 +84,25 @@ class Profile(AbstractUser):
         can_change_payment_addresses = controller_contract.functions.canSetFeeReceiver(user_address).call()
         logging.info(f'User {user_address} can change payment addresses: {can_change_payment_addresses}')
         return can_change_payment_addresses
+
+    def get_role_system_permissions(self):
+        contract_super_admin = self.is_contract_super_admin()
+        contract_change_price = self.is_contract_change_price_admin()
+        contract_change_payment_addresses = self.is_contract_change_payment_addresses_admin()
+        # Enable/disable mainnet toggle
+        can_change_network_mode = self.has_perm('contracts.edit_networkmode')
+
+        # View user database
+        can_view_profiles = self.has_perm('accounts.view_profile')
+        # Freeze users
+        # Contact users
+
+        return {
+            'contract_super_admin': contract_super_admin,
+            'can_change_price': contract_change_price,
+            'can_change_payment_addresses': contract_change_payment_addresses,
+            'can_change_network_mode': can_change_network_mode,
+            'can_view_users': can_view_profiles,
+            'can_freeze_users': False,
+            'can_contact_users': False,
+        }
