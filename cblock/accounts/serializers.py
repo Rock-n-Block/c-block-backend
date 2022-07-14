@@ -59,30 +59,6 @@ class MetamaskUserSerializer(CountryFieldMixin, serializers.ModelSerializer):
         read_only_fields = ['email', 'owner_address']
 
 
-class MetamaskUserPatchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = (
-            "name",
-            "company",
-            "phone_number",
-            "country",
-            "city",
-            "street",
-            "office",
-            "building",
-            "zipcode",
-            "avatar"
-        )
-
-    # def update(self, instance, validated_data):
-    #     logging.info("started patch")
-    #     for attr, value in validated_data.items():
-    #         logging.info(f"{attr} - {value}")
-    #         setattr(instance, attr, value)
-    #     instance.save()
-    #     return instance
-
 class MetamaskRegisterSerializer(RegisterSerializer):
     username = None
     owner_address = serializers.CharField(required=True, allow_blank=False)

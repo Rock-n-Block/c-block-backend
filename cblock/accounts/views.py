@@ -21,7 +21,7 @@ from django_countries import countries
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
 from cblock.accounts.models import Profile
-from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer, MetamaskUserPatchSerializer
+from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer
 
 def add_profile_completion_to_response(response_data, profile: Profile):
     extra_data = {'is_completed_profile': profile.is_completed_profile()}
@@ -40,6 +40,10 @@ class MetamaskUserDetailsView(APIView):
         response_data = add_profile_completion_to_response(response_data, request.user)
         return Response(response_data, status=HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="Update user info",
+        responses={200: MetamaskUserSerializer},
+    )
     def patch(self, request):
         user = request.user
         request_data = request.data
