@@ -70,7 +70,6 @@ class Profile(AbstractUser):
 
         user_address = network.w3.toChecksumAddress(self.owner_address)
         contract_owner = controller_contract.functions.owner().call()
-        contract_owner = '0xe7513343c3ead5c17f5e9d857a4b7fab07f56d0a'
         is_admin = contract_owner.lower() == user_address.lower()
         # logging.info(f'User {user_address} is_admin: {is_admin} ({contract_owner})')
         return is_admin
