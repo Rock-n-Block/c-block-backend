@@ -1,13 +1,15 @@
+# from django.contrib.auth.decorators import permission_required
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-
 from cblock.accounts.models import Profile
-from cblock.accounts.permissions import IsAuthenticatedAndContractSuperAdmin
 from cblock.contracts.models import (
     TokenContract,
     TokenHolder,
@@ -440,8 +442,14 @@ def show_current_network_mode(request):
     responses={'200':NetworkModeSerializer()}
 )
 @api_view(http_method_names=['POST'])
-@permission_classes([IsAuthenticatedAndContractSuperAdmin])
+@permission_classes([IsAuthenticated])
 def update_network_mode(request):
+    network_mode, _ = NetworkMode.objects.get_or_create(name='celo')
+
+    user: Profile = request.user
+    if not user.has_perm('contracts.change_networkmode', network_mode):
+        raise PermissionDenied
+
     """
     Returns current permission for deployments
     """
@@ -453,7 +461,7 @@ def update_network_mode(request):
     if not isinstance(new_status, bool):
         return Response(data={'Error': 'Only boolean values are acceptes'}, status=HTTP_400_BAD_REQUEST)
 
-    network_mode, _ = NetworkMode.objects.get_or_create(name='celo')
+
     network_mode.mainnet_enabled = new_status
     network_mode.save()
 

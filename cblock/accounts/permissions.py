@@ -3,6 +3,17 @@ import logging
 from rest_framework.permissions import BasePermission
 from guardian.shortcuts import assign_perm, remove_perm
 
+PERMISSION_LIST_USERS = {
+    'can_view_users': 'accounts.view_profile',
+    'can_freeze_users': 'accounts.freeze_profile',
+    'can_contact_users': 'accounts.contact_profile',
+}
+
+PERMISSION_LIST_CONTRACTS = {
+    'can_change_network_mode': 'contracts.change_networkmode'
+}
+
+
 class IsAuthenticatedAndContractSuperAdmin(BasePermission):
     """
     Permission to check Super Admin on contract
@@ -43,3 +54,23 @@ def update_permission_value(value, permission_name, user, obj=None):
         assign_perm(permission_name, user, obj)
     else:
         remove_perm(permission_name, user, obj)
+
+def change_super_admin(old_user, new_user):
+    if old_user == new_user:
+        logging.error('old user == new user')
+        return
+
+    for profile_perm_slug, profile_perm_value in PERMISSION_LIST_USERS.items():
+        update_permission_value(True, profile_perm_value, new_user)
+        update_permission_value(False, profile_perm_value, old_user)
+
+    for contracts_perm_slug, contracts_perm_value in PERMISSION_LIST_CONTRACTS.items():
+        if contracts_perm_slug == 'can_change_network_mode':
+            from cblock.contracts.models import NetworkMode
+            contracts_obj, _ = NetworkMode.objects.get_or_create(name='celo')
+        else:
+            contracts_obj = None
+        update_permission_value(True, contracts_perm_value, new_user, contracts_obj)
+        update_permission_value(False, contracts_perm_value, old_user, contracts_obj)
+
+    logging.info(f'superuser updated {old_user} -> {new_user}')

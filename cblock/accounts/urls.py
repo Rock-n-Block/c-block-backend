@@ -13,7 +13,9 @@ from cblock.accounts.views import (
     GenerateMetamaskMessageView,
     RetrieveCountryInfoView,
     UserListView,
-    AdminPermissionUpdateView
+    AdminPermissionUpdateView,
+    UserFreezeView,
+    UserContactView
 )
 
 
@@ -31,11 +33,12 @@ urlpatterns = [
     path('user/', MetamaskUserDetailsView.as_view(), name='account_user_details'),
     path('country_codes/', RetrieveCountryInfoView.as_view(), name='retrieve_country_codes'),
 
-    path('users_list/', UserListView.as_view(), name='account_user_list'),
-
     path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
     path('password/change/', PasswordChangeView.as_view(), name='account_password_change'),
 
-    path('permissions/update/', AdminPermissionUpdateView.as_view(), name='account_permissions_update')
+    path('role_system/users_list/', UserListView.as_view(), name='account_user_list'),
+    path('role_system/update_permissions/', AdminPermissionUpdateView.as_view(), name='account_permissions_update'),
+    path('role_system/freeze_user/', UserFreezeView.as_view(), name='account_permissions_update'),
+    path('role_system/contact_user/', UserContactView.as_view(), name='account_permissions_update')
 ]

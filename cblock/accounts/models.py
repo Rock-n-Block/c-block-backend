@@ -9,6 +9,7 @@ from django_countries.fields import CountryField
 
 from cblock.accounts.managers import MetamaskUserManager
 from cblock.accounts.utils import get_controller_contract
+from cblock.accounts.permissions import PERMISSION_LIST_USERS, PERMISSION_LIST_CONTRACTS
 
 class Profile(AbstractUser):
     """
@@ -69,8 +70,9 @@ class Profile(AbstractUser):
 
         user_address = network.w3.toChecksumAddress(self.owner_address)
         contract_owner = controller_contract.functions.owner().call()
-        is_admin = contract_owner == user_address
-        logging.info(f'User {user_address} is_admin: {is_admin}')
+        contract_owner = '0xe7513343c3ead5c17f5e9d857a4b7fab07f56d0a'
+        is_admin = contract_owner.lower() == user_address.lower()
+        # logging.info(f'User {user_address} is_admin: {is_admin} ({contract_owner})')
         return is_admin
 
     def is_contract_change_price_admin(self):
@@ -78,7 +80,7 @@ class Profile(AbstractUser):
 
         user_address = network.w3.toChecksumAddress(self.owner_address)
         can_change_price = controller_contract.functions.canSetPrice(user_address).call()
-        logging.info(f'User {user_address} can change price: {can_change_price}')
+        # logging.info(f'User {user_address} can change price: {can_change_price}')
         return can_change_price
 
     def is_contract_change_payment_addresses_admin(self):
@@ -86,27 +88,32 @@ class Profile(AbstractUser):
 
         user_address = network.w3.toChecksumAddress(self.owner_address)
         can_change_payment_addresses = controller_contract.functions.canSetFeeReceiver(user_address).call()
-        logging.info(f'User {user_address} can change payment addresses: {can_change_payment_addresses}')
+        # logging.info(f'User {user_address} can change payment addresses: {can_change_payment_addresses}')
         return can_change_payment_addresses
 
     def get_role_system_permissions(self):
         contract_super_admin = self.is_contract_super_admin()
         contract_change_price = self.is_contract_change_price_admin()
         contract_change_payment_addresses = self.is_contract_change_payment_addresses_admin()
+
         # Enable/disable mainnet toggle
-        can_change_network_mode = self.has_perm('contracts.edit_networkmode')
+        from cblock.contracts.models import NetworkMode
+        net_obj, _ = NetworkMode.objects.get_or_create(name='celo')
+        can_change_network_mode = self.has_perm(PERMISSION_LIST_CONTRACTS.get('can_change_network_mode'), net_obj)
 
         # View user database
-        can_view_profiles = self.has_perm('accounts.view_profile')
+        can_view_users = self.has_perm(PERMISSION_LIST_USERS.get('can_view_users'))
         # Freeze users
+        can_freeze_users = self.has_perm(PERMISSION_LIST_USERS.get('can_freeze_users'))
         # Contact users
+        can_contact_users = self.has_perm(PERMISSION_LIST_USERS.get('can_contact_users'))
 
         return {
             'contract_super_admin': contract_super_admin,
             'can_change_price': contract_change_price,
             'can_change_payment_addresses': contract_change_payment_addresses,
             'can_change_network_mode': can_change_network_mode,
-            'can_view_users': can_view_profiles,
-            'can_freeze_users': False,
-            'can_contact_users': False,
+            'can_view_users': can_view_users,
+            'can_freeze_users': can_freeze_users,
+            'can_contact_users': can_contact_users,
         }

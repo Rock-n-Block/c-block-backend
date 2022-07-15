@@ -27,7 +27,12 @@ from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
 from cblock.accounts.models import Profile
 from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer
-from cblock.accounts.permissions import IsAuthenticatedAndContractSuperAdmin, update_permission_value
+from cblock.accounts.permissions import (
+    IsAuthenticatedAndContractSuperAdmin,
+    update_permission_value,
+    PERMISSION_LIST_USERS,
+    PERMISSION_LIST_CONTRACTS
+)
 
 from cblock.mails.mail_messages import EMAIL_TEXTS
 from cblock.settings import config
@@ -91,8 +96,21 @@ def get_phone_code(iso):
 
 class RetrieveCountryInfoView(APIView):
 
-    @staticmethod
-    def get(request):
+    @swagger_auto_schema(
+        operation_description="get info of country codes",
+        responses={200: openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'country_code': openapi.Schema(type=openapi.TYPE_STRING),
+                    'country_name': openapi.Schema(type=openapi.TYPE_STRING),
+                    'phone_code': openapi.Schema(type=openapi.TYPE_INTEGER)
+                }
+            )
+        )}
+    )
+    def get(self, request):
         countries_list = list(countries)
         countries_with_phone_code = []
         for code, country_name in countries_list:
@@ -112,6 +130,7 @@ class UserListView(PermissionRequiredMixin, ListAPIView):
     serializer_class = MetamaskUserSerializer
     permission_classes = (IsAuthenticated,)
     permission_required = 'accounts.view_profile'
+    raise_exception = True
 
     def get_object(self):
         user_data = super().get_object()
@@ -144,34 +163,42 @@ class AdminPermissionUpdateView(APIView):
                 {"error": USER_NOT_FOUND_RESPONSE}, status=status.HTTP_404_NOT_FOUND
             )
 
+        profile_perms_names = PERMISSION_LIST_USERS
+        contracts_perms_names = PERMISSION_LIST_CONTRACTS
         can_view_users = request.data.get('can_view_users')
         if can_view_users is not None:
-            update_permission_value(can_view_users, 'accounts.view_profile', user)
+            update_permission_value(can_view_users, profile_perms_names.get('can_view_users'), user)
 
         can_freeze_users = request.data.get('can_freeze_users')
         if can_freeze_users is not None:
-            update_permission_value(can_freeze_users,'accounts.freeze_profile', user)
+            update_permission_value(can_freeze_users,profile_perms_names.get('can_freeze_users'), user)
 
         can_contact_users = request.data.get('can_contact_users')
         if can_contact_users is not None:
-            update_permission_value(can_contact_users, 'accounts.contact_profile', user)
+            update_permission_value(can_contact_users, profile_perms_names.get('can_contact_users'), user)
 
         # Setting `view` permission if it was not passed
-        if can_freeze_users or can_contact_users and not can_view_users:
-            update_permission_value(can_view_users, 'accounts.view_profile', user)
+        if (can_freeze_users or can_contact_users) and not can_view_users:
+            update_permission_value(True, profile_perms_names.get('can_view_users'), user)
 
         can_change_network_mode = request.data.get('can_change_network_mode')
         if can_change_network_mode is not None:
             from cblock.contracts.models import NetworkMode
-            network_mode_obj = NetworkMode.objects.get_or_create(name='celo')
-            update_permission_value(can_change_network_mode, 'contracts.edit_networkmode', user, network_mode_obj)
+            network_mode_obj, _ = NetworkMode.objects.get_or_create(name='celo')
+            update_permission_value(
+                can_change_network_mode,
+                contracts_perms_names.get('can_change_network_mode'),
+                user,
+                network_mode_obj
+            )
 
         response_data = MetamaskUserSerializer(user).data
         return Response(response_data)
 
 
 class UserFreezeView(PermissionRequiredMixin, APIView):
-
+    permission_required = 'accounts.freeze_profile'
+    raise_exception = True
 
     @swagger_auto_schema(
         operation_description="freeze user",
@@ -185,7 +212,6 @@ class UserFreezeView(PermissionRequiredMixin, APIView):
         ),
         responses={200: "OK", 400: "Bad request", 404: "User not found"}
     )
-    @permission_required('accounts.freeze_profile')
     def post(self, request):
         user_id = request.data.get('id')
         freezed = request.data.get('freezed')
@@ -204,7 +230,8 @@ class UserFreezeView(PermissionRequiredMixin, APIView):
         return Response(response_data)
 
 class UserContactView(PermissionRequiredMixin, APIView):
-
+    permission_required = 'accounts.contact_profile'
+    raise_exception = True
     @swagger_auto_schema(
         operation_description="contact user",
         request_body=openapi.Schema(
@@ -217,7 +244,6 @@ class UserContactView(PermissionRequiredMixin, APIView):
         ),
         responses={200: "OK", 400: "Bad request", 404: "User not found"}
     )
-    @permission_required('accounts.contact_profile')
     def post(self, request):
         user_id = request.data.get('id')
 
