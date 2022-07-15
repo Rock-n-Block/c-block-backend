@@ -217,7 +217,6 @@ class TransferOwnershipMixin(EventMixinBase):
 
         return ownership_addresses
 
-
 class WeddingEventdMixinBase(EventMixinBase):
     def _get_events_wedding(self, event_name, last_checked_block, last_network_block):
         return self._get_events_base(

@@ -22,7 +22,7 @@ class IsAuthenticatedAndContractSuperAdmin(BasePermission):
         if not (request.user and request.user.is_authenticated):
             return False
 
-        return request.user.is_contract_super_admin()
+        return request.user.is_contract_owner
 
 class IsAuthenticatedAndContractChangePricesAdmin(BasePermission):
     """
@@ -72,5 +72,11 @@ def change_super_admin(old_user, new_user):
             contracts_obj = None
         update_permission_value(True, contracts_perm_value, new_user, contracts_obj)
         update_permission_value(False, contracts_perm_value, old_user, contracts_obj)
+
+    new_user.is_contract_owner = True
+    new_user.save()
+
+    old_user.is_contract_owner = False
+    old_user.save()
 
     logging.info(f'superuser updated {old_user} -> {new_user}')

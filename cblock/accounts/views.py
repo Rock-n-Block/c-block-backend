@@ -126,7 +126,9 @@ class RetrieveCountryInfoView(APIView):
 
 
 class UserListView(PermissionRequiredMixin, ListAPIView):
-    queryset =  Profile.objects.exclude(owner_address="")
+    queryset =  Profile.objects.exclude(
+        owner_address__in=["", "0x0000000000000000000000000000000000000000000000000000000000000000"]
+    )
     serializer_class = MetamaskUserSerializer
     permission_classes = (IsAuthenticated,)
     permission_required = 'accounts.view_profile'
@@ -165,6 +167,12 @@ class AdminPermissionUpdateView(APIView):
 
         profile_perms_names = PERMISSION_LIST_USERS
         contracts_perms_names = PERMISSION_LIST_CONTRACTS
+
+        if len(request.data.keys()) < 2:
+            return Response(
+                {"error": "at least 1 permission must be passed"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         can_view_users = request.data.get('can_view_users')
         if can_view_users is not None:
             update_permission_value(can_view_users, profile_perms_names.get('can_view_users'), user)

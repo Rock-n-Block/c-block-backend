@@ -9,7 +9,7 @@ from django_countries.fields import CountryField
 
 from cblock.accounts.managers import MetamaskUserManager
 from cblock.accounts.utils import get_controller_contract
-from cblock.accounts.permissions import PERMISSION_LIST_USERS, PERMISSION_LIST_CONTRACTS
+from cblock.accounts.permissions import PERMISSION_LIST_USERS, PERMISSION_LIST_CONTRACTS, change_super_admin
 
 class Profile(AbstractUser):
     """
@@ -37,6 +37,7 @@ class Profile(AbstractUser):
     avatar = models.ImageField(null=True, upload_to='avatars/')
 
     freezed = models.BooleanField(default=False)
+    is_contract_owner = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (("email", "owner_address"),)
@@ -65,15 +66,6 @@ class Profile(AbstractUser):
         )
         return all(v is not None for v in profile_detail_fields)
 
-    def is_contract_super_admin(self):
-        controller_contract, network = get_controller_contract()
-
-        user_address = network.w3.toChecksumAddress(self.owner_address)
-        contract_owner = controller_contract.functions.owner().call()
-        is_admin = contract_owner.lower() == user_address.lower()
-        # logging.info(f'User {user_address} is_admin: {is_admin} ({contract_owner})')
-        return is_admin
-
     def is_contract_change_price_admin(self):
         controller_contract, network = get_controller_contract()
 
@@ -91,7 +83,6 @@ class Profile(AbstractUser):
         return can_change_payment_addresses
 
     def get_role_system_permissions(self):
-        contract_super_admin = self.is_contract_super_admin()
         contract_change_price = self.is_contract_change_price_admin()
         contract_change_payment_addresses = self.is_contract_change_payment_addresses_admin()
 
@@ -108,7 +99,7 @@ class Profile(AbstractUser):
         can_contact_users = self.has_perm(PERMISSION_LIST_USERS.get('can_contact_users'))
 
         return {
-            'contract_super_admin': contract_super_admin,
+            'contract_super_admin': self.is_contract_owner,
             'can_change_price': contract_change_price,
             'can_change_payment_addresses': contract_change_payment_addresses,
             'can_change_network_mode': can_change_network_mode,
@@ -116,3 +107,20 @@ class Profile(AbstractUser):
             'can_freeze_users': can_freeze_users,
             'can_contact_users': can_contact_users,
         }
+
+class ControllerOwnershipTransferred(models.Model):
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+    old_owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    new_owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    changed = models.BooleanField(default=False)
+
+    def change_superuser(self):
+        if self.changed:
+            logging.warning('Super Admin already changed, skipping')
+            return
+
+        change_super_admin(self.old_owner, self.new_owner)
+        self.changed = True
+        self.save()
+
+        logging.info(f'Super Admin changed: {self.old_owner} -> {self.new_owner}')

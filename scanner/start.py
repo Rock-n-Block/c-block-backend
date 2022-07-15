@@ -24,7 +24,8 @@ from scanner.components.handlers import (
     HandlerWeddingWithdrawalStatusChanged,
     HandlerWeddingDivorceProposed,
     HandlerWeddingDivorceStatusChanged,
-    HandlerProbateFundsDistributed
+    HandlerProbateFundsDistributed,
+    HandlerControllerTransferOwnership
 )
 
 from cblock.settings import config
@@ -118,5 +119,12 @@ if __name__ == "__main__":
             handler=HandlerProbateFundsDistributed,
             preload_contracts=True
         ).start()
+
+        # Controller Transfer Ownership
+        ScannerAbsolute(
+            network=network,
+            handler=HandlerControllerTransferOwnership,
+            contracts=network.controller_contract
+        )
 
 

@@ -1,5 +1,8 @@
+import logging
 from copy import deepcopy
 from django.utils import timezone
+
+from django.db.utils import IntegrityError
 
 from scanner.components.base import HandlerABC
 from cblock.contracts.models import (
@@ -11,8 +14,9 @@ from cblock.contracts.models import (
     WeddingActionStatus,
     LastWillContract,
     LostKeyContract,
-    CONTRACT_MODELS
+    CONTRACT_MODELS,
 )
+from cblock.accounts.models import ControllerOwnershipTransferred
 from cblock.mails.services import send_wedding_mail, send_probate_transferred
 
 
@@ -348,3 +352,27 @@ class HandlerProbateFundsDistributed(HandlerABC):
         contract_instance.distribution_tx_hash = data.tx_hash
         contract_instance.save()
         send_probate_transferred(self.network.explorer_tx_uri, contract_instance, data)
+
+class HandlerControllerTransferOwnership(HandlerABC):
+    TYPE = "controller_transfer_ownership"
+
+    def save_event(self, event_data):
+        data = self.scanner.parse_data_transfer_ownership(event_data)
+        self.logger.info(f"New event: {data}")
+
+        old_owner = self.get_owner(data.previous_owner)
+        new_owner = self.get_owner(data.new_owner)
+
+        try:
+            ownership_tx = ControllerOwnershipTransferred(
+                tx_hash=data.tx_hash,
+                old_owner=old_owner,
+                new_owner=new_owner,
+                changed=False
+            )
+            ownership_tx.save()
+        except IntegrityError:
+            logging.warning(f'tx {data.tx_hash} for changing super user already saved')
+            return
+
+        ownership_tx.change_superuser()
