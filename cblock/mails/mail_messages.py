@@ -195,6 +195,11 @@ Best wishes, Bitflex Team
           """
         },
     },
+    'admin': {
+        'contact': {
+            'title': 'C-Block Platform - New support message'
+        }
+    }
 
 
 }

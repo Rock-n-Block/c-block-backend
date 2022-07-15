@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -27,6 +28,9 @@ from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 from cblock.accounts.models import Profile
 from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer
 from cblock.accounts.permissions import IsAuthenticatedAndContractSuperAdmin, update_permission_value
+
+from cblock.mails.mail_messages import EMAIL_TEXTS
+from cblock.settings import config
 
 USER_NOT_FOUND_RESPONSE = "user not found"
 
@@ -115,6 +119,21 @@ class UserListView(PermissionRequiredMixin, ListAPIView):
 class AdminPermissionUpdateView(APIView):
     permission_classes = [IsAuthenticatedAndContractSuperAdmin,]
 
+    @swagger_auto_schema(
+        operation_description="update permissions for user",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "id": openapi.Schema(type=openapi.TYPE_NUMBER),
+                "can_view_users": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                "can_freeze_users": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                "can_contact_users": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                "can_change_network_mode": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            },
+            required=["id"]
+        ),
+        responses={200: "OK", 400: "Bad request", 404: "User not found"}
+    )
     def post(self, request):
         user_id = request.data.get('id')
 
@@ -127,25 +146,97 @@ class AdminPermissionUpdateView(APIView):
 
         can_view_users = request.data.get('can_view_users')
         if can_view_users is not None:
-            update_permission_value(
-                can_view_users,
-                'accounts.view_profile',
-                user
-            )
+            update_permission_value(can_view_users, 'accounts.view_profile', user)
+
+        can_freeze_users = request.data.get('can_freeze_users')
+        if can_freeze_users is not None:
+            update_permission_value(can_freeze_users,'accounts.freeze_profile', user)
+
+        can_contact_users = request.data.get('can_contact_users')
+        if can_contact_users is not None:
+            update_permission_value(can_contact_users, 'accounts.contact_profile', user)
+
+        # Setting `view` permission if it was not passed
+        if can_freeze_users or can_contact_users and not can_view_users:
+            update_permission_value(can_view_users, 'accounts.view_profile', user)
 
         can_change_network_mode = request.data.get('can_change_network_mode')
         if can_change_network_mode is not None:
             from cblock.contracts.models import NetworkMode
             network_mode_obj = NetworkMode.objects.get_or_create(name='celo')
-
-            update_permission_value(
-                can_change_network_mode,
-                'contracts.edit_networkmode',
-                user,
-                network_mode_obj
-            )
+            update_permission_value(can_change_network_mode, 'contracts.edit_networkmode', user, network_mode_obj)
 
         response_data = MetamaskUserSerializer(user).data
         return Response(response_data)
 
 
+class UserFreezeView(PermissionRequiredMixin, APIView):
+
+
+    @swagger_auto_schema(
+        operation_description="freeze user",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "id": openapi.Schema(type=openapi.TYPE_NUMBER),
+                "freezed": openapi.Schema(type=openapi.TYPE_BOOLEAN)
+            },
+            required=["id", "freezed"]
+        ),
+        responses={200: "OK", 400: "Bad request", 404: "User not found"}
+    )
+    @permission_required('accounts.freeze_profile')
+    def post(self, request):
+        user_id = request.data.get('id')
+        freezed = request.data.get('freezed')
+
+        try:
+            user = Profile.objects.get(id=request.data.get('id'))
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": USER_NOT_FOUND_RESPONSE}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        user.freezed = freezed
+        user.save()
+
+        response_data = MetamaskUserSerializer(user).data
+        return Response(response_data)
+
+class UserContactView(PermissionRequiredMixin, APIView):
+
+    @swagger_auto_schema(
+        operation_description="contact user",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "id": openapi.Schema(type=openapi.TYPE_NUMBER),
+                "message": openapi.Schema(type=openapi.TYPE_STRING)
+            },
+            required=["id", "freezed"]
+        ),
+        responses={200: "OK", 400: "Bad request", 404: "User not found"}
+    )
+    @permission_required('accounts.contact_profile')
+    def post(self, request):
+        user_id = request.data.get('id')
+
+        message = request.data.get('message')
+
+        try:
+            user = Profile.objects.get(id=request.data.get('id'))
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": USER_NOT_FOUND_RESPONSE}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        message_text_title = EMAIL_TEXTS.get('admin').get('contact').get('title')
+        send_mail(
+            message_text_title,
+            message,
+            from_email=config.email_host_user,
+            recipient_list=[user.email],
+            fail_silently=True
+        )
+
+        return Response({"result": "ok"})

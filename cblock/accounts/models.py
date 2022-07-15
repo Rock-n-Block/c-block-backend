@@ -39,6 +39,10 @@ class Profile(AbstractUser):
 
     class Meta:
         unique_together = (("email", "owner_address"),)
+        permissions = [
+            ('freeze_profile', 'Can freeze user profile by setting freezed status'),
+            ('contact_profile', 'Can contact profile by using contract form')
+        ]
 
     def __str__(self):
         return f'{self.email} - {self.owner_address}'
