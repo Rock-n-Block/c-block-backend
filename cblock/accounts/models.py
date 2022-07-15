@@ -110,8 +110,12 @@ class Profile(AbstractUser):
 
 class ControllerOwnershipTransferred(models.Model):
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
-    old_owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    new_owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    old_owner = models.ForeignKey(Profile, on_delete=models.CASCADE,
+                                  related_name='old_owners', related_query_name='old_owner'
+                                  )
+    new_owner = models.ForeignKey(Profile, on_delete=models.CASCADE,
+                                  related_name='new_owner', related_query_name='new_owner'
+                                  )
     changed = models.BooleanField(default=False)
 
     def change_superuser(self):
