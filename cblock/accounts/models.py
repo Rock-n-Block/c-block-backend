@@ -9,7 +9,7 @@ from django_countries.fields import CountryField
 
 from cblock.accounts.managers import MetamaskUserManager
 from cblock.accounts.utils import get_controller_contract
-from cblock.accounts.permissions import PERMISSION_LIST_USERS, PERMISSION_LIST_CONTRACTS, change_super_admin
+from cblock.accounts.permissions import PERMISSION_LIST_USERS, PERMISSION_LIST_CONTRACTS, check_admin_rights
 
 class Profile(AbstractUser):
     """
@@ -37,7 +37,6 @@ class Profile(AbstractUser):
     avatar = models.ImageField(null=True, upload_to='avatars/')
 
     freezed = models.BooleanField(default=False)
-    is_contract_owner = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (("email", "owner_address"),)
@@ -83,8 +82,11 @@ class Profile(AbstractUser):
         return can_change_payment_addresses
 
     def get_role_system_permissions(self):
-        contract_change_price = self.is_contract_change_price_admin()
-        contract_change_payment_addresses = self.is_contract_change_payment_addresses_admin()
+        # contract_change_price = self.is_contract_change_price_admin()
+        # contract_change_payment_addresses = self.is_contract_change_payment_addresses_admin()
+        is_contract_super_admin = check_admin_rights(self, ControllerSuperAdmin)
+        is_contract_price_admin = check_admin_rights(self, ControllerPriceAdmin)
+        is_contract_payment_addresses_admin = check_admin_rights(self, ControllerPaymentAddressesAdmin)
 
         # Enable/disable mainnet toggle
         from cblock.contracts.models import NetworkMode
@@ -99,21 +101,33 @@ class Profile(AbstractUser):
         can_contact_users = self.has_perm(PERMISSION_LIST_USERS.get('can_contact_users'))
 
         return {
-            'contract_super_admin': self.is_contract_owner,
-            'can_change_price': contract_change_price,
-            'can_change_payment_addresses': contract_change_payment_addresses,
-            'can_change_network_mode': can_change_network_mode,
-            'can_view_users': can_view_users,
-            'can_freeze_users': can_freeze_users,
-            'can_contact_users': can_contact_users,
+            'contract_super_admin': is_contract_super_admin,
+            'can_change_price': is_contract_price_admin,
+            'can_change_payment_addresses': is_contract_payment_addresses_admin,
+            'can_change_network_mode': is_contract_super_admin or can_change_network_mode,
+            'can_view_users': is_contract_super_admin or can_view_users,
+            'can_freeze_users': is_contract_super_admin or can_freeze_users,
+            'can_contact_users': is_contract_super_admin or can_contact_users,
         }
+
+class ControllerSuperAdmin(models.Model):
+    owner_address = models.CharField(max_length=64, unique=True, blank=False)
+    is_admin = models.BooleanField(default=False)
+
+class ControllerPriceAdmin(models.Model):
+    owner_address = models.CharField(max_length=64, unique=True, blank=False)
+    is_admin = models.BooleanField(default=False)
+
+class ControllerPaymentAddressesAdmin(models.Model):
+    owner_address = models.CharField(max_length=64, unique=True, blank=False)
+    is_admin = models.BooleanField(default=False)
 
 class ControllerOwnershipTransferred(models.Model):
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
-    old_owner = models.ForeignKey(Profile, on_delete=models.CASCADE,
+    old_owner = models.ForeignKey(ControllerSuperAdmin, on_delete=models.CASCADE,
                                   related_name='old_owners', related_query_name='old_owner'
                                   )
-    new_owner = models.ForeignKey(Profile, on_delete=models.CASCADE,
+    new_owner = models.ForeignKey(ControllerSuperAdmin, on_delete=models.CASCADE,
                                   related_name='new_owner', related_query_name='new_owner'
                                   )
     changed = models.BooleanField(default=False)
@@ -123,7 +137,16 @@ class ControllerOwnershipTransferred(models.Model):
             logging.warning('Super Admin already changed, skipping')
             return
 
-        change_super_admin(self.old_owner, self.new_owner)
+        if self.old_owner == self.new_owner:
+            logging.error('old user == new user')
+            return
+
+        self.new_owner.is_admin = True
+        self.new_owner.save()
+
+        self.old_owner.is_admin = False
+        self.old_owner.save()
+
         self.changed = True
         self.save()
 

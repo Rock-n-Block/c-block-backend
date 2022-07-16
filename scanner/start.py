@@ -78,6 +78,13 @@ if __name__ == "__main__":
             contracts=network.lostkey_factories,
         ).start()
 
+        # Controller Transfer Ownership
+        ScannerAbsolute(
+            network=network,
+            handler=HandlerControllerTransferOwnership,
+            contracts=network.controller_contract
+        ).start()
+
         # Transfer ownership scanner
         ScannerAbsolute(
             network=network,
@@ -119,12 +126,5 @@ if __name__ == "__main__":
             handler=HandlerProbateFundsDistributed,
             preload_contracts=True
         ).start()
-
-        # Controller Transfer Ownership
-        ScannerAbsolute(
-            network=network,
-            handler=HandlerControllerTransferOwnership,
-            contracts=network.controller_contract
-        )
 
 

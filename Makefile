@@ -66,3 +66,16 @@ update_migrate: down
 update: down
 	pull
 	up
+
+redis_rollback_testnet:
+	sudo $(compose) stop scanner
+	sudo $(compose) exec web python manage.py redis_rollback_scanner testnet $(block_number)
+	sudo $(compose) start scanner
+
+redis_rollback_mainnet:
+	sudo $(compose) stop scanner
+	sudo $(compose) exec web python manage.py redis_rollback_scanner mainnet $(block_number)
+	sudo $(compose) start scanner
+
+cleanup_contracts_db:
+	sudo $(compose) exec web python manage.py clean_contracts_db $(network)

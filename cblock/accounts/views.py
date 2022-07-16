@@ -7,7 +7,7 @@ from string import ascii_letters
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail
 
 from drf_yasg import openapi
@@ -25,13 +25,13 @@ from rest_framework import status
 from django_countries import countries
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
-from cblock.accounts.models import Profile
+from cblock.accounts.models import Profile, ControllerSuperAdmin, ControllerPriceAdmin, ControllerPaymentAddressesAdmin
 from cblock.accounts.serializers import MetamaskLoginSerializer, MetamaskUserSerializer
 from cblock.accounts.permissions import (
-    IsAuthenticatedAndContractSuperAdmin,
-    update_permission_value,
     PERMISSION_LIST_USERS,
-    PERMISSION_LIST_CONTRACTS
+    PERMISSION_LIST_CONTRACTS,
+    update_permission_value,
+    check_admin_rights
 )
 
 from cblock.mails.mail_messages import EMAIL_TEXTS
@@ -125,20 +125,27 @@ class RetrieveCountryInfoView(APIView):
 
 
 
-class UserListView(PermissionRequiredMixin, ListAPIView):
+class UserListView(ListAPIView):
     queryset =  Profile.objects.exclude(
         owner_address__in=["", "0x0000000000000000000000000000000000000000000000000000000000000000"]
     )
     serializer_class = MetamaskUserSerializer
     permission_classes = (IsAuthenticated,)
-    permission_required = 'accounts.view_profile'
-    raise_exception = True
 
     def get_object(self):
         user_data = super().get_object()
 
+    def get(self, request, *args, **kwargs):
+        user: Profile = request.user
+
+        perms = check_admin_rights(user, ControllerSuperAdmin, PERMISSION_LIST_USERS.get('can_view_users'))
+        if not perms:
+            raise PermissionDenied()
+
+        return super().get(request, *args, **kwargs)
+
 class AdminPermissionUpdateView(APIView):
-    permission_classes = [IsAuthenticatedAndContractSuperAdmin,]
+    permission_classes = [IsAuthenticated,]
 
     @swagger_auto_schema(
         operation_description="update permissions for user",
@@ -156,7 +163,10 @@ class AdminPermissionUpdateView(APIView):
         responses={200: "OK", 400: "Bad request", 404: "User not found"}
     )
     def post(self, request):
-        user_id = request.data.get('id')
+        user = request.user
+        perms = check_admin_rights(user, ControllerSuperAdmin)
+        if not perms:
+            raise PermissionDenied()
 
         try:
             user = Profile.objects.get(id=request.data.get('id'))
@@ -165,9 +175,6 @@ class AdminPermissionUpdateView(APIView):
                 {"error": USER_NOT_FOUND_RESPONSE}, status=status.HTTP_404_NOT_FOUND
             )
 
-        profile_perms_names = PERMISSION_LIST_USERS
-        contracts_perms_names = PERMISSION_LIST_CONTRACTS
-
         if len(request.data.keys()) < 2:
             return Response(
                 {"error": "at least 1 permission must be passed"}, status=status.HTTP_400_BAD_REQUEST
@@ -175,19 +182,19 @@ class AdminPermissionUpdateView(APIView):
 
         can_view_users = request.data.get('can_view_users')
         if can_view_users is not None:
-            update_permission_value(can_view_users, profile_perms_names.get('can_view_users'), user)
+            update_permission_value(can_view_users, PERMISSION_LIST_USERS.get('can_view_users'), user)
 
         can_freeze_users = request.data.get('can_freeze_users')
         if can_freeze_users is not None:
-            update_permission_value(can_freeze_users,profile_perms_names.get('can_freeze_users'), user)
+            update_permission_value(can_freeze_users,PERMISSION_LIST_USERS.get('can_freeze_users'), user)
 
         can_contact_users = request.data.get('can_contact_users')
         if can_contact_users is not None:
-            update_permission_value(can_contact_users, profile_perms_names.get('can_contact_users'), user)
+            update_permission_value(can_contact_users, PERMISSION_LIST_USERS.get('can_contact_users'), user)
 
         # Setting `view` permission if it was not passed
         if (can_freeze_users or can_contact_users) and not can_view_users:
-            update_permission_value(True, profile_perms_names.get('can_view_users'), user)
+            update_permission_value(True, PERMISSION_LIST_USERS.get('can_view_users'), user)
 
         can_change_network_mode = request.data.get('can_change_network_mode')
         if can_change_network_mode is not None:
@@ -195,7 +202,7 @@ class AdminPermissionUpdateView(APIView):
             network_mode_obj, _ = NetworkMode.objects.get_or_create(name='celo')
             update_permission_value(
                 can_change_network_mode,
-                contracts_perms_names.get('can_change_network_mode'),
+                PERMISSION_LIST_CONTRACTS.get('can_change_network_mode'),
                 user,
                 network_mode_obj
             )
@@ -204,9 +211,7 @@ class AdminPermissionUpdateView(APIView):
         return Response(response_data)
 
 
-class UserFreezeView(PermissionRequiredMixin, APIView):
-    permission_required = 'accounts.freeze_profile'
-    raise_exception = True
+class UserFreezeView(APIView):
 
     @swagger_auto_schema(
         operation_description="freeze user",
@@ -221,7 +226,11 @@ class UserFreezeView(PermissionRequiredMixin, APIView):
         responses={200: "OK", 400: "Bad request", 404: "User not found"}
     )
     def post(self, request):
-        user_id = request.data.get('id')
+        user = request.user
+        perms = check_admin_rights(user, ControllerSuperAdmin, PERMISSION_LIST_USERS.get('can_freeze_users'))
+        if not perms:
+            raise PermissionDenied()
+
         freezed = request.data.get('freezed')
 
         try:
@@ -253,7 +262,10 @@ class UserContactView(PermissionRequiredMixin, APIView):
         responses={200: "OK", 400: "Bad request", 404: "User not found"}
     )
     def post(self, request):
-        user_id = request.data.get('id')
+        user = request.user
+        perms = check_admin_rights(user, ControllerSuperAdmin, PERMISSION_LIST_USERS.get('can_contact_users'))
+        if not perms:
+            raise PermissionDenied()
 
         message = request.data.get('message')
 

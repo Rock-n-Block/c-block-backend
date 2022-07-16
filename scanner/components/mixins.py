@@ -188,35 +188,6 @@ class NewContractLostkeyMixin(NewContractProbateMixinBasae):
         )
 
 
-class TransferOwnershipMixin(EventMixinBase):
-    def get_events_transfer_ownership(self, last_checked_block, last_network_block):
-        return self._get_events_base(
-            contract_abi=OWNABLE_ABI,
-            event_name="OwnershipTransferred",
-            from_block=last_checked_block,
-            to_block=last_network_block
-        )
-
-    def parse_data_transfer_ownership(self, event) -> TransferOwnership:
-        return TransferOwnership(
-            tx_hash=event["transactionHash"].hex(),
-            sender=self._parse_data_get_sender(event),
-            contract_address=event['address'].lower(),
-            previous_owner=event['args']['previousOwner'].lower(),
-            new_owner=event['args']['newOwner'].lower()
-        )
-
-    def preload_contracts_transfer_ownership(self, network) -> List[str]:
-        contract_addresses = get_contract_addresses(network.is_testnet)
-        if 'wedding' in contract_addresses.keys():
-            contract_addresses.pop('wedding')
-
-        ownership_addresses = []
-        for address_list in contract_addresses.values():
-            ownership_addresses += address_list
-
-        return ownership_addresses
-
 class WeddingEventdMixinBase(EventMixinBase):
     def _get_events_wedding(self, event_name, last_checked_block, last_network_block):
         return self._get_events_base(
@@ -363,3 +334,47 @@ class ProbateFundsDistributedMixin(EventMixinBase):
     def preload_contracts_probate_funds_distributed(self, network) -> List[str]:
         contract_addresses = get_probates(dead=True, test_network=network.is_testnet)
         return rewrap_addresses_to_checksum([contract.address for contract in contract_addresses])
+
+class TransferOwnershipMixinBase(EventMixinBase):
+    def _get_events_transfer_ownership(self, last_checked_block, last_network_block):
+        return self._get_events_base(
+            contract_abi=OWNABLE_ABI,
+            event_name="OwnershipTransferred",
+            from_block=last_checked_block,
+            to_block=last_network_block
+        )
+
+    def _parse_data_transfer_ownership(self, event) -> TransferOwnership:
+        return TransferOwnership(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            contract_address=event['address'].lower(),
+            previous_owner=event['args']['previousOwner'].lower(),
+            new_owner=event['args']['newOwner'].lower()
+        )
+
+class TransferOwnershipMixin(TransferOwnershipMixinBase):
+
+    def get_events_transfer_ownership(self, last_checked_block, last_network_block):
+        return self._get_events_transfer_ownership(last_checked_block, last_network_block)
+
+    def parse_data_transfer_ownership(self, event) -> TransferOwnership:
+        return self._parse_data_transfer_ownership(event)
+
+    def preload_contracts_transfer_ownership(self, network) -> List[str]:
+        contract_addresses = get_contract_addresses(network.is_testnet)
+        if 'wedding' in contract_addresses.keys():
+            contract_addresses.pop('wedding')
+
+        ownership_addresses = []
+        for address_list in contract_addresses.values():
+            ownership_addresses += address_list
+
+        return ownership_addresses
+
+class ControllerTransferOwnershipMixin(TransferOwnershipMixinBase):
+    def get_events_controller_transfer_ownership(self, last_checked_block, last_network_block):
+        return self._get_events_transfer_ownership(last_checked_block, last_network_block)
+
+    def parse_data_controller_transfer_ownership(self, event) -> TransferOwnership:
+        return self._parse_data_transfer_ownership(event)

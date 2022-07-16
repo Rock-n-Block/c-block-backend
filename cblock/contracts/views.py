@@ -9,7 +9,8 @@ from rest_framework.exceptions import PermissionDenied
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from cblock.accounts.models import Profile
+from cblock.accounts.models import Profile, ControllerSuperAdmin
+from cblock.accounts.permissions import check_admin_rights, PERMISSION_LIST_CONTRACTS
 from cblock.contracts.models import (
     TokenContract,
     TokenHolder,
@@ -445,10 +446,15 @@ def show_current_network_mode(request):
 @permission_classes([IsAuthenticated])
 def update_network_mode(request):
     network_mode, _ = NetworkMode.objects.get_or_create(name='celo')
-
     user: Profile = request.user
-    if not user.has_perm('contracts.change_networkmode', network_mode):
-        raise PermissionDenied
+    perms = check_admin_rights(
+        user,
+        ControllerSuperAdmin,
+        PERMISSION_LIST_CONTRACTS.get('can_change_network_mode'),
+        network_mode
+    )
+    if not perms:
+        raise PermissionDenied()
 
     """
     Returns current permission for deployments

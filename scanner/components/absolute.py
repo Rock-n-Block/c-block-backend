@@ -55,6 +55,10 @@ class ScannerAbsolute(threading.Thread):
             if self.preload_contracts:
                 self.contracts = getattr(scanner, f'preload_contracts_{handler.TYPE}')(self.network)
                 handler.logger.info(f'Dymanic contract list items: {len(self.contracts)} items, {self.contracts}')
+                if len(self.contracts) == 0:
+                    scanner.save_last_block(self.block_name, last_network_block)
+                    scanner.sleep()
+                    continue
 
             event_list = getattr(scanner, f"get_events_{handler.TYPE}")(
                 last_checked_block,

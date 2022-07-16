@@ -1,7 +1,8 @@
 import logging
 from copy import deepcopy
-from django.utils import timezone
+from typing import Optional
 
+from django.utils import timezone
 from django.db.utils import IntegrityError
 
 from scanner.components.base import HandlerABC
@@ -16,7 +17,12 @@ from cblock.contracts.models import (
     LostKeyContract,
     CONTRACT_MODELS,
 )
-from cblock.accounts.models import ControllerOwnershipTransferred
+from cblock.accounts.models import (
+    ControllerSuperAdmin,
+    ControllerPriceAdmin,
+    ControllerPaymentAddressesAdmin,
+    ControllerOwnershipTransferred
+)
 from cblock.mails.services import send_wedding_mail, send_probate_transferred
 
 
@@ -356,19 +362,21 @@ class HandlerProbateFundsDistributed(HandlerABC):
 class HandlerControllerTransferOwnership(HandlerABC):
     TYPE = "controller_transfer_ownership"
 
+    def get_controller_superadmin(self, owner_address: str) -> Optional[ControllerSuperAdmin]:
+        user, _ = ControllerSuperAdmin.objects.get_or_create(owner_address=owner_address.lower())
+        return user
     def save_event(self, event_data):
         data = self.scanner.parse_data_transfer_ownership(event_data)
         self.logger.info(f"New event: {data}")
 
-        old_owner = self.get_owner(data.previous_owner)
-        new_owner = self.get_owner(data.new_owner)
+        old_owner = self.get_controller_superadmin(data.previous_owner)
+        new_owner = self.get_controller_superadmin(data.new_owner)
 
         try:
             ownership_tx = ControllerOwnershipTransferred(
                 tx_hash=data.tx_hash,
                 old_owner=old_owner,
                 new_owner=new_owner,
-                changed=False
             )
             ownership_tx.save()
         except IntegrityError:
