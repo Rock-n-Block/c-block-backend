@@ -212,6 +212,7 @@ class AdminPermissionUpdateView(APIView):
 
 
 class UserFreezeView(APIView):
+    permission_classes = [IsAuthenticated, ]
 
     @swagger_auto_schema(
         operation_description="freeze user",
@@ -246,9 +247,9 @@ class UserFreezeView(APIView):
         response_data = MetamaskUserSerializer(user).data
         return Response(response_data)
 
-class UserContactView(PermissionRequiredMixin, APIView):
-    permission_required = 'accounts.contact_profile'
-    raise_exception = True
+class UserContactView(APIView):
+    permission_classes = [IsAuthenticated, ]
+
     @swagger_auto_schema(
         operation_description="contact user",
         request_body=openapi.Schema(
