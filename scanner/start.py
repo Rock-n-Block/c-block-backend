@@ -25,7 +25,9 @@ from scanner.components.handlers import (
     HandlerWeddingDivorceProposed,
     HandlerWeddingDivorceStatusChanged,
     HandlerProbateFundsDistributed,
-    HandlerControllerTransferOwnership
+    HandlerControllerTransferOwnership,
+    HandlerControllerPriceAdminChanged,
+    HandlerControllerPaymentAddressesAdminChanged
 )
 
 from cblock.settings import config
@@ -82,6 +84,20 @@ if __name__ == "__main__":
         ScannerAbsolute(
             network=network,
             handler=HandlerControllerTransferOwnership,
+            contracts=network.controller_contract
+        ).start()
+
+        # Controller Price Admin Changed
+        ScannerAbsolute(
+            network=network,
+            handler=HandlerControllerPriceAdminChanged,
+            contracts=network.controller_contract
+        ).start()
+
+        # Controller Price Admin Changed
+        ScannerAbsolute(
+            network=network,
+            handler=HandlerControllerPaymentAddressesAdminChanged,
             contracts=network.controller_contract
         ).start()
 

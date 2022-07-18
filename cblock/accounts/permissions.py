@@ -38,8 +38,6 @@ def check_admin_rights(user, admin_model=None, permission_name=None, permission_
     if permission_name:
         with_permission = user.has_perm(permission_name, permission_obj)
 
-    logging.info(is_controller_admin)
-    logging.info(with_permission)
     if (not is_controller_admin) and (not with_permission):
         return False
 

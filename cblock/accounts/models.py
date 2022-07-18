@@ -114,14 +114,6 @@ class ControllerSuperAdmin(models.Model):
     owner_address = models.CharField(max_length=64, unique=True, blank=False)
     is_admin = models.BooleanField(default=False)
 
-class ControllerPriceAdmin(models.Model):
-    owner_address = models.CharField(max_length=64, unique=True, blank=False)
-    is_admin = models.BooleanField(default=False)
-
-class ControllerPaymentAddressesAdmin(models.Model):
-    owner_address = models.CharField(max_length=64, unique=True, blank=False)
-    is_admin = models.BooleanField(default=False)
-
 class ControllerOwnershipTransferred(models.Model):
     tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
     old_owner = models.ForeignKey(ControllerSuperAdmin, on_delete=models.CASCADE,
@@ -151,3 +143,19 @@ class ControllerOwnershipTransferred(models.Model):
         self.save()
 
         logging.info(f'Super Admin changed: {self.old_owner} -> {self.new_owner}')
+
+class ControllerPriceAdmin(models.Model):
+    owner_address = models.CharField(max_length=64, unique=True, blank=False)
+    is_admin = models.BooleanField(default=False)
+
+class ControllerPaymentAddressesAdmin(models.Model):
+    owner_address = models.CharField(max_length=64, unique=True, blank=False)
+    is_admin = models.BooleanField(default=False)
+
+class ControllerPriceAdminChanged(models.Model):
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+    accounts = models.ManyToManyField(ControllerPriceAdmin, default=None)
+
+class ControllerPaymentAddressesAdminChanged(models.Model):
+    tx_hash = models.CharField(max_length=128, unique=True, help_text='Transaction hash')
+    accounts = models.ManyToManyField(ControllerPaymentAddressesAdmin, default=None)

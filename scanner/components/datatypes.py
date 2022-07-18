@@ -68,3 +68,13 @@ class WeddingDivorceStatusChanged(WeddingStatusBase):
 class ProbateFundsDistributed(EventBase):
     contract_address: str
     backup_addresses: list
+
+@dataclass
+class PriceAdminChanged(EventBase):
+    accounts: list
+    can_set_price: list
+
+@dataclass
+class PaymentAddressesAdminChanged(EventBase):
+    accounts: list
+    can_change_payment_addresses: list

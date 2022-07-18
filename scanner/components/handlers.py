@@ -19,9 +19,11 @@ from cblock.contracts.models import (
 )
 from cblock.accounts.models import (
     ControllerSuperAdmin,
+    ControllerOwnershipTransferred,
     ControllerPriceAdmin,
-    ControllerPaymentAddressesAdmin,
-    ControllerOwnershipTransferred
+    ControllerPriceAdminChanged,
+    ControllerPaymentAddressesAdminChanged,
+    ControllerPaymentAddressesAdmin
 )
 from cblock.mails.services import send_wedding_mail, send_probate_transferred
 
@@ -372,15 +374,79 @@ class HandlerControllerTransferOwnership(HandlerABC):
         old_owner = self.get_controller_superadmin(data.previous_owner)
         new_owner = self.get_controller_superadmin(data.new_owner)
 
-        try:
-            ownership_tx = ControllerOwnershipTransferred(
-                tx_hash=data.tx_hash,
-                old_owner=old_owner,
-                new_owner=new_owner,
-            )
-            ownership_tx.save()
-        except IntegrityError:
+        ownership_tx_found = ControllerOwnershipTransferred.objects.filter(tx_hash=data.tx_hash)
+        if ownership_tx_found:
             logging.warning(f'tx {data.tx_hash} for changing super user already saved')
             return
 
+        ownership_tx = ControllerOwnershipTransferred(
+            tx_hash=data.tx_hash,
+            old_owner=old_owner,
+            new_owner=new_owner
+        )
+        ownership_tx.save()
         ownership_tx.change_superuser()
+
+
+class HandlerControllerPriceAdminChanged(HandlerABC):
+    TYPE = "controller_set_price_admin"
+
+    def get_controller_price_admin(self, owner_address: str) -> Optional[ControllerPriceAdmin]:
+        user, _ = ControllerPriceAdmin.objects.get_or_create(owner_address=owner_address.lower())
+        return user
+    def save_event(self, event_data):
+        data = self.scanner.parse_data_controller_set_price_admin(event_data)
+        self.logger.info(f"New event: {data}")
+
+        admin_changed_tx_found = ControllerPriceAdminChanged.objects.filter(tx_hash=data.tx_hash)
+        if admin_changed_tx_found:
+            logging.warning(f'tx {data.tx_hash} for changing price admin already saved')
+            return
+
+        admin_changed_tx = ControllerPriceAdminChanged(
+            tx_hash=data.tx_hash,
+        )
+        admin_changed_tx.save()
+
+
+        admin_accounts_list = []
+        for account, is_admin in zip(data.accounts, data.can_set_price):
+            admin_account = self.get_controller_price_admin(account)
+            admin_account.is_admin = is_admin
+            admin_account.save()
+
+            admin_accounts_list.append(admin_account)
+
+        admin_changed_tx.accounts.set(admin_accounts_list)
+
+class HandlerControllerPaymentAddressesAdminChanged(HandlerABC):
+    TYPE = "controller_payment_addresses_admin"
+
+    def get_controller_payment_addresses_admin(self, owner_address: str) -> Optional[ControllerPaymentAddressesAdmin]:
+        user, _ = ControllerPaymentAddressesAdmin.objects.get_or_create(owner_address=owner_address.lower())
+        return user
+    def save_event(self, event_data):
+        data = self.scanner.parse_data_controller_payment_addresses_admin(event_data)
+        self.logger.info(f"New event: {data}")
+
+        admin_changed_tx_found = ControllerPaymentAddressesAdminChanged.objects.filter(tx_hash=data.tx_hash)
+        if admin_changed_tx_found:
+            logging.warning(f'tx {data.tx_hash} for changing payment addresses admin already saved')
+            return
+
+        admin_changed_tx = ControllerPaymentAddressesAdminChanged(
+            tx_hash=data.tx_hash,
+        )
+        admin_changed_tx.save()
+
+        admin_accounts_list = []
+        for account, is_admin in zip(data.accounts, data.can_change_payment_addresses):
+            admin_account = self.get_controller_payment_addresses_admin(account)
+            admin_account.is_admin = is_admin
+            admin_account.save()
+
+            admin_accounts_list.append(admin_account)
+
+        admin_changed_tx.accounts.set(admin_accounts_list)
+
+

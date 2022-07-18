@@ -11,7 +11,8 @@ from contract_abi import (
     PROBATE_FACTORY_ABI,
     PROBATE_ABI,
     WEDDING_ABI,
-    OWNABLE_ABI
+    OWNABLE_ABI,
+    CONTROLLER_ABI
 )
 from scanner.components.datatypes import (
     NewContractToken,
@@ -24,7 +25,9 @@ from scanner.components.datatypes import (
     WeddingDivorceProposed,
     WeddingDivorceStatusChanged,
     TransferOwnership,
-    ProbateFundsDistributed
+    ProbateFundsDistributed,
+    PriceAdminChanged,
+    PaymentAddressesAdminChanged
 )
 
 
@@ -378,3 +381,47 @@ class ControllerTransferOwnershipMixin(TransferOwnershipMixinBase):
 
     def parse_data_controller_transfer_ownership(self, event) -> TransferOwnership:
         return self._parse_data_transfer_ownership(event)
+
+
+class ControllerCustomAdminChangedBase(EventMixinBase):
+
+    def _get_events_controller_custom_admin(self, event_name, last_checked_block, last_network_block):
+        return self._get_events_base(
+            contract_abi=CONTROLLER_ABI,
+            event_name=event_name,
+            from_block=last_checked_block,
+            to_block=last_network_block
+        )
+
+class ControllerPriceAdminChanged(ControllerCustomAdminChangedBase):
+    def get_events_controller_set_price_admin(self, last_checked_block, last_network_block):
+        return self._get_events_controller_custom_admin(
+            event_name="CanSetPriceEdited",
+            last_checked_block=last_checked_block,
+            last_network_block=last_network_block
+        )
+
+    def parse_data_controller_set_price_admin(self, event) -> PriceAdminChanged:
+        return PriceAdminChanged(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            accounts=event['args']['account'],
+            can_set_price=event['args']['_canSetPrice']
+        )
+
+class ControllerPaymentAddressesAdminChanged(ControllerCustomAdminChangedBase):
+    def get_events_controller_payment_addresses_admin(self, last_checked_block, last_network_block):
+        return self._get_events_controller_custom_admin(
+            event_name="CanSetFeeReceiverEdited",
+            last_checked_block=last_checked_block,
+            last_network_block=last_network_block
+        )
+
+    def parse_data_controller_payment_addresses_admin(self, event) -> PaymentAddressesAdminChanged:
+        return PaymentAddressesAdminChanged(
+            tx_hash=event["transactionHash"].hex(),
+            sender=self._parse_data_get_sender(event),
+            accounts=event['args']['account'],
+            can_change_payment_addresses=event['args']['_canSetFeeReceiver']
+        )
+
