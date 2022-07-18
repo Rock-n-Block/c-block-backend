@@ -53,6 +53,9 @@ class HandlerABC(ABC):
         self.logger = loggers.get(logger_name)
 
     def get_owner(self, owner_address: str) -> Optional[Profile]:
+        if owner_address == '0x0000000000000000000000000000000000000000':
+            return Profile.objects.get(email='AnonymousUser')
+
         user, _ = Profile.objects.get_or_create(owner_address=owner_address.lower())
         return user
 
