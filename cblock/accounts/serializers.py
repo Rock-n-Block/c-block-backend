@@ -55,9 +55,9 @@ class MetamaskUserSerializer(CountryFieldMixin, serializers.ModelSerializer):
         fields = [
             'id', 'email', 'owner_address', 'name', 'company', 'phone_number',
             'country', 'city', 'street', 'office', 'building', 'zipcode',
-            'avatar', 'freezed'
+            'avatar', 'freezed', 'date_joined'
         ]
-        read_only_fields = ['id', 'email', 'owner_address']
+        read_only_fields = ['id', 'email', 'owner_address', 'freezed', 'date_joined']
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
