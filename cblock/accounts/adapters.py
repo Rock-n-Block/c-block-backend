@@ -37,3 +37,9 @@ class CustomDomainAdapter(DefaultAccountAdapter):
         else:
             email_template = "account/email/email_confirmation"
         self.send_mail(email_template, emailconfirmation.email_address.email, ctx)
+
+    def save_user(self, request, user, form, commit=True):
+        user = super().save_user(request, user, form, commit=False)
+        user.owner_address = form.cleaned_data.get('owner_address')
+        user.save()
+        return user

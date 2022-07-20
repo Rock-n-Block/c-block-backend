@@ -10,6 +10,9 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from django_countries.serializers import CountryFieldMixin
 
+from allauth.account.adapter import get_adapter
+from allauth.account.utils import setup_user_email
+
 from cblock.settings import DEFAULT_FROM_EMAIL
 from cblock.accounts.models import Profile
 from cblock.accounts.utils import valid_metamask_message, get_domain_for_emails
@@ -85,8 +88,6 @@ class MetamaskRegisterSerializer(RegisterSerializer):
 
 
     def validate(self, data):
-        super(MetamaskRegisterSerializer, self).validate(data)
-
         data['owner_address'] = data['owner_address'].lower()
 
         if not valid_metamask_message(data.get('owner_address'), data.get('message'), data.get('signature')):
@@ -98,22 +99,36 @@ class MetamaskRegisterSerializer(RegisterSerializer):
         if self.get_email_and_address_exists(data.get('email'), data.get('owner_address')):
             raise serializers.ValidationError(_("Pair of this user address and email already exists"))
 
+        data = super(MetamaskRegisterSerializer, self).validate(data)
+
         return data
 
 
+
     def get_cleaned_data(self):
-        super(MetamaskRegisterSerializer, self).get_cleaned_data()
+        # super(MetamaskRegisterSerializer, self).get_cleaned_data()
+        # logging.info(self.validated_data)
         return {
             'password1': self.validated_data.get('password1', ''),
             'email': self.validated_data.get('email', ''),
             'owner_address': self.validated_data.get('owner_address', '')
         }
 
-    def save(self, request):
-        user = super().save(request)
-        user.owner_address = self.get_cleaned_data().get('owner_address')
-        user.save()
-        return user
+    # def save(self, request):
+    #     user = super().save(request)
+    #     user.owner_address = self.get_cleaned_data().get('owner_address')
+    #     user.save()
+    #     return user
+    #
+    # def save(self, request):
+    #     adapter = get_adapter()
+    #     user = adapter.new_user(request)
+    #     self.cleaned_data = self.get_cleaned_data()
+    #     logging.info(self.cleaned_data)
+    #     adapter.save_user(request, user, self)
+    #     self.custom_signup(request, user)
+    #     setup_user_email(request, user, [])
+    #     return user
 
 
 class CustomDomainPasswordResetSerializer(PasswordResetSerializer):
