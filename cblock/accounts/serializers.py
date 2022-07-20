@@ -1,5 +1,5 @@
 import logging
-
+from urllib.parse import urlparse
 from web3 import Web3
 from django.contrib.auth.forms import PasswordResetForm
 from django.utils.translation import ugettext_lazy as _
@@ -63,6 +63,9 @@ class MetamaskUserSerializer(CountryFieldMixin, serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['is_completed_profile'] = instance.is_completed_profile()
         rep['permissions'] = instance.get_role_system_permissions()
+        if rep['avatar']:
+            rep['avatar'] = urlparse(rep['avatar']).path
+
         return rep
 
 
@@ -74,11 +77,11 @@ class MetamaskRegisterSerializer(RegisterSerializer):
 
     @staticmethod
     def get_owner_address_exists(owner_address):
-        return Profile.objects.filter(owner_address__iexact=owner_address).exists()
+        return Profile.objects.filter(owner_address__iexact=owner_address.lower()).exists()
 
     @staticmethod
     def get_email_and_address_exists(email, owner_address):
-        return Profile.objects.filter(email__iexact=email, owner_address__iexact=owner_address).exists()
+        return Profile.objects.filter(email__iexact=email, owner_address__iexact=owner_address.lower()).exists()
 
 
     def validate(self, data):
