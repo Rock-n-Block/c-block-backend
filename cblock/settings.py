@@ -176,6 +176,10 @@ if config.frontend_host_domain:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
 
+if config.set_cookie_to_frontend_domain and config.frontend_host_domain != "":
+    SESSION_COOKIE_DOMAIN = config.frontend_host_domain
+    CSRF_COOKIE_DOMAIN = config.frontend_host_domain
+
 CSRF_TRUSTED_ORIGINS =  config.allowed_hosts
 
 LOGIN_URL = '/'

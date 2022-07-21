@@ -50,6 +50,7 @@ class Config:
     rates_checker_interval: int
     sentry_dsn: str
     frontend_host_domain: str
+    set_cookie_to_frontend_domain: bool
     networks: List[Network]
 
 

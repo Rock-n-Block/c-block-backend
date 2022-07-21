@@ -14,6 +14,7 @@ scanner_sleep: 60                      # Timeout between scans
 rates_checker_interval: 3600           # Timeout between rates fetching
 sentry_dsn: ''                         # URL for Sentry endpoint (set as '' if there is not Sentry)
 frontend_host_domain: ''               # URL for frontend host, if frontend is deployed on separate domain
+set_cookie_to_frontend_domain: False   # Option to set cookies on forntend domain instead of Swagger
 networks:
   - name: 'testnet'       # Required, use testnet/mainnet for each network
     ws_endpoint: 'wss://alfajores-forno.celo-testnet.org/ws'
